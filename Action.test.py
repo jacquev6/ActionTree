@@ -26,7 +26,7 @@ class SingleThread( unittest.TestCase ):
             m = Mock( name, self.mock.values()[ 0 ] )
         else:
             m = Mock( name )
-        a = Action( ExecuteMock( m.object ) )
+        a = Action( m.object )
         self.mock[ name ] = m
         self.action[ name ] = a
 
@@ -38,9 +38,7 @@ class SingleThread( unittest.TestCase ):
         self.action[ a ].addDependency( self.action[ b ] )
 
     def expectAction( self, name ):
-        with self.mock[ name ].atomic:
-            self.mock[ name ].expect.begin()
-            self.mock[ name ].expect.end()
+        self.mock[ name ].expect()
 
     def executeAction( self, name ):
         self.action[ name ].execute()
