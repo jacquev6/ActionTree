@@ -69,4 +69,20 @@ class SingleThread( unittest.TestCase ):
 
         self.executeAction( "a" )
 
+    def testDeepDependencies( self ):
+        self.addDependency( "a", "b" )
+        self.addDependency( "b", "c" )
+        self.addDependency( "c", "d" )
+        self.addDependency( "d", "e" )
+        self.addDependency( "e", "f" )
+
+        self.expectAction( "f" )
+        self.expectAction( "e" )
+        self.expectAction( "d" )
+        self.expectAction( "c" )
+        self.expectAction( "b" )
+        self.expectAction( "a" )
+
+        self.executeAction( "a" )
+
 unittest.main()
