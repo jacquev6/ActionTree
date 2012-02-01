@@ -16,28 +16,42 @@ class ExecuteMock:
 class SingleThread( unittest.TestCase ):
     def setUp( self ):
         unittest.TestCase.setUp( self )
-        self.a = Mock( "a" )
-        self.b = Mock( "b", self.a )
-        self.aAction = Action( ExecuteMock( self.a.object ) )
-        self.bAction = Action( ExecuteMock( self.b.object ) )
+        self.mock = dict()
+        self.action = dict()
+        self.addMock( "a" )
+        self.addMock( "b" )
+
+    def addMock( self, name ):
+        m = Mock( name )
+        a = Action( ExecuteMock( m.object ) )
+        self.mock[ name ] = m
+        self.action[ name ] = a
 
     def tearDown( self ):
-        self.a.tearDown()
+        for mock in self.mock.itervalues():
+            mock.tearDown()
+
+    def addDependency( self, a, b ):
+        self.action[ a ].addDependency( self.action[ b ] )
+
+    def expectAction( self, name ):
+        self.mock[ name ].expect.begin()
+        self.mock[ name ].expect.end()
+
+    def executeAction( self, name ):
+        self.action[ name ].execute()
 
     def testSingleAction( self ):
-        self.a.expect.begin()
-        self.a.expect.end()
+        self.expectAction( "a" )
 
-        self.aAction.execute()
+        self.executeAction( "a" )
 
     def testOneDependency( self ):
-        self.aAction.addDependency( self.bAction )
+        self.addDependency( "a", "b" )
 
-        self.b.expect.begin()
-        self.b.expect.end()
-        self.a.expect.begin()
-        self.a.expect.end()
+        self.expectAction( "b" )
+        self.expectAction( "a" )
 
-        self.aAction.execute()
+        self.executeAction( "a" )
 
 unittest.main()
