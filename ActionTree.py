@@ -3,7 +3,7 @@ class Action:
         self.__execute = execute
         self.__dependencies = set()
 
-    def execute( self ):
+    def execute( self, threads = 1 ):
         self.__executeDependencies()
         self.__execute()
 

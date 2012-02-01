@@ -83,4 +83,59 @@ class SingleThread( unittest.TestCase ):
 
         self.executeAction( "a" )
 
+class ThreadPool( unittest.TestCase ):
+    def setUp( self ):
+        unittest.TestCase.setUp( self )
+        self.mock = dict()
+        self.action = dict()
+        for name in "abcdef":
+            self.addMock( name )
+
+    def addMock( self, name ):
+        if len( self.mock ) != 0:
+            m = Mock( name, self.mock.values()[ 0 ] )
+        else:
+            m = Mock( name )
+        a = Action( ExecuteMock( m.object ) )
+        self.mock[ name ] = m
+        self.action[ name ] = a
+
+    def tearDown( self ):
+        for mock in self.mock.itervalues():
+            mock.tearDown()
+
+    def addDependency( self, a, b ):
+        self.action[ a ].addDependency( self.action[ b ] )
+
+    def expectBegin( self, name ):
+        self.mock[ name ].expect.begin()
+
+    def expectEnd( self, name ):
+        self.mock[ name ].expect.end()
+
+    def executeAction( self, name ):
+        self.action[ name ].execute( threads = 3 )
+
+    def testSingleAction( self ):
+        self.expectBegin( "a" )
+        self.expectEnd( "a" )
+
+        self.executeAction( "a" )
+
+    def testManyDependencies( self ):
+        dependencies = "bcd"
+        for name in dependencies:
+            self.addDependency( "a", name )
+
+        with self.mock.values()[ 0 ].unordered:
+            for name in dependencies:
+                self.expectBegin( name )
+        with self.mock.values()[ 0 ].unordered:
+            for name in dependencies:
+                self.expectEnd( name )
+        self.expectBegin( "a" )
+        self.expectEnd( "a" )
+
+        self.executeAction( "a" )
+
 unittest.main()
