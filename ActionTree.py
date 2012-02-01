@@ -2,10 +2,13 @@ class Action:
     def __init__( self, execute ):
         self.__execute = execute
         self.__dependencies = set()
+        self.__executed = False
 
     def execute( self, threads = 1 ):
-        self.__executeDependencies()
-        self.__execute()
+        if not self.__executed:
+            self.__executeDependencies()
+            self.__execute()
+            self.__executed = True
 
     def addDependency( self, dependency ):
         self.__dependencies.add( dependency )

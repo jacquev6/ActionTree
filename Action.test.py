@@ -83,6 +83,20 @@ class SingleThread( unittest.TestCase ):
 
         self.executeAction( "a" )
 
+    def testDiamondDependencies( self ):
+        self.addDependency( "a", "b" )
+        self.addDependency( "a", "c" )
+        self.addDependency( "b", "d" )
+        self.addDependency( "c", "d" )
+
+        self.expectAction( "d" )
+        with self.mock.values()[ 0 ].unordered:
+            self.expectAction( "b" )
+            self.expectAction( "c" )
+        self.expectAction( "a" )
+
+        self.executeAction( "a" )
+
 class ThreadPool( unittest.TestCase ):
     def setUp( self ):
         unittest.TestCase.setUp( self )
@@ -133,6 +147,25 @@ class ThreadPool( unittest.TestCase ):
         with self.mock.values()[ 0 ].unordered:
             for name in dependencies:
                 self.expectEnd( name )
+        self.expectBegin( "a" )
+        self.expectEnd( "a" )
+
+        self.executeAction( "a" )
+
+    def testDiamondDependencies( self ):
+        self.addDependency( "a", "b" )
+        self.addDependency( "a", "c" )
+        self.addDependency( "b", "d" )
+        self.addDependency( "c", "d" )
+
+        self.expectBegin( "d" )
+        self.expectEnd( "d" )
+        with self.mock.values()[ 0 ].unordered:
+            self.expectBegin( "b" )
+            self.expectBegin( "c" )
+        with self.mock.values()[ 0 ].unordered:
+            self.expectEnd( "b" )
+            self.expectEnd( "c" )
         self.expectBegin( "a" )
         self.expectEnd( "a" )
 
