@@ -18,11 +18,14 @@ class SingleThread( unittest.TestCase ):
         unittest.TestCase.setUp( self )
         self.mock = dict()
         self.action = dict()
-        self.addMock( "a" )
-        self.addMock( "b" )
+        for name in "abcdef":
+            self.addMock( name )
 
     def addMock( self, name ):
-        m = Mock( name )
+        if len( self.mock ) != 0:
+            m = Mock( name, self.mock.values()[ 0 ] )
+        else:
+            m = Mock( name )
         a = Action( ExecuteMock( m.object ) )
         self.mock[ name ] = m
         self.action[ name ] = a
@@ -35,8 +38,9 @@ class SingleThread( unittest.TestCase ):
         self.action[ a ].addDependency( self.action[ b ] )
 
     def expectAction( self, name ):
-        self.mock[ name ].expect.begin()
-        self.mock[ name ].expect.end()
+        with self.mock[ name ].atomic:
+            self.mock[ name ].expect.begin()
+            self.mock[ name ].expect.end()
 
     def executeAction( self, name ):
         self.action[ name ].execute()
@@ -50,6 +54,17 @@ class SingleThread( unittest.TestCase ):
         self.addDependency( "a", "b" )
 
         self.expectAction( "b" )
+        self.expectAction( "a" )
+
+        self.executeAction( "a" )
+
+    def testManyDependencies( self ):
+        for name in "bcdef":
+            self.addDependency( "a", name )
+
+        with self.mock.values()[ 0 ].unordered:
+            for name in "befcd":
+                self.expectAction( name )
         self.expectAction( "a" )
 
         self.executeAction( "a" )
