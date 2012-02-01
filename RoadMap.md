@@ -1,0 +1,5 @@
+- Multithreading
+    - fixed number of threads
+    - adapted number of threads
+- Error collection
+- Keep going
