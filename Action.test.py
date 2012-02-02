@@ -1,4 +1,5 @@
 import unittest
+import threading
 import time
 from MockMockMock import Mock
 
@@ -7,11 +8,14 @@ from ActionTree import Action
 class ExecuteMock:
     def __init__( self, mock ):
         self.__mock = mock
+        self.__lock = threading.Lock()
 
     def __call__( self ):
-        self.__mock.begin()
+        with self.__lock:
+            self.__mock.begin()
         time.sleep( 0.1 )
-        self.__mock.end()
+        with self.__lock:
+            self.__mock.end()
 
 class SingleThread( unittest.TestCase ):
     def setUp( self ):
@@ -166,6 +170,28 @@ class ThreadPool( unittest.TestCase ):
         with self.mock.values()[ 0 ].unordered:
             self.expectEnd( "b" )
             self.expectEnd( "c" )
+        self.expectBegin( "a" )
+        self.expectEnd( "a" )
+
+        self.executeAction( "a" )
+
+    def testDeepDependencies( self ):
+        self.addDependency( "a", "b" )
+        self.addDependency( "b", "c" )
+        self.addDependency( "c", "d" )
+        self.addDependency( "d", "e" )
+        self.addDependency( "e", "f" )
+
+        self.expectBegin( "f" )
+        self.expectEnd( "f" )
+        self.expectBegin( "e" )
+        self.expectEnd( "e" )
+        self.expectBegin( "d" )
+        self.expectEnd( "d" )
+        self.expectBegin( "c" )
+        self.expectEnd( "c" )
+        self.expectBegin( "b" )
+        self.expectEnd( "b" )
         self.expectBegin( "a" )
         self.expectEnd( "a" )
 
