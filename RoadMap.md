@@ -3,3 +3,4 @@
     - adapted number of threads
 - Error collection
 - Keep going
+- Detect dependency cycles
