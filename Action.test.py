@@ -17,184 +17,148 @@ class ExecuteMock:
         with self.__lock:
             self.__mock.end()
 
-class SingleThread( unittest.TestCase ):
+class TestCase( object ):
     def setUp( self ):
         unittest.TestCase.setUp( self )
-        self.mock = dict()
-        self.action = dict()
+        self.__mock = dict()
+        self.__action = dict()
         for name in "abcdef":
-            self.addMock( name )
+            self.__addMock( name )
 
-    def addMock( self, name ):
-        if len( self.mock ) != 0:
-            m = Mock( name, self.mock.values()[ 0 ] )
+    def __addMock( self, name ):
+        if len( self.__mock ) != 0:
+            m = Mock( name, self.__mock.values()[ 0 ] )
         else:
             m = Mock( name )
-        a = Action( m.object )
-        self.mock[ name ] = m
-        self.action[ name ] = a
+        a = Action( self.callableFromMock( m.object ) )
+        self.__mock[ name ] = m
+        self.__action[ name ] = a
 
     def tearDown( self ):
-        for mock in self.mock.itervalues():
+        for mock in self.__mock.itervalues():
             mock.tearDown()
 
-    def addDependency( self, a, b ):
-        self.action[ a ].addDependency( self.action[ b ] )
+    def __addDependency( self, a, b ):
+        self.__action[ a ].addDependency( self.__action[ b ] )
 
-    def expectAction( self, name ):
-        self.mock[ name ].expect()
+    def getMock( self, name ):
+        return self.__mock[ name ]
 
-    def executeAction( self, name ):
-        self.action[ name ].execute()
+    def __executeAction( self, name ):
+        self.executeAction( self.__action[ name ] )
 
-    def testSingleAction( self ):
-        self.expectAction( "a" )
-
-        self.executeAction( "a" )
-
-    def testOneDependency( self ):
-        self.addDependency( "a", "b" )
-
-        self.expectAction( "b" )
-        self.expectAction( "a" )
-
-        self.executeAction( "a" )
-
-    def testManyDependencies( self ):
-        for name in "bcdef":
-            self.addDependency( "a", name )
-
-        with self.mock.values()[ 0 ].unordered:
-            for name in "befcd":
-                self.expectAction( name )
-        self.expectAction( "a" )
-
-        self.executeAction( "a" )
-
-    def testDeepDependencies( self ):
-        self.addDependency( "a", "b" )
-        self.addDependency( "b", "c" )
-        self.addDependency( "c", "d" )
-        self.addDependency( "d", "e" )
-        self.addDependency( "e", "f" )
-
-        self.expectAction( "f" )
-        self.expectAction( "e" )
-        self.expectAction( "d" )
-        self.expectAction( "c" )
-        self.expectAction( "b" )
-        self.expectAction( "a" )
-
-        self.executeAction( "a" )
-
-    def testDiamondDependencies( self ):
-        self.addDependency( "a", "b" )
-        self.addDependency( "a", "c" )
-        self.addDependency( "b", "d" )
-        self.addDependency( "c", "d" )
-
-        self.expectAction( "d" )
-        with self.mock.values()[ 0 ].unordered:
-            self.expectAction( "b" )
-            self.expectAction( "c" )
-        self.expectAction( "a" )
-
-        self.executeAction( "a" )
-
-class ThreadPool( unittest.TestCase ):
-    def setUp( self ):
-        unittest.TestCase.setUp( self )
-        self.mock = dict()
-        self.action = dict()
-        for name in "abcdef":
-            self.addMock( name )
-
-    def addMock( self, name ):
-        if len( self.mock ) != 0:
-            m = Mock( name, self.mock.values()[ 0 ] )
-        else:
-            m = Mock( name )
-        a = Action( ExecuteMock( m.object ) )
-        self.mock[ name ] = m
-        self.action[ name ] = a
-
-    def tearDown( self ):
-        for mock in self.mock.itervalues():
-            mock.tearDown()
-
-    def addDependency( self, a, b ):
-        self.action[ a ].addDependency( self.action[ b ] )
-
-    def expectBegin( self, name ):
-        self.mock[ name ].expect.begin()
-
-    def expectEnd( self, name ):
-        self.mock[ name ].expect.end()
-
-    def executeAction( self, name ):
-        self.action[ name ].execute( threads = 3 )
-
-    def testSingleAction( self ):
-        self.expectBegin( "a" )
-        self.expectEnd( "a" )
-
-        self.executeAction( "a" )
+    @property
+    def unordered( self ):
+        return self.__mock.values()[ 0 ].unordered
 
     def testManyDependencies( self ):
         dependencies = "bcd"
         for name in dependencies:
-            self.addDependency( "a", name )
+            self.__addDependency( "a", name )
 
-        with self.mock.values()[ 0 ].unordered:
-            for name in dependencies:
-                self.expectBegin( name )
-        with self.mock.values()[ 0 ].unordered:
-            for name in dependencies:
-                self.expectEnd( name )
-        self.expectBegin( "a" )
-        self.expectEnd( "a" )
+        self.expectManyDependencies( dependencies )
 
-        self.executeAction( "a" )
-
-    def testDiamondDependencies( self ):
-        self.addDependency( "a", "b" )
-        self.addDependency( "a", "c" )
-        self.addDependency( "b", "d" )
-        self.addDependency( "c", "d" )
-
-        self.expectBegin( "d" )
-        self.expectEnd( "d" )
-        with self.mock.values()[ 0 ].unordered:
-            self.expectBegin( "b" )
-            self.expectBegin( "c" )
-        with self.mock.values()[ 0 ].unordered:
-            self.expectEnd( "b" )
-            self.expectEnd( "c" )
-        self.expectBegin( "a" )
-        self.expectEnd( "a" )
-
-        self.executeAction( "a" )
+        self.__executeAction( "a" )
 
     def testDeepDependencies( self ):
-        self.addDependency( "a", "b" )
-        self.addDependency( "b", "c" )
-        self.addDependency( "c", "d" )
-        self.addDependency( "d", "e" )
-        self.addDependency( "e", "f" )
+        self.__addDependency( "a", "b" )
+        self.__addDependency( "b", "c" )
+        self.__addDependency( "c", "d" )
+        self.__addDependency( "d", "e" )
+        self.__addDependency( "e", "f" )
 
-        self.expectBegin( "f" )
-        self.expectEnd( "f" )
-        self.expectBegin( "e" )
-        self.expectEnd( "e" )
-        self.expectBegin( "d" )
-        self.expectEnd( "d" )
-        self.expectBegin( "c" )
-        self.expectEnd( "c" )
-        self.expectBegin( "b" )
-        self.expectEnd( "b" )
-        self.expectBegin( "a" )
-        self.expectEnd( "a" )
+        self.expectDeepDependencies()
 
-        self.executeAction( "a" )
+        self.__executeAction( "a" )
+
+    def testDiamondDependencies( self ):
+        self.__addDependency( "a", "b" )
+        self.__addDependency( "a", "c" )
+        self.__addDependency( "b", "d" )
+        self.__addDependency( "c", "d" )
+
+        self.expectDiamondDependencies()
+
+        self.__executeAction( "a" )
+
+class SingleThread( TestCase, unittest.TestCase ):
+    def callableFromMock( self, m ):
+        return m
+
+    def executeAction( self, action ):
+        action.execute()
+
+    def __expectAction( self, name ):
+        self.getMock( name ).expect()
+
+    def expectManyDependencies( self, dependencies ):
+        with self.unordered:
+            for name in dependencies:
+                self.__expectAction( name )
+        self.__expectAction( "a" )
+
+    def expectDeepDependencies( self ):
+        self.__expectAction( "f" )
+        self.__expectAction( "e" )
+        self.__expectAction( "d" )
+        self.__expectAction( "c" )
+        self.__expectAction( "b" )
+        self.__expectAction( "a" )
+
+    def expectDiamondDependencies( self ):
+        self.__expectAction( "d" )
+        with self.unordered:
+            self.__expectAction( "b" )
+            self.__expectAction( "c" )
+        self.__expectAction( "a" )
+
+class ThreadPool( TestCase, unittest.TestCase ):
+    def callableFromMock( self, m ):
+        return ExecuteMock( m )
+
+    def executeAction( self, action ):
+        action.execute( threads = 3 )
+
+    def __expectBegin( self, name ):
+        self.getMock( name ).expect.begin()
+
+    def __expectEnd( self, name ):
+        self.getMock( name ).expect.end()
+
+    def expectManyDependencies( self, dependencies ):
+        with self.unordered:
+            for name in dependencies:
+                self.__expectBegin( name )
+        with self.unordered:
+            for name in dependencies:
+                self.__expectEnd( name )
+        self.__expectBegin( "a" )
+        self.__expectEnd( "a" )
+
+    def expectDiamondDependencies( self ):
+        self.__expectBegin( "d" )
+        self.__expectEnd( "d" )
+        with self.unordered:
+            self.__expectBegin( "b" )
+            self.__expectBegin( "c" )
+        with self.unordered:
+            self.__expectEnd( "b" )
+            self.__expectEnd( "c" )
+        self.__expectBegin( "a" )
+        self.__expectEnd( "a" )
+
+    def expectDeepDependencies( self ):
+        self.__expectBegin( "f" )
+        self.__expectEnd( "f" )
+        self.__expectBegin( "e" )
+        self.__expectEnd( "e" )
+        self.__expectBegin( "d" )
+        self.__expectEnd( "d" )
+        self.__expectBegin( "c" )
+        self.__expectEnd( "c" )
+        self.__expectBegin( "b" )
+        self.__expectEnd( "b" )
+        self.__expectBegin( "a" )
+        self.__expectEnd( "a" )
 
 unittest.main()
