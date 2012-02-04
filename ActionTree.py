@@ -16,9 +16,10 @@ class Action:
     def addDependency( self, dependency ):
         self.__dependencies.add( dependency )
 
-    def execute( self, threads = 1 ):
+    def execute( self, threads = 1, keepGoing = False ):
         self.__condition = threading.Condition()
         self.__exceptions = []
+        self.__keepGoing = keepGoing
         threads = [ threading.Thread( target = self.__executeInOneThread ) for i in range( threads ) ]
         for thread in threads:
             thread.start()
@@ -45,9 +46,11 @@ class Action:
                 try:
                     a.__execute()
                 except Exception, e:
-                    a.__failed = True
                     with self.__condition:
+                        a.__failed = True
                         self.__exceptions.append( e )
+                        if not self.__keepGoing:
+                            self.__canceled = True
                 with self.__condition:
                     if not a.__failed:
                         a.__executed = True

@@ -51,6 +51,10 @@ class TestCase( unittest.TestCase ):
     def unordered( self ):
         return self.__mock.values()[ 0 ].unordered
 
+    @property
+    def optional( self ):
+        return self.__mock.values()[ 0 ].optional
+
 class ThreadingTestCase:
     def testManyDependencies( self ):
         dependencies = "bcd"
@@ -177,6 +181,40 @@ class ExceptionsHandling( TestCase ):
         with self.assertRaises( Action.Exception ) as cm:
             self.getAction( "a" ).execute()
         self.assertEqual( len( cm.exception.exceptions ), 1 )
-        self.assertTrue( cm.exception.exceptions[ 0 ] is e )
+        self.assertIs( cm.exception.exceptions[ 0 ], e )
+
+    def testExceptionsInDependencies_KeepGoing( self ):
+        dependencies = "bcd"
+        for name in dependencies:
+            self.addDependency( "a", name )
+
+        eb = Exception()
+        ec = Exception()
+        with self.unordered:
+            self.getMock( "b" ).expect().andRaise( eb )
+            self.getMock( "c" ).expect().andRaise( ec )
+            self.getMock( "d" ).expect()
+
+        with self.assertRaises( Action.Exception ) as cm:
+            self.getAction( "a" ).execute( keepGoing = True )
+        self.assertEqual( len( cm.exception.exceptions ), 2 )
+
+    def testExceptionsInDependencies_NoKeepGoing( self ):
+        dependencies = "bcd"
+        for name in dependencies:
+            self.addDependency( "a", name )
+
+        eb = Exception()
+        ec = Exception()
+        ed = Exception()
+        with self.unordered:
+            with self.optional:
+                self.getMock( "b" ).expect().andRaise( eb )
+                self.getMock( "c" ).expect().andRaise( ec )
+                self.getMock( "d" ).expect().andRaise( ed )
+
+        with self.assertRaises( Action.Exception ) as cm:
+            self.getAction( "a" ).execute()
+        self.assertEqual( len( cm.exception.exceptions ), 1 )
 
 unittest.main()
