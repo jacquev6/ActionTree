@@ -7,6 +7,9 @@ class Action:
         self.__executed = False
         self.__executing = False
 
+    def addDependency( self, dependency ):
+        self.__dependencies.add( dependency )
+
     def execute( self, threads = 1 ):
         self.__condition = threading.Condition()
         threads = [ threading.Thread( target = self.__executeInOneThread ) for i in range( threads ) ]
@@ -43,10 +46,3 @@ class Action:
             return self
         else:
             return None
-
-    def addDependency( self, dependency ):
-        self.__dependencies.add( dependency )
-
-    def __executeDependencies( self ):
-        for dependency in self.__dependencies:
-            dependency.execute()
