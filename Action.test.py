@@ -17,7 +17,7 @@ class ExecuteMock:
         with self.__lock:
             self.__mock.end()
 
-class TestCase( object ):
+class TestCase( unittest.TestCase ):
     def setUp( self ):
         unittest.TestCase.setUp( self )
         self.__mock = dict()
@@ -38,50 +38,51 @@ class TestCase( object ):
         for mock in self.__mock.itervalues():
             mock.tearDown()
 
-    def __addDependency( self, a, b ):
+    def addDependency( self, a, b ):
         self.__action[ a ].addDependency( self.__action[ b ] )
 
     def getMock( self, name ):
         return self.__mock[ name ]
 
-    def __executeAction( self, name ):
-        self.executeAction( self.__action[ name ] )
+    def getAction( self, name ):
+        return self.__action[ name ]
 
     @property
     def unordered( self ):
         return self.__mock.values()[ 0 ].unordered
 
+class ThreadingTestCase:
     def testManyDependencies( self ):
         dependencies = "bcd"
         for name in dependencies:
-            self.__addDependency( "a", name )
+            self.addDependency( "a", name )
 
         self.expectManyDependencies( dependencies )
 
-        self.__executeAction( "a" )
+        self.executeAction( self.getAction( "a" ) )
 
     def testDeepDependencies( self ):
-        self.__addDependency( "a", "b" )
-        self.__addDependency( "b", "c" )
-        self.__addDependency( "c", "d" )
-        self.__addDependency( "d", "e" )
-        self.__addDependency( "e", "f" )
+        self.addDependency( "a", "b" )
+        self.addDependency( "b", "c" )
+        self.addDependency( "c", "d" )
+        self.addDependency( "d", "e" )
+        self.addDependency( "e", "f" )
 
         self.expectDeepDependencies()
 
-        self.__executeAction( "a" )
+        self.executeAction( self.getAction( "a" ) )
 
     def testDiamondDependencies( self ):
-        self.__addDependency( "a", "b" )
-        self.__addDependency( "a", "c" )
-        self.__addDependency( "b", "d" )
-        self.__addDependency( "c", "d" )
+        self.addDependency( "a", "b" )
+        self.addDependency( "a", "c" )
+        self.addDependency( "b", "d" )
+        self.addDependency( "c", "d" )
 
         self.expectDiamondDependencies()
 
-        self.__executeAction( "a" )
+        self.executeAction( self.getAction( "a" ) )
 
-class SingleThread( TestCase, unittest.TestCase ):
+class SingleThread( TestCase, ThreadingTestCase ):
     def callableFromMock( self, m ):
         return m
 
@@ -112,7 +113,7 @@ class SingleThread( TestCase, unittest.TestCase ):
             self.__expectAction( "c" )
         self.__expectAction( "a" )
 
-class ThreadPool( TestCase, unittest.TestCase ):
+class ThreadPool( TestCase, ThreadingTestCase ):
     def callableFromMock( self, m ):
         return ExecuteMock( m )
 
@@ -160,5 +161,22 @@ class ThreadPool( TestCase, unittest.TestCase ):
         self.__expectEnd( "b" )
         self.__expectBegin( "a" )
         self.__expectEnd( "a" )
+
+class ExceptionsHandling( TestCase ):
+    def callableFromMock( self, m ):
+        return m
+
+    def testExceptionInDependency( self ):
+        dependencies = "b"
+        for name in dependencies:
+            self.addDependency( "a", name )
+
+        e = Exception()
+        self.getMock( "b" ).expect().andRaise( e )
+
+        with self.assertRaises( Action.Exception ) as cm:
+            self.getAction( "a" ).execute()
+        self.assertEqual( len( cm.exception.exceptions ), 1 )
+        self.assertTrue( cm.exception.exceptions[ 0 ] is e )
 
 unittest.main()
