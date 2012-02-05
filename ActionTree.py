@@ -38,34 +38,43 @@ class Action:
             raise Action.Exception( exceptions )
 
     def __executeInOneThread( self, condition, exceptions, keepGoing ):
-        while True:
-            with condition:
-                action = None
-                while action is None:
-                    action = self.__getActionToExecuteNow()
-                    if self.__isFinished():
-                        return
-                    if action is None:
-                        condition.wait()
-                if any( d.__isFailure() for d in action.__dependencies ):
-                    action.__canceled = True
-                else:
-                    action.__executing = True
-            if action.__executing:
-                try:
-                    action.__execute()
-                except Exception, e:
-                    with condition:
-                        action.__failed = True
-                        exceptions.append( e )
-                        if not keepGoing:
-                            self.__canceled = True
-                with condition:
-                    if not action.__failed:
-                        action.__executed = True
-                    action.__executing = False
-                    condition.notifyAll()
+        while not self.__isFinished():
+            self.__executeOneAction( condition, exceptions, keepGoing )
 
+    def __executeOneAction( self, condition, exceptions, keepGoing ):
+        with condition:
+            action = self.__waitForActionToExecuteNow( condition )
+            if action is None:
+                return
+            goOn = self.__prepareExecution( action )
+        if goOn:
+            try:
+                action.__execute()
+            except Exception, e:
+                with condition:
+                    action.__failed = True
+                    exceptions.append( e )
+                    if not keepGoing:
+                        self.__canceled = True
+            with condition:
+                if not action.__failed:
+                    action.__executed = True
+                action.__executing = False
+                condition.notifyAll()
+
+    def __waitForActionToExecuteNow( self, condition ):
+        action = None
+        while action is None:
+            action = self.__getActionToExecuteNow()
+            if self.__isFinished():
+                return None
+            if action is None:
+                condition.wait()
+        return action
+
+    ### Returns None in two cases:
+    ###  - when self is finished or failed
+    ###  - when nothing can be started yet, because dependencies are still being executed
     def __getActionToExecuteNow( self ):
         if self.__executing or self.__isFinished():
             return None
@@ -77,6 +86,14 @@ class Action:
             return self
         else:
             return None
+
+    def __prepareExecution( self, action ):
+        if any( d.__isFailure() for d in action.__dependencies ):
+            action.__canceled = True
+            return False
+        else:
+            action.__executing = True
+            return True
 
     def __isFinished( self ):
         return self.__executed or self.__isFailure()
