@@ -42,12 +42,12 @@ class Action:
             with condition:
                 action = None
                 while action is None:
-                    action = self.__getNextActionToExecute()
-                    if self.__executed or self.__canceled or self.__failed:
+                    action = self.__getActionToExecuteNow()
+                    if self.__isFinished():
                         return
                     if action is None:
                         condition.wait()
-                if any( d.__failed or d.__canceled for d in action.__dependencies ):
+                if any( d.__isFailure() for d in action.__dependencies ):
                     action.__canceled = True
                 else:
                     action.__executing = True
@@ -66,14 +66,20 @@ class Action:
                     action.__executing = False
                     condition.notifyAll()
 
-    def __getNextActionToExecute( self ):
-        if self.__executed or self.__executing or self.__failed or self.__canceled:
+    def __getActionToExecuteNow( self ):
+        if self.__executing or self.__isFinished():
             return None
         for dependency in self.__dependencies:
-            action = dependency.__getNextActionToExecute()
+            action = dependency.__getActionToExecuteNow()
             if action is not None:
                 return action
-        if all( dependency.__executed or dependency.__failed or dependency.__canceled for dependency in self.__dependencies ):
+        if all( dependency.__isFinished() for dependency in self.__dependencies ):
             return self
         else:
             return None
+
+    def __isFinished( self ):
+        return self.__executed or self.__isFailure()
+
+    def __isFailure( self ):
+        return self.__canceled or self.__failed
