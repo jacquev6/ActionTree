@@ -1,4 +1,3 @@
 - Multithreading
     - adapted number of threads
-- Detect dependency cycles
 - Execution report

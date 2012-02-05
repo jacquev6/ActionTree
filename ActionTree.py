@@ -14,7 +14,15 @@ class Action:
         self.__executing = False
 
     def addDependency( self, dependency ):
+        if self in dependency.__getAllDependencies():
+            raise Exception( "Dependency cycle" )
         self.__dependencies.add( dependency )
+
+    def __getAllDependencies( self ):
+        dependencies = [ self ]
+        for dependency in self.__dependencies:
+            dependencies += dependency.__getAllDependencies()
+        return dependencies
 
     def execute( self, threads = 1, keepGoing = False ):
         self.__condition = threading.Condition()

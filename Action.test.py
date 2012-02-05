@@ -217,4 +217,25 @@ class ExceptionsHandling( TestCase ):
             self.getAction( "a" ).execute()
         self.assertEqual( len( cm.exception.exceptions ), 1 )
 
+class DependencyCycle( TestCase ):
+    def callableFromMock( self, m ):
+        return m
+
+    def testSelfDependency( self ):
+        with self.assertRaises( Exception ):
+            self.addDependency( "a", "a" )
+
+    def testShortCycle( self ):
+        self.addDependency( "a", "b" )
+        with self.assertRaises( Exception ):
+            self.addDependency( "b", "a" )
+
+    def testLongCycle( self ):
+        self.addDependency( "a", "b" )
+        self.addDependency( "b", "c" )
+        self.addDependency( "c", "d" )
+        self.addDependency( "d", "e" )
+        with self.assertRaises( Exception ):
+            self.addDependency( "e", "a" )
+
 unittest.main()
