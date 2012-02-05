@@ -2,8 +2,8 @@ import threading
 
 class Action:
     class Exception( Exception ):
-        def __init__( self, excpetions ):
-            self.exceptions = excpetions
+        def __init__( self, exceptions ):
+            self.exceptions = exceptions
 
     def __init__( self, execute ):
         self.__execute = execute
