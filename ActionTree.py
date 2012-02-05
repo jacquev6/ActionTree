@@ -20,9 +20,9 @@ class Action:
         self.__dependencies.add( dependency )
 
     def __getAllDependencies( self ):
-        dependencies = [ self ]
+        dependencies = set( [ self ] )
         for dependency in self.__dependencies:
-            dependencies += dependency.__getAllDependencies()
+            dependencies |= dependency.__getAllDependencies()
         return dependencies
 
     def execute( self, jobs = 1, keepGoing = False ):
