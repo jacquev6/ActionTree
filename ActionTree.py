@@ -5,8 +5,9 @@ class Action:
         def __init__( self, exceptions ):
             self.exceptions = exceptions
 
-    def __init__( self, execute ):
+    def __init__( self, execute, label ):
         self.__execute = execute
+        self.__label = label
         self.__dependencies = set()
         self.__executed = False
         self.__failed = False

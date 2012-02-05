@@ -30,7 +30,7 @@ class TestCase( unittest.TestCase ):
             m = Mock( name, self.__mock.values()[ 0 ] )
         else:
             m = Mock( name )
-        a = Action( self.callableFromMock( m.object ) )
+        a = Action( self.callableFromMock( m.object ), name )
         self.__mock[ name ] = m
         self.__action[ name ] = a
 
