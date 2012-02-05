@@ -238,4 +238,29 @@ class DependencyCycle( TestCase ):
         with self.assertRaises( Exception ):
             self.addDependency( "e", "a" )
 
+class MultipleExecutions( TestCase ):
+    def callableFromMock( self, m ):
+        return m
+
+    def testSimpleSuccess( self ):
+        repeat = 5
+        for i in range( repeat ):
+            self.getMock( "a" ).expect()
+
+        for i in range( repeat ):
+            self.getAction( "a" ).execute()
+
+    def testFailureInMiddle( self ):
+        self.addDependency( "a", "b" )
+        self.addDependency( "b", "c" )
+
+        repeat = 5
+        for i in range( repeat ):
+            self.getMock( "c" ).expect()
+            self.getMock( "b" ).expect().andRaise( Exception() )
+
+        for i in range( repeat ):
+            with self.assertRaises( Action.Exception ):
+                self.getAction( "a" ).execute()
+
 unittest.main()

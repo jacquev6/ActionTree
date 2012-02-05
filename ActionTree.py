@@ -26,6 +26,18 @@ class Action:
         return dependencies
 
     def execute( self, jobs = 1, keepGoing = False ):
+        self.__resetBeforeExecution()
+        self.__doExecute( jobs, keepGoing )
+
+    def __resetBeforeExecution( self ):
+        self.__executed = False
+        self.__failed = False
+        self.__canceled = False
+        self.__executing = False
+        for dependency in self.__dependencies:
+            dependency.__resetBeforeExecution()
+
+    def __doExecute( self, jobs, keepGoing ):
         condition = threading.Condition()
         exceptions = []
         threads = []
