@@ -1,3 +1,4 @@
 - Multithreading
     - adapted number of threads
+- Execution preview
 - Execution report
