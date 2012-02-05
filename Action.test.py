@@ -122,7 +122,7 @@ class ThreadPool( TestCase, ThreadingTestCase ):
         return ExecuteMock( m )
 
     def executeAction( self, action ):
-        action.execute( threads = 3 )
+        action.execute( jobs = 3 )
 
     def __expectBegin( self, name ):
         self.getMock( name ).expect.begin()
