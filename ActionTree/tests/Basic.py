@@ -1,3 +1,6 @@
+# Copyright 2012 Vincent Jacques
+# vincent@vincent-jacques.net
+
 import unittest
 import threading
 import time
@@ -259,5 +262,3 @@ class MultipleExecutions( TestCase ):
         for i in range( repeat ):
             with self.assertRaises( Action.Exception ):
                 self.getAction( "a" ).execute()
-
-unittest.main()
