@@ -1,7 +1,7 @@
 import unittest
 import threading
 import time
-from MockMockMock import Mock
+import MockMockMock
 
 from ActionTree import Action
 
@@ -20,23 +20,20 @@ class ExecuteMock:
 class TestCase( unittest.TestCase ):
     def setUp( self ):
         unittest.TestCase.setUp( self )
+        self.__mockEngine = MockMockMock.Engine()
         self.__mock = dict()
         self.__action = dict()
         for name in "abcdef":
             self.__addMock( name )
 
     def __addMock( self, name ):
-        if len( self.__mock ) != 0:
-            m = Mock( name, self.__mock.values()[ 0 ] )
-        else:
-            m = Mock( name )
+        m = self.__mockEngine.create( name )
         a = Action( self.callableFromMock( m.object ), name )
         self.__mock[ name ] = m
         self.__action[ name ] = a
 
     def tearDown( self ):
-        for mock in self.__mock.itervalues():
-            mock.tearDown()
+        self.__mockEngine.tearDown()
 
     def addDependency( self, a, b ):
         self.__action[ a ].addDependency( self.__action[ b ] )
@@ -49,11 +46,11 @@ class TestCase( unittest.TestCase ):
 
     @property
     def unordered( self ):
-        return self.__mock.values()[ 0 ].unordered
+        return self.__mockEngine.unordered
 
     @property
     def optional( self ):
-        return self.__mock.values()[ 0 ].optional
+        return self.__mockEngine.optional
 
 class ThreadingTestCase:
     def testManyDependencies( self ):

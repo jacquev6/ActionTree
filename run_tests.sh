@@ -4,7 +4,7 @@ coverage erase
 
 for f in *.test.py
 do 
-    coverage run --append $f --quiet
+    coverage run --branch --append $f --quiet
 done
 
-coverage report -m
+coverage report -m --include="ActionTree.py"
