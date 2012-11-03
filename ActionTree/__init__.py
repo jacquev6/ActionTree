@@ -4,3 +4,5 @@
 # vincent@vincent-jacques.net
 
 from Action import Action
+
+VERSION = "0.1.0"
