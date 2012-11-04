@@ -21,6 +21,8 @@ class ExceptionsHandling( Framework.TestCase ):
             self.getAction( "a" ).execute()
         self.assertEqual( len( cm.exception.exceptions ), 1 )
         self.assertIs( cm.exception.exceptions[ 0 ], e )
+        self.assertTrue( self.getAction( "a" ).canceled )
+        self.assertTrue( self.getAction( "b" ).failed )
 
     def testExceptionsInDependencies_KeepGoing( self ):
         dependencies = "bcd"
@@ -39,6 +41,10 @@ class ExceptionsHandling( Framework.TestCase ):
         self.assertEqual( len( cm.exception.exceptions ), 2 )
         self.assertTrue( eb in cm.exception.exceptions )
         self.assertTrue( ec in cm.exception.exceptions )
+        self.assertTrue( self.getAction( "a" ).canceled )
+        self.assertTrue( self.getAction( "b" ).failed )
+        self.assertTrue( self.getAction( "c" ).failed )
+        self.assertTrue( self.getAction( "d" ).successful )
 
     def testExceptionsInDependencies_NoKeepGoing( self ):
         dependencies = "bcd"
@@ -56,7 +62,18 @@ class ExceptionsHandling( Framework.TestCase ):
             with self.optional:
                 self.getMock( "d" ).expect().andRaise( ed )
 
+        a = self.getAction( "a" )
+        b = self.getAction( "b" )
+        c = self.getAction( "c" )
+        d = self.getAction( "d" )
+
         with self.assertRaises( Action.Exception ) as cm:
-            self.getAction( "a" ).execute()
+            a.execute()
         self.assertEqual( len( cm.exception.exceptions ), 1 )
         self.assertTrue( cm.exception.exceptions[ 0 ] in [ eb, ec, ed ] )
+        self.assertTrue( a.canceled )
+        self.assertTrue( b.failed ^ b.canceled )
+        self.assertTrue( c.failed ^ c.canceled )
+        self.assertTrue( d.failed ^ d.canceled )
+        self.assertEqual( len( [ x for x in [ b, c, d ] if x.failed ] ), 1 )
+        self.assertEqual( len( [ x for x in [ b, c, d ] if x.canceled ] ), 2 )

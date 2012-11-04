@@ -57,6 +57,7 @@ class Action:
         for thread in threads:
             thread.join()
         if len( exceptions ) > 0:
+            self.__markCanceledActions()
             raise Action.Exception( exceptions )
 
     def __executeInOneThread( self, condition, exceptions, keepGoing ):
@@ -117,8 +118,26 @@ class Action:
             action.__executing = True
             return True
 
+    def __markCanceledActions( self ):
+        for dependency in self.__dependencies:
+            dependency.__markCanceledActions()
+        if not self.__isFinished():
+            self.__canceled = True
+
     def __isFinished( self ):
         return self.__executed or self.__isFailure()
 
     def __isFailure( self ):
         return self.__canceled or self.__failed
+
+    @property
+    def failed( self ):
+        return self.__failed
+
+    @property
+    def successful( self ):
+        return self.__executed
+
+    @property
+    def canceled( self ):
+        return self.__canceled
