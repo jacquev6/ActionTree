@@ -7,3 +7,4 @@ from ExceptionsHandling import *
 from DependencyCycle import *
 from MultipleExecutions import *
 from Threading_ import *
+from Timing import *

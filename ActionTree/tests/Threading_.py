@@ -53,6 +53,16 @@ class ThreadingTestCase:
 
         self.executeAction( self.getAction( "a" ) )
 
+    def testHalfDiamondDependency( self ):
+        self.addDependency( "a", "b" )
+        self.addDependency( "a", "d" )
+        self.addDependency( "b", "d" )
+
+        self.expectHalfDiamondDependencies()
+
+        self.executeAction( self.getAction( "a" ) )
+
+
 class SingleThread( Framework.TestCase, ThreadingTestCase ):
     def executeAction( self, action ):
         action.execute()
@@ -79,6 +89,11 @@ class SingleThread( Framework.TestCase, ThreadingTestCase ):
         with self.unordered:
             self.__expectAction( "b" )
             self.__expectAction( "c" )
+        self.__expectAction( "a" )
+
+    def expectHalfDiamondDependencies( self ):
+        self.__expectAction( "d" )
+        self.__expectAction( "b" )
         self.__expectAction( "a" )
 
 class ThreadPool( Framework.TestCase, ThreadingTestCase ):
@@ -113,6 +128,14 @@ class ThreadPool( Framework.TestCase, ThreadingTestCase ):
         with self.unordered:
             self.__expectEnd( "b" )
             self.__expectEnd( "c" )
+        self.__expectBegin( "a" )
+        self.__expectEnd( "a" )
+
+    def expectHalfDiamondDependencies( self ):
+        self.__expectBegin( "d" )
+        self.__expectEnd( "d" )
+        self.__expectBegin( "b" )
+        self.__expectEnd( "b" )
         self.__expectBegin( "a" )
         self.__expectEnd( "a" )
 

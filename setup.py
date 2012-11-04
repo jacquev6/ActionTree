@@ -9,8 +9,6 @@ import textwrap
 import sys
 import glob
 
-import ActionTree
-
 class test( Command ):
     user_options = []
 
@@ -46,7 +44,7 @@ class test( Command ):
 
 setup(
     name = "ActionTree",
-    version = ActionTree.VERSION,
+    version = "0.1.0",
     description = "Concurrent actions library. Don't use it (yet)",
     author = "Vincent Jacques",
     author_email = "vincent@vincent-jacques.net",

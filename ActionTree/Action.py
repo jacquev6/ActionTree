@@ -5,10 +5,14 @@
 
 import threading
 
+
 class Action:
     class Exception( Exception ):
         def __init__( self, exceptions ):
             self.exceptions = exceptions
+
+        def __str__( self ):
+            return ", ".join( str( e ) for e in self.exceptions )
 
     def __init__( self, execute, label ):
         self.__execute = execute
