@@ -12,16 +12,16 @@ class TestCase( unittest.TestCase ):
     def setUp( self ):
         unittest.TestCase.setUp( self )
         self.__mockEngine = MockMockMock.Engine()
-        self.__mock = dict()
-        self.__action = dict()
+        self.__mocks = dict()
+        self.__actions = dict()
         for name in "abcdef":
             self.__addMock( name )
 
     def __addMock( self, name ):
         m = self.__mockEngine.create( name )
         a = Action( self.callableFromMock( m.object ), name )
-        self.__mock[ name ] = m
-        self.__action[ name ] = a
+        self.__mocks[ name ] = m
+        self.__actions[ name ] = a
 
     def callableFromMock( self, m ):
         return m
@@ -30,13 +30,13 @@ class TestCase( unittest.TestCase ):
         self.__mockEngine.tearDown()
 
     def addDependency( self, a, b ):
-        self.__action[ a ].addDependency( self.__action[ b ] )
+        self.__actions[ a ].addDependency( self.__actions[ b ] )
 
     def getMock( self, name ):
-        return self.__mock[ name ]
+        return self.__mocks[ name ]
 
     def getAction( self, name ):
-        return self.__action[ name ]
+        return self.__actions[ name ]
 
     @property
     def unordered( self ):
