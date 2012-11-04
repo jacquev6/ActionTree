@@ -23,6 +23,9 @@ class TestCase( unittest.TestCase ):
         self.__mock[ name ] = m
         self.__action[ name ] = a
 
+    def callableFromMock( self, m ):
+        return m
+
     def tearDown( self ):
         self.__mockEngine.tearDown()
 

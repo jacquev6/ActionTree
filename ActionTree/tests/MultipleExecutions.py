@@ -9,9 +9,6 @@ from ActionTree.Action import Action
 
 
 class MultipleExecutions( Framework.TestCase ):
-    def callableFromMock( self, m ):
-        return m
-
     def testSimpleSuccess( self ):
         repeat = 5
         for i in range( repeat ):

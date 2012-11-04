@@ -9,9 +9,6 @@ from ActionTree.Action import Action
 
 
 class ExceptionsHandling( Framework.TestCase ):
-    def callableFromMock( self, m ):
-        return m
-
     def testExceptionInDependency( self ):
         dependencies = "b"
         for name in dependencies:

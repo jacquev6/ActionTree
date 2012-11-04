@@ -7,9 +7,6 @@ import Framework
 
 
 class DependencyCycle( Framework.TestCase ):
-    def callableFromMock( self, m ):
-        return m
-
     def testSelfDependency( self ):
         with self.assertRaises( Exception ):
             self.addDependency( "a", "a" )

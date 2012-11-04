@@ -54,9 +54,6 @@ class ThreadingTestCase:
         self.executeAction( self.getAction( "a" ) )
 
 class SingleThread( Framework.TestCase, ThreadingTestCase ):
-    def callableFromMock( self, m ):
-        return m
-
     def executeAction( self, action ):
         action.execute()
 
