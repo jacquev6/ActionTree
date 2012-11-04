@@ -37,6 +37,8 @@ class ExceptionsHandling( Framework.TestCase ):
         with self.assertRaises( Action.Exception ) as cm:
             self.getAction( "a" ).execute( keepGoing = True )
         self.assertEqual( len( cm.exception.exceptions ), 2 )
+        self.assertTrue( eb in cm.exception.exceptions )
+        self.assertTrue( ec in cm.exception.exceptions )
 
     def testExceptionsInDependencies_NoKeepGoing( self ):
         dependencies = "bcd"
@@ -49,9 +51,12 @@ class ExceptionsHandling( Framework.TestCase ):
         with self.unordered:
             with self.optional:
                 self.getMock( "b" ).expect().andRaise( eb )
+            with self.optional:
                 self.getMock( "c" ).expect().andRaise( ec )
+            with self.optional:
                 self.getMock( "d" ).expect().andRaise( ed )
 
         with self.assertRaises( Action.Exception ) as cm:
             self.getAction( "a" ).execute()
         self.assertEqual( len( cm.exception.exceptions ), 1 )
+        self.assertTrue( cm.exception.exceptions[ 0 ] in [ eb, ec, ed ] )
