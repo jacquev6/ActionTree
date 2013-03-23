@@ -13,9 +13,32 @@
 
 # You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
 
-import unittest
+import sys, os
 
-from . import AllTests
+sys.path.insert(0, os.path.abspath('..'))
+from setup import version as setupVersion
 
-if __name__ == "__main__":
-    unittest.main(module=AllTests)
+extensions = ['sphinx.ext.autodoc']
+
+# The suffix of source filenames.
+source_suffix = '.rst'
+
+# The master toctree document.
+master_doc = 'index'
+
+# General information about the project.
+project = u'ActionTree'
+copyright = u'2013, Vincent Jacques'
+
+# The version info for the project you're documenting, acts as replacement for
+# |version| and |release|, also used in various other places throughout the
+# built documents.
+#
+# The short X.Y version.
+version = setupVersion
+# The full version, including alpha/beta/rc tags.
+release = setupVersion
+
+autodoc_default_flags = ["members"]
+autodoc_member_order = "bysource"
+autoclass_content = "both"
