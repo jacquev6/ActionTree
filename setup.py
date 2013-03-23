@@ -27,7 +27,7 @@ if __name__ == "__main__":
         description="Concurrent actions library. Don't use it (yet)",
         author="Vincent Jacques",
         author_email="vincent@vincent-jacques.net",
-        url="",
+        url="http://jacquev6.github.com/ActionTree",
         long_description=textwrap.dedent("""\
         """),
         packages=[
