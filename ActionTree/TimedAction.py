@@ -19,6 +19,9 @@ from .Action import Action
 
 
 class TimedAction(Action):
+    """
+    Foo
+    """
     time = time.time  # Allow static dependency injection
 
     def __init__(self, execute, label):

@@ -13,5 +13,24 @@
 
 # You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+ActionTree
+==========
+
+Introduction
+------------
+
+Reference
+---------
+
+.. autoclass:: ActionTree.Action.Action
+    :members:
+    :undoc-members:
+
+.. autoclass:: ActionTree.TimedAction.TimedAction
+    :members:
+    :undoc-members:
+"""
+
 from .Action import Action
 from .TimedAction import TimedAction

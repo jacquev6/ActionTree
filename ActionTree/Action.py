@@ -17,6 +17,9 @@ import threading
 
 
 class Action:
+    """
+    Foo
+    """
     class Exception(Exception):
         def __init__(self, exceptions):
             self.exceptions = exceptions
