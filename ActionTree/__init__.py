@@ -33,4 +33,5 @@ Reference
 """
 
 from .Action import Action
+from .CompoundException import CompoundException
 from .TimedAction import TimedAction

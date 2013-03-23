@@ -19,18 +19,15 @@ from .Action import Action
 
 
 class TimedAction(Action):
-    """
-    Foo
-    """
-    time = time.time  # Allow static dependency injection
+    _time = time.time  # Allow static dependency injection. But keep it private.
 
     def __init__(self, execute, label):
         self.__execute = execute
         Action.__init__(self, self.__timedExecute, label)
 
     def __timedExecute(self):
-        self.beginTime = self.time()
+        self.beginTime = self._time()
         try:
             self.__execute()
         finally:
-            self.endTime = self.time()
+            self.endTime = self._time()

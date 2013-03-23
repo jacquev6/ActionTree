@@ -1,13 +1,23 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2012 Vincent Jacques
+# Copyright 2013 Vincent Jacques
 # vincent@vincent-jacques.net
+
+# This file is part of ActionTree. http://jacquev6.github.com/ActionTree
+
+# ActionTree is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+
+# ActionTree is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+
+# You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
 
 import unittest
 
 import MockMockMock
 
-from ActionTree import Action, TimedAction
+from ActionTree import Action, CompoundException, TimedAction
 
 
 class Timing(unittest.TestCase):
@@ -19,7 +29,7 @@ class Timing(unittest.TestCase):
         self.time = self.mocks.create("time")
 
         self.a = TimedAction(self.m.object, "timed")
-        TimedAction.time = self.time.object
+        TimedAction._time = self.time.object
 
     def testExecution(self):
         self.time.expect().andReturn(1352032735.2)
@@ -37,7 +47,7 @@ class Timing(unittest.TestCase):
         self.m.expect().andRaise(e)
         self.time.expect().andReturn(1352032737.1)
 
-        with self.assertRaises(Action.Exception) as cm:
+        with self.assertRaises(CompoundException) as cm:
             self.a.execute()
         self.assertEqual(len(cm.exception.exceptions), 1)
         self.assertIs(cm.exception.exceptions[0], e)

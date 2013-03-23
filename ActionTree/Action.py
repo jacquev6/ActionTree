@@ -15,18 +15,10 @@
 
 import threading
 
+from .CompoundException import CompoundException
+
 
 class Action:
-    """
-    Foo
-    """
-    class Exception(Exception):
-        def __init__(self, exceptions):
-            self.exceptions = exceptions
-
-        def __str__(self):
-            return ", ".join(str(e) for e in self.exceptions)
-
     def __init__(self, execute, label):
         self.__execute = execute
         self.__label = label
@@ -71,7 +63,7 @@ class Action:
             thread.join()
         if len(exceptions) > 0:
             self.__markCanceledActions()
-            raise Action.Exception(exceptions)
+            raise CompoundException(exceptions)
 
     def __executeInOneThread(self, condition, exceptions, keepGoing):
         while not self.__isFinished():
