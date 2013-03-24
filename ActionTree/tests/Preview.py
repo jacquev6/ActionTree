@@ -34,6 +34,17 @@ class Preview(unittest.TestCase):
 
         self.assertEqual(a.getPreview(), ["d", "c", "b", "a"])
 
+    def testDeepDependencyWithDuplicatedLabel(self):
+        a = Action(lambda: 0, "label")
+        b = Action(lambda: 0, "label")
+        c = Action(lambda: 0, "label")
+        d = Action(lambda: 0, "label")
+        a.addDependency(b)
+        b.addDependency(c)
+        c.addDependency(d)
+
+        self.assertEqual(a.getPreview(), ["label", "label", "label", "label"])
+
     def testDiamondDependency(self):
         #     a
         #    / \

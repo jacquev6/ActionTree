@@ -50,13 +50,16 @@ class Action:
         return dependencies
 
     def getPreview(self):
-        preview = []
+        return [action.__label for action in self.__getPossibleExecutionOrder()]
+
+    def __getPossibleExecutionOrder(self):
+        actions = []
         for dependency in self.__dependencies:
-            for label in dependency.getPreview():
-                if label not in preview:
-                    preview.append(label)
-        preview.append(self.__label)  # Should be if-ed also
-        return preview
+            for action in dependency.__getPossibleExecutionOrder():
+                if action not in actions:
+                    actions.append(action)
+        actions.append(self)
+        return actions
 
     def execute(self, jobs=1, keepGoing=False):
         self.__resetBeforeExecution()
