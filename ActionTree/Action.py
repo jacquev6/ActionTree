@@ -151,6 +151,7 @@ class Action:
     Successful = 1
     Canceled = 2
     Failed = 3
+
     @property
     def status(self):
         if self.__failed:

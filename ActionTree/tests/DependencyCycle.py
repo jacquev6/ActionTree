@@ -17,6 +17,7 @@ import unittest
 
 from ActionTree import Action
 
+
 class DependencyCycle(unittest.TestCase):
     def testSelfDependency(self):
         a = Action(lambda: 0, "a")
