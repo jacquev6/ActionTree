@@ -19,14 +19,21 @@ from .CompoundException import CompoundException
 
 
 class Action:
+    Pending = 0
+    Successful = 1
+    Canceled = 2
+    Failed = 3
+    __Executing = 4
+
     def __init__(self, execute, label):
         self.__execute = execute
         self.__label = label
         self.__dependencies = set()
-        self.__executed = False
-        self.__failed = False
-        self.__canceled = False
-        self.__executing = False
+        self.__status = Action.Pending
+
+    @property
+    def status(self):
+        return self.__status
 
     def addDependency(self, dependency):
         if self in dependency.__getAllDependencies():
@@ -44,10 +51,7 @@ class Action:
         self.__doExecute(jobs, keepGoing)
 
     def __resetBeforeExecution(self):
-        self.__executed = False
-        self.__failed = False
-        self.__canceled = False
-        self.__executing = False
+        self.__status = Action.Pending
         for dependency in self.__dependencies:
             dependency.__resetBeforeExecution()
 
@@ -80,14 +84,13 @@ class Action:
                 action.__execute()
             except Exception, e:
                 with condition:
-                    action.__failed = True
+                    action.__status = Action.Failed
                     exceptions.append(e)
-                    if not keepGoing:
-                        self.__canceled = True
+                    if not keepGoing and action is not self:
+                        self.__status = Action.Canceled
             with condition:
-                if not action.__failed:
-                    action.__executed = True
-                action.__executing = False
+                if action.__status != Action.Failed:
+                    action.__status = Action.Successful
                 condition.notifyAll()
 
     def __waitForActionToExecuteNow(self, condition):
@@ -104,7 +107,7 @@ class Action:
     ###  - when self is finished or failed
     ###  - when nothing can be started yet, because dependencies are still being executed
     def __getActionToExecuteNow(self):
-        if self.__executing or self.__isFinished():
+        if self.__status == Action.__Executing or self.__isFinished():
             return None
         for dependency in self.__dependencies:
             action = dependency.__getActionToExecuteNow()
@@ -117,35 +120,20 @@ class Action:
 
     def __prepareExecution(self, action):
         if any(d.__isFailure() for d in action.__dependencies):
-            action.__canceled = True
+            action.__status = Action.Canceled
             return False
         else:
-            action.__executing = True
+            action.__status = Action.__Executing
             return True
 
     def __markCanceledActions(self):
         for dependency in self.__dependencies:
             dependency.__markCanceledActions()
         if not self.__isFinished():
-            self.__canceled = True
+            self.__status = Action.Canceled
 
     def __isFinished(self):
-        return self.__executed or self.__isFailure()
+        return self.__status in [Action.Successful, Action.Failed, Action.Canceled]
 
     def __isFailure(self):
-        return self.__canceled or self.__failed
-
-    Pending = 0
-    Successful = 1
-    Canceled = 2
-    Failed = 3
-
-    @property
-    def status(self):
-        if self.__failed:
-            return Action.Failed
-        if self.__executed:
-            return Action.Successful
-        if self.__canceled:
-            return Action.Canceled
-        return Action.Pending
+        return self.__status in [Action.Failed, Action.Canceled]
