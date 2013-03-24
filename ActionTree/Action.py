@@ -135,18 +135,6 @@ class Action:
     def __isFailure(self):
         return self.__canceled or self.__failed
 
-    @property
-    def failed(self):
-        return self.__failed
-
-    @property
-    def successful(self):
-        return self.__executed
-
-    @property
-    def canceled(self):
-        return self.__canceled
-
     Pending = 0
     Successful = 1
     Canceled = 2
