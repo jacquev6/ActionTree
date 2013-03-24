@@ -13,29 +13,48 @@
 
 # You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
 
-import Framework
+import unittest
+import MockMockMock
 
 from ActionTree import Action, CompoundException
 
 
-class MultipleExecutions(Framework.TestCase):
+class MultipleExecutions(unittest.TestCase):
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.mocks = MockMockMock.Engine()
+
+    def __createMockedAction(self, name):
+        mock = self.mocks.create(name + "Mock")
+        action = Action(mock.object, name)
+        return action, mock
+
     def testSimpleSuccess(self):
         repeat = 5
-        for i in range(repeat):
-            self.getMock("a").expect()
+        a, aMock = self.__createMockedAction("a")
 
         for i in range(repeat):
-            self.getAction("a").execute()
+            aMock.expect()
+
+        for i in range(repeat):
+            a.execute()
+            self.assertEqual(a.status, Action.Successful)
 
     def testFailureInMiddle(self):
-        self.addDependency("a", "b")
-        self.addDependency("b", "c")
+        a, aMock = self.__createMockedAction("a")
+        b, bMock = self.__createMockedAction("b")
+        c, cMock = self.__createMockedAction("c")
+        a.addDependency(b)
+        b.addDependency(c)
 
         repeat = 5
         for i in range(repeat):
-            self.getMock("c").expect()
-            self.getMock("b").expect().andRaise(Exception())
+            cMock.expect()
+            bMock.expect().andRaise(Exception())
 
         for i in range(repeat):
             with self.assertRaises(CompoundException):
-                self.getAction("a").execute()
+                a.execute()
+            self.assertEqual(a.status, Action.Canceled)
+            self.assertEqual(b.status, Action.Failed)
+            self.assertEqual(c.status, Action.Successful)
