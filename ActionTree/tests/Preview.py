@@ -22,3 +22,14 @@ class Preview(unittest.TestCase):
     def testSimplePreview(self):
         a = Action(lambda: 0, "a")
         self.assertEqual(a.getPreview(), ["a"])
+
+    def testDeepDependency(self):
+        a = Action(lambda: 0, "a")
+        b = Action(lambda: 0, "b")
+        c = Action(lambda: 0, "c")
+        d = Action(lambda: 0, "d")
+        a.addDependency(b)
+        b.addDependency(c)
+        c.addDependency(d)
+
+        self.assertEqual(a.getPreview(), ["d", "c", "b", "a"])

@@ -50,7 +50,11 @@ class Action:
         return dependencies
 
     def getPreview(self):
-        return [self.__label]
+        preview = []
+        for dependency in self.__dependencies:
+            preview += dependency.getPreview()
+        preview.append(self.__label)
+        return preview
 
     def execute(self, jobs=1, keepGoing=False):
         self.__resetBeforeExecution()
