@@ -29,6 +29,9 @@ class MultipleExecutions(unittest.TestCase):
         action = Action(mock.object, name)
         return action, mock
 
+    def tearDown(self):
+        self.mocks.tearDown()
+
     def testSimpleSuccess(self):
         repeat = 5
         a, aMock = self.__createMockedAction("a")

@@ -29,6 +29,9 @@ class ExceptionsHandling(unittest.TestCase):
         action = Action(mock.object, name)
         return action, mock
 
+    def tearDown(self):
+        self.mocks.tearDown()
+
     def testExceptionInDependency(self):
         a, aMock = self.__createMockedAction("a")
         b, bMock = self.__createMockedAction("b")
