@@ -23,6 +23,14 @@ class Preview(unittest.TestCase):
         a = Action(lambda: 0, "a")
         self.assertEqual(a.getPreview(), ["a"])
 
+    def testTypedLabel(self):
+        a = Action(lambda: 0, ("a", "curious", "label", 42))
+        self.assertEqual(a.getPreview(), [("a", "curious", "label", 42)])
+
+    def testNoneLabel(self):
+        a = Action(lambda: 0, None)
+        self.assertEqual(a.getPreview(), [None])
+
     def testDeepDependency(self):
         a = Action(lambda: 0, "a")
         b = Action(lambda: 0, "b")
