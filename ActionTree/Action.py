@@ -146,3 +146,17 @@ class Action:
     @property
     def canceled(self):
         return self.__canceled
+
+    Pending = 0
+    Successful = 1
+    Canceled = 2
+    Failed = 3
+    @property
+    def status(self):
+        if self.__failed:
+            return Action.Failed
+        if self.__executed:
+            return Action.Successful
+        if self.__canceled:
+            return Action.Canceled
+        return Action.Pending

@@ -22,14 +22,14 @@ from ActionTree import Action
 class TestCase(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
-        self.__mockEngine = MockMockMock.Engine()
+        self.mocks = MockMockMock.Engine()
         self.__mocks = dict()
         self.__actions = dict()
         for name in "abcdef":
             self.__addMock(name)
 
     def __addMock(self, name):
-        m = self.__mockEngine.create(name)
+        m = self.mocks.create(name)
         a = Action(self.callableFromMock(m.object), name)
         self.__mocks[name] = m
         self.__actions[name] = a
@@ -38,7 +38,7 @@ class TestCase(unittest.TestCase):
         return m
 
     def tearDown(self):
-        self.__mockEngine.tearDown()
+        self.mocks.tearDown()
 
     def addDependency(self, a, b):
         self.__actions[a].addDependency(self.__actions[b])
@@ -51,8 +51,8 @@ class TestCase(unittest.TestCase):
 
     @property
     def unordered(self):
-        return self.__mockEngine.unordered
+        return self.mocks.unordered
 
     @property
     def optional(self):
-        return self.__mockEngine.optional
+        return self.mocks.optional

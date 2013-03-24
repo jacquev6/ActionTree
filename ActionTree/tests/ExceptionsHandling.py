@@ -13,77 +13,96 @@
 
 # You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
 
-import Framework
+import unittest
+import MockMockMock
 
 from ActionTree import Action, CompoundException
 
 
-class ExceptionsHandling(Framework.TestCase):
+class ExceptionsHandling(unittest.TestCase):
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.mocks = MockMockMock.Engine()
+
+    def __createMockedAction(self, name):
+        mock = self.mocks.create(name + "Mock")
+        action = Action(mock.object, name)
+        return action, mock
+
     def testExceptionInDependency(self):
-        dependencies = "b"
-        for name in dependencies:
-            self.addDependency("a", name)
+        a, aMock = self.__createMockedAction("a")
+        b, bMock = self.__createMockedAction("b")
+
+        a.addDependency(b)
 
         e = Exception()
-        self.getMock("b").expect().andRaise(e)
+        bMock.expect().andRaise(e)
 
         with self.assertRaises(CompoundException) as cm:
-            self.getAction("a").execute()
+            a.execute()
+
         self.assertEqual(len(cm.exception.exceptions), 1)
         self.assertIs(cm.exception.exceptions[0], e)
-        self.assertTrue(self.getAction("a").canceled)
-        self.assertTrue(self.getAction("b").failed)
+
+        self.assertEqual(a.status, Action.Canceled)
+        self.assertEqual(b.status, Action.Failed)
 
     def testExceptionsInDependencies_KeepGoing(self):
-        dependencies = "bcd"
-        for name in dependencies:
-            self.addDependency("a", name)
+        a, aMock = self.__createMockedAction("a")
+        b, bMock = self.__createMockedAction("b")
+        c, cMock = self.__createMockedAction("c")
+        d, dMock = self.__createMockedAction("d")
+
+        a.addDependency(b)
+        a.addDependency(c)
+        a.addDependency(d)
 
         eb = Exception()
         ec = Exception()
-        with self.unordered:
-            self.getMock("b").expect().andRaise(eb)
-            self.getMock("c").expect().andRaise(ec)
-            self.getMock("d").expect()
+        with self.mocks.unordered:
+            bMock.expect().andRaise(eb)
+            cMock.expect().andRaise(ec)
+            dMock.expect()
 
         with self.assertRaises(CompoundException) as cm:
-            self.getAction("a").execute(keepGoing=True)
+            a.execute(keepGoing=True)
+
         self.assertEqual(len(cm.exception.exceptions), 2)
-        self.assertTrue(eb in cm.exception.exceptions)
-        self.assertTrue(ec in cm.exception.exceptions)
-        self.assertTrue(self.getAction("a").canceled)
-        self.assertTrue(self.getAction("b").failed)
-        self.assertTrue(self.getAction("c").failed)
-        self.assertTrue(self.getAction("d").successful)
+        self.assertIn(eb, cm.exception.exceptions)
+        self.assertIn(ec, cm.exception.exceptions)
+
+        self.assertEqual(a.status, Action.Canceled)
+        self.assertEqual(b.status, Action.Failed)
+        self.assertEqual(c.status, Action.Failed)
+        self.assertEqual(d.status, Action.Successful)
 
     def testExceptionsInDependencies_NoKeepGoing(self):
-        dependencies = "bcd"
-        for name in dependencies:
-            self.addDependency("a", name)
+        a, aMock = self.__createMockedAction("a")
+        b, bMock = self.__createMockedAction("b")
+        c, cMock = self.__createMockedAction("c")
+        d, dMock = self.__createMockedAction("d")
+
+        a.addDependency(b)
+        a.addDependency(c)
+        a.addDependency(d)
 
         eb = Exception()
         ec = Exception()
         ed = Exception()
-        with self.unordered:
-            with self.optional:
-                self.getMock("b").expect().andRaise(eb)
-            with self.optional:
-                self.getMock("c").expect().andRaise(ec)
-            with self.optional:
-                self.getMock("d").expect().andRaise(ed)
-
-        a = self.getAction("a")
-        b = self.getAction("b")
-        c = self.getAction("c")
-        d = self.getAction("d")
+        with self.mocks.unordered:
+            with self.mocks.optional:
+                bMock.expect().andRaise(eb)
+            with self.mocks.optional:
+                cMock.expect().andRaise(ec)
+            with self.mocks.optional:
+                dMock.expect().andRaise(ed)
 
         with self.assertRaises(CompoundException) as cm:
             a.execute()
+
         self.assertEqual(len(cm.exception.exceptions), 1)
-        self.assertTrue(cm.exception.exceptions[0] in [eb, ec, ed])
-        self.assertTrue(a.canceled)
-        self.assertTrue(b.failed ^ b.canceled)
-        self.assertTrue(c.failed ^ c.canceled)
-        self.assertTrue(d.failed ^ d.canceled)
-        self.assertEqual(len([x for x in [b, c, d] if x.failed]), 1)
-        self.assertEqual(len([x for x in [b, c, d] if x.canceled]), 2)
+        self.assertIn(cm.exception.exceptions[0], [eb, ec, ed])
+
+        self.assertEqual(a.status, Action.Canceled)
+        self.assertEqual(len([x for x in [b, c, d] if x.status == Action.Canceled]), 2)
+        self.assertEqual(len([x for x in [b, c, d] if x.status == Action.Failed]), 1)
