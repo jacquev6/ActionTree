@@ -16,5 +16,6 @@
 from ExceptionsHandling import ExceptionsHandling
 from DependencyCycle import DependencyCycle
 from MultipleExecutions import MultipleExecutions
-from Threading_ import SingleThread, ThreadPool
+from Execution import Execution
+from MultiThreadedExecution import MultiThreadedExecution
 from Timing import Timing

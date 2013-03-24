@@ -15,10 +15,49 @@
 
 import threading
 import time
-
-import Framework
+import unittest
+import MockMockMock
 
 from ActionTree import Action
+
+
+class TestCase(unittest.TestCase):
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.mocks = MockMockMock.Engine()
+        self.__mocks = dict()
+        self.__actions = dict()
+        for name in "abcdef":
+            self.__addMock(name)
+
+    def __addMock(self, name):
+        m = self.mocks.create(name)
+        a = Action(self.callableFromMock(m.object), name)
+        self.__mocks[name] = m
+        self.__actions[name] = a
+
+    def callableFromMock(self, m):
+        return m
+
+    def tearDown(self):
+        self.mocks.tearDown()
+
+    def addDependency(self, a, b):
+        self.__actions[a].addDependency(self.__actions[b])
+
+    def getMock(self, name):
+        return self.__mocks[name]
+
+    def getAction(self, name):
+        return self.__actions[name]
+
+    @property
+    def unordered(self):
+        return self.mocks.unordered
+
+    @property
+    def optional(self):
+        return self.mocks.optional
 
 
 class ExecuteMock:
@@ -75,41 +114,7 @@ class ThreadingTestCase:
         self.executeAction(self.getAction("a"))
 
 
-class SingleThread(Framework.TestCase, ThreadingTestCase):
-    def executeAction(self, action):
-        action.execute()
-
-    def __expectAction(self, name):
-        self.getMock(name).expect()
-
-    def expectManyDependencies(self, dependencies):
-        with self.unordered:
-            for name in dependencies:
-                self.__expectAction(name)
-        self.__expectAction("a")
-
-    def expectDeepDependencies(self):
-        self.__expectAction("f")
-        self.__expectAction("e")
-        self.__expectAction("d")
-        self.__expectAction("c")
-        self.__expectAction("b")
-        self.__expectAction("a")
-
-    def expectDiamondDependencies(self):
-        self.__expectAction("d")
-        with self.unordered:
-            self.__expectAction("b")
-            self.__expectAction("c")
-        self.__expectAction("a")
-
-    def expectHalfDiamondDependencies(self):
-        self.__expectAction("d")
-        self.__expectAction("b")
-        self.__expectAction("a")
-
-
-class ThreadPool(Framework.TestCase, ThreadingTestCase):
+class MultiThreadedExecution(TestCase, ThreadingTestCase):
     def callableFromMock(self, m):
         return ExecuteMock(m)
 
