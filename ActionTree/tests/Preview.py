@@ -19,6 +19,16 @@ from ActionTree import Action
 
 
 class Preview(unittest.TestCase):
+    def testGetDependenciesAndLabelsAreNotOnlyEqualButSame(self):
+        bLabel = ("b",)
+        a = Action(lambda: 0, "a")
+        b = Action(lambda: 0, bLabel)
+        a.addDependency(b)
+
+        otherB, = a.getDependencies()
+        self.assertIs(otherB, b)
+        self.assertIs(otherB.label, bLabel)
+
     def testSimplePreview(self):
         a = Action(lambda: 0, "a")
         self.assertEqual(a.getPreview(), ["a"])

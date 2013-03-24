@@ -38,10 +38,17 @@ class Action:
     def status(self):
         return self.__status
 
+    @property
+    def label(self):
+        return self.__label
+
     def addDependency(self, dependency):
         if self in dependency.__getAllDependencies():
             raise Exception("Dependency cycle")
         self.__dependencies.add(dependency)
+
+    def getDependencies(self):
+        return list(self.__dependencies)
 
     def __getAllDependencies(self):
         dependencies = set([self])
