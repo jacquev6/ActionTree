@@ -21,3 +21,4 @@ from .MultiThreadedExecution import MultiThreadedExecution
 from .Timing import Timing
 from .Preview import Preview
 from .Stock import CreateDirectoryTestCase, CallSubprocessTestCase, DeleteFileTestCase, CopyFileTestCase, TouchFileTestCase
+from .Report import Report
