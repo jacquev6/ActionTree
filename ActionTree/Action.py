@@ -20,6 +20,11 @@ from .CompoundException import CompoundException
 
 
 class Action:
+    """
+    The main class of ActionTree. It represents an action to be started after all its dependencies
+    are finished.
+    """
+
     _time = time.time  # Allow static dependency injection. But keep it private.
 
     Pending = 0
@@ -29,6 +34,10 @@ class Action:
     __Executing = 4
 
     def __init__(self, execute, label):
+        """
+        :param callable execute: the function to execute the action
+        :param label: whatever you want to attach to the action. Can be retrieved by :attr:`Action.label` and :meth:`Action.getPreview`.
+        """
         self.__execute = execute
         self.__label = label
         self.__dependencies = set()
@@ -36,18 +45,40 @@ class Action:
 
     @property
     def status(self):
+        """
+        The status of the action.
+
+        Possible values:
+
+        - :attr:`Action.Pending`, initially
+        - :attr:`Action.Successful` after normal execution
+        - :attr:`Action.Failed` if the execution raised an exception
+        - :attr:`Action.Canceled` if some dependency raised an exception
+        """
         return self.__status
 
     @property
     def label(self):
+        """
+        The label passed to the constructor
+        """
         return self.__label
 
     def addDependency(self, dependency):
+        """
+        Adds a dependency to be executed before this action.
+        Order of insertion of dependencies is not important.
+
+        :param ``Action`` dependency:
+        """
         if self in dependency.__getAllDependencies():
             raise Exception("Dependency cycle")
         self.__dependencies.add(dependency)
 
     def getDependencies(self):
+        """
+        Returns the list of this action's dependencies.
+        """
         return list(self.__dependencies)
 
     def __getAllDependencies(self):
@@ -57,6 +88,9 @@ class Action:
         return dependencies
 
     def getPreview(self):
+        """
+        Returns the labels of this action and its dependencies, in an order that could be the execution order.
+        """
         return [action.__label for action in self.__getPossibleExecutionOrder()]
 
     def __getPossibleExecutionOrder(self, seenActions=set()):
@@ -69,6 +103,14 @@ class Action:
         return actions
 
     def execute(self, jobs=1, keepGoing=False):
+        """
+        Recursively executes this action's dependencies then this action.
+
+        If dependencies raise exceptions, these exceptions are encapsulated in a :class:`CompoundException` and this :class:`CompoundException` is thrown.
+
+        :param int jobs: number of actions to execute in parallel
+        :param bool keepGoing: if True, then :meth:`execute` does not stop on first failure, but executes as many dependencies as possible.
+        """
         self.__resetBeforeExecution()
         self.__doExecute(jobs, keepGoing)
 

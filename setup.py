@@ -24,11 +24,20 @@ if __name__ == "__main__":
     setuptools.setup(
         name="ActionTree",
         version=version,
-        description="Concurrent actions library. Don't use it (yet)",
+        description="Executes (long) actions in parallel, respecting dependencies between those actions",
         author="Vincent Jacques",
         author_email="vincent@vincent-jacques.net",
         url="http://jacquev6.github.com/ActionTree",
         long_description=textwrap.dedent("""\
+        ActionTree executes (long) actions in parallel, respecting dependencies between those actions.
+
+        You create the graph of the actions to be executed and then call the ``execute`` method of its root,
+        specifying how many actions must be run in parallel and if errors should stop the execution.
+
+        Documentation
+        =============
+
+        See http://jacquev6.github.com/ActionTree
         """),
         packages=[
             "ActionTree",

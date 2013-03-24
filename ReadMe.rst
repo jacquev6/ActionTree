@@ -1,4 +1,7 @@
-ActionTree is a Python library executing long concurrent actions with inter-dependencies.
+ActionTree executes (long) actions in parallel, respecting dependencies between those actions.
+
+You create the graph of the actions to be executed and then call the ``execute`` method of its root,
+specifying how many actions must be run in parallel and if errors should stop the execution.
 
 Documentation
 =============
