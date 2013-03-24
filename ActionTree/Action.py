@@ -52,13 +52,13 @@ class Action:
     def getPreview(self):
         return [action.__label for action in self.__getPossibleExecutionOrder()]
 
-    def __getPossibleExecutionOrder(self):
+    def __getPossibleExecutionOrder(self, seenActions=set()):
         actions = []
-        for dependency in self.__dependencies:
-            for action in dependency.__getPossibleExecutionOrder():
-                if action not in actions:
-                    actions.append(action)
-        actions.append(self)
+        if self not in seenActions:
+            seenActions.add(self)
+            for dependency in self.__dependencies:
+                actions += dependency.__getPossibleExecutionOrder(seenActions)
+            actions.append(self)
         return actions
 
     def execute(self, jobs=1, keepGoing=False):
