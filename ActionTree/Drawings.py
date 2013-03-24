@@ -14,9 +14,14 @@
 # You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
 
 import math
+import collections
+
+from .Action import Action
 
 
 class ExecutionReport:
+    Action = collections.namedtuple('Action', ['label', 'beginTime', 'endTime', 'status'])
+
     def __init__(self, action):
         self.__actions = []
         self.__gatherInformation(action)
@@ -28,17 +33,19 @@ class ExecutionReport:
             # seenActions.append(action)
             # for dependency in action.getDependencies():
                 # dependency.__gatherInformation(seenActions)
-            self.__actions.append((action.beginTime, action.endTime, action.status))
+            self.__actions.append(ExecutionReport.Action(str(action.label), action.beginTime, action.endTime, action.status))
 
     def __consolidate(self):
-        self.__beginTime = math.floor(min(a[0] for a in self.__actions))
-        self.__endTime = math.ceil(max(a[1] for a in self.__actions))
+        self.__beginTime = math.floor(min(a.beginTime for a in self.__actions))
+        self.__endTime = math.ceil(max(a.endTime for a in self.__actions))
         self.__duration = self.__endTime - self.__beginTime
 
     def getHeight(self, ctx):
         return 10 + len(self.__actions) * 20
 
     def draw(self, ctx, width):
+        ctx.save()
+
         ctx.translate(10, 0)
         ctx.scale((width - 20) / self.__duration, 1)
         ctx.translate(-self.__beginTime, 0)
@@ -46,9 +53,12 @@ class ExecutionReport:
         self.__drawTimeLine(ctx)
         ctx.translate(0, 10)
 
+        ctx.set_line_width(4)
         for action in self.__actions:
             self.__drawAction(action, ctx, width)
             ctx.translate(0, 20)
+
+        ctx.restore()
 
     def __drawTimeLine(self, ctx):
         ctx.move_to(self.__beginTime, 5)
@@ -56,6 +66,20 @@ class ExecutionReport:
         ctx.stroke()
 
     def __drawAction(self, action, ctx, width):
-        ctx.move_to(action[0], 10)
-        ctx.line_to(action[1], 10)
+        ctx.move_to(action.beginTime, 18)
+        ctx.line_to(action.endTime, 18)
+        if action.status == Action.Successful:
+            ctx.set_source_rgb(0, 0, 0)
+        elif action.status == Action.Canceled:
+            ctx.set_source_rgb(.4, .4, .4)
+        else:
+            ctx.set_source_rgb(1, 0, 0)
         ctx.stroke()
+
+        ctx.move_to(action.beginTime, 15)
+        ctx.save()
+        ctx.identity_matrix()
+        ctx.set_font_size(15)
+        ctx.set_source_rgb(0, 0, 0)
+        ctx.show_text(action.label)
+        ctx.restore()

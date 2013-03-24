@@ -62,14 +62,41 @@ class Report(unittest.TestCase):
             self.assertTrue(False, "Check file " + fileName + ". If it is OK, modify test " + testName + " to accept digest " + digest)
         f.close()
 
-    def testOneAction(self):
+    def testOneSuccessfulAction(self):
         a = self.mocks.create("a")
 
         with self.mocks.unordered:
             a.expect.getDependencies().andReturn([])
+            a.expect.label.andReturn(("a", "complex", ["label"]))
             a.expect.beginTime.andReturn(10.5)
             a.expect.endTime.andReturn(13.5)
             a.expect.status.andReturn(ActionTree.Action.Successful)
 
         r = ExecutionReport(a.object)
-        self.__checkDrawing(r, ["dc43c0855be2e545bae6a9415d48c278"])
+        self.__checkDrawing(r, ["1c2561544692d635c0968b07f29828ec"])
+
+    def testOneFailedAction(self):
+        a = self.mocks.create("a")
+
+        with self.mocks.unordered:
+            a.expect.getDependencies().andReturn([])
+            a.expect.label.andReturn(("a", "complex", ["label"]))
+            a.expect.beginTime.andReturn(10.5)
+            a.expect.endTime.andReturn(13.5)
+            a.expect.status.andReturn(ActionTree.Action.Failed)
+
+        r = ExecutionReport(a.object)
+        self.__checkDrawing(r, ["15e53eecf46a47bb06f253bf780919a6"])
+
+    def testOneCanceledAction(self):
+        a = self.mocks.create("a")
+
+        with self.mocks.unordered:
+            a.expect.getDependencies().andReturn([])
+            a.expect.label.andReturn(("a", "complex", ["label"]))
+            a.expect.beginTime.andReturn(10.5)
+            a.expect.endTime.andReturn(13.5)
+            a.expect.status.andReturn(ActionTree.Action.Canceled)
+
+        r = ExecutionReport(a.object)
+        self.__checkDrawing(r, ["fbd166ddbd7faf46c304d6252e67191b"])
