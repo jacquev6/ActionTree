@@ -52,8 +52,10 @@ class Action:
     def getPreview(self):
         preview = []
         for dependency in self.__dependencies:
-            preview += dependency.getPreview()
-        preview.append(self.__label)
+            for label in dependency.getPreview():
+                if label not in preview:
+                    preview.append(label)
+        preview.append(self.__label)  # Should be if-ed also
         return preview
 
     def execute(self, jobs=1, keepGoing=False):

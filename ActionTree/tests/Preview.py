@@ -33,3 +33,21 @@ class Preview(unittest.TestCase):
         c.addDependency(d)
 
         self.assertEqual(a.getPreview(), ["d", "c", "b", "a"])
+
+    def testDiamondDependency(self):
+        #     a
+        #    / \
+        #   b   c
+        #    \ /
+        #     d
+
+        a = Action(lambda: 0, "a")
+        b = Action(lambda: 0, "b")
+        c = Action(lambda: 0, "c")
+        d = Action(lambda: 0, "d")
+        a.addDependency(b)
+        a.addDependency(c)
+        b.addDependency(d)
+        c.addDependency(d)
+
+        self.assertEqual(a.getPreview(), ["d", "c", "b", "a"])
