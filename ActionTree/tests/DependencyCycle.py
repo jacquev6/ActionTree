@@ -13,23 +13,35 @@
 
 # You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
 
-import Framework
+import unittest
 
+from ActionTree import Action
 
-class DependencyCycle(Framework.TestCase):
+class DependencyCycle(unittest.TestCase):
     def testSelfDependency(self):
-        with self.assertRaises(Exception):
-            self.addDependency("a", "a")
+        a = Action(lambda: 0, "a")
+        with self.assertRaises(Exception) as cm:
+            a.addDependency(a)
+        self.assertEqual(cm.exception.args[0], "Dependency cycle")
 
     def testShortCycle(self):
-        self.addDependency("a", "b")
-        with self.assertRaises(Exception):
-            self.addDependency("b", "a")
+        a = Action(lambda: 0, "a")
+        b = Action(lambda: 0, "b")
+        a.addDependency(b)
+        with self.assertRaises(Exception) as cm:
+            b.addDependency(a)
+        self.assertEqual(cm.exception.args[0], "Dependency cycle")
 
     def testLongCycle(self):
-        self.addDependency("a", "b")
-        self.addDependency("b", "c")
-        self.addDependency("c", "d")
-        self.addDependency("d", "e")
-        with self.assertRaises(Exception):
-            self.addDependency("e", "a")
+        a = Action(lambda: 0, "a")
+        b = Action(lambda: 0, "b")
+        c = Action(lambda: 0, "c")
+        d = Action(lambda: 0, "d")
+        e = Action(lambda: 0, "e")
+        a.addDependency(b)
+        b.addDependency(c)
+        c.addDependency(d)
+        d.addDependency(e)
+        with self.assertRaises(Exception) as cm:
+            e.addDependency(a)
+        self.assertEqual(cm.exception.args[0], "Dependency cycle")
