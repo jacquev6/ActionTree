@@ -34,6 +34,15 @@ class Execution(unittest.TestCase):
     def tearDown(self):
         self.mocks.tearDown()
 
+    def testSimpleExecution(self):
+        a, aMock = self.__createMockedAction("a")
+
+        aMock.expect()
+
+        self.assertEqual(a.status, Action.Pending)
+        a.execute()
+        self.assertEqual(a.status, Action.Successful)
+
     def testManyDependencies(self):
         #     a
         #    /|\
