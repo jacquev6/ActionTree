@@ -14,11 +14,14 @@
 # You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
 
 import threading
+import time
 
 from .CompoundException import CompoundException
 
 
 class Action:
+    _time = time.time  # Allow static dependency injection. But keep it private.
+
     Pending = 0
     Successful = 1
     Canceled = 2
@@ -80,6 +83,7 @@ class Action:
                 return
             goOn = self.__prepareExecution(action)
         if goOn:
+            action.beginTime = Action._time()
             try:
                 action.__execute()
             except Exception, e:
@@ -88,6 +92,8 @@ class Action:
                     exceptions.append(e)
                     if not keepGoing and action is not self:
                         self.__status = Action.Canceled
+            finally:
+                action.endTime = Action._time()
             with condition:
                 if action.__status != Action.Failed:
                     action.__status = Action.Successful

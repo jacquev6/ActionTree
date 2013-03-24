@@ -17,7 +17,7 @@ import unittest
 
 import MockMockMock
 
-from ActionTree import Action, CompoundException, TimedAction
+from ActionTree import Action, CompoundException
 
 
 class Timing(unittest.TestCase):
@@ -28,8 +28,8 @@ class Timing(unittest.TestCase):
         self.m = self.mocks.create("m")
         self.time = self.mocks.create("time")
 
-        self.a = TimedAction(self.m.object, "timed")
-        TimedAction._time = self.time.object
+        self.a = Action(self.m.object, "timed")
+        Action._time = self.time.object
 
     def testExecution(self):
         self.time.expect().andReturn(1352032735.2)

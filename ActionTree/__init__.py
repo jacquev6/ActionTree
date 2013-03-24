@@ -26,12 +26,7 @@ Reference
 .. autoclass:: ActionTree.Action.Action
     :members:
     :undoc-members:
-
-.. autoclass:: ActionTree.TimedAction.TimedAction
-    :members:
-    :undoc-members:
 """
 
 from .Action import Action
 from .CompoundException import CompoundException
-from .TimedAction import TimedAction
