@@ -19,4 +19,4 @@ class CompoundException(Exception):
         self.exceptions = exceptions
 
     def __str__(self):
-        return ", ".join(str(e) for e in self.exceptions)
+        return "CompoundException: [" + ", ".join(str(e) for e in self.exceptions) + "]"

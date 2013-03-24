@@ -32,6 +32,21 @@ class ExceptionsHandling(unittest.TestCase):
     def tearDown(self):
         self.mocks.tearDown()
 
+    def testSimpleFailure(self):
+        a, aMock = self.__createMockedAction("a")
+
+        e = Exception("FooBar")
+        aMock.expect().andRaise(e)
+
+        with self.assertRaises(CompoundException) as cm:
+            a.execute()
+
+        self.assertEqual(len(cm.exception.exceptions), 1)
+        self.assertIs(cm.exception.exceptions[0], e)
+        self.assertEqual(str(cm.exception), "CompoundException: [FooBar]")
+
+        self.assertEqual(a.status, Action.Failed)
+
     def testExceptionInDependency(self):
         a, aMock = self.__createMockedAction("a")
         b, bMock = self.__createMockedAction("b")
@@ -60,8 +75,8 @@ class ExceptionsHandling(unittest.TestCase):
         a.addDependency(c)
         a.addDependency(d)
 
-        eb = Exception()
-        ec = Exception()
+        eb = Exception("eb", 42)
+        ec = Exception("ec")
         with self.mocks.unordered:
             bMock.expect().andRaise(eb)
             cMock.expect().andRaise(ec)
@@ -73,6 +88,7 @@ class ExceptionsHandling(unittest.TestCase):
         self.assertEqual(len(cm.exception.exceptions), 2)
         self.assertIn(eb, cm.exception.exceptions)
         self.assertIn(ec, cm.exception.exceptions)
+        self.assertIn(str(cm.exception), ["CompoundException: [('eb', 42), ec]", "CompoundException: [ec, ('eb', 42)]"])
 
         self.assertEqual(a.status, Action.Canceled)
         self.assertEqual(b.status, Action.Failed)
@@ -89,9 +105,9 @@ class ExceptionsHandling(unittest.TestCase):
         a.addDependency(c)
         a.addDependency(d)
 
-        eb = Exception()
-        ec = Exception()
-        ed = Exception()
+        eb = Exception("eb")
+        ec = Exception("ec")
+        ed = Exception("ed")
         with self.mocks.unordered:
             with self.mocks.optional:
                 bMock.expect().andRaise(eb)
@@ -105,6 +121,7 @@ class ExceptionsHandling(unittest.TestCase):
 
         self.assertEqual(len(cm.exception.exceptions), 1)
         self.assertIn(cm.exception.exceptions[0], [eb, ec, ed])
+        self.assertIn(str(cm.exception), ["CompoundException: [eb]", "CompoundException: [ec]", "CompoundException: [ed]"])
 
         self.assertEqual(a.status, Action.Canceled)
         self.assertEqual(len([x for x in [b, c, d] if x.status == Action.Canceled]), 2)
