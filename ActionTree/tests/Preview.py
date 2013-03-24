@@ -61,4 +61,4 @@ class Preview(unittest.TestCase):
         b.addDependency(d)
         c.addDependency(d)
 
-        self.assertEqual(a.getPreview(), ["d", "c", "b", "a"])
+        self.assertIn(a.getPreview(), [["d", "c", "b", "a"], ["d", "b", "c", "a"]])
