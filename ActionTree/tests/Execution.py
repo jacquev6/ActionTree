@@ -142,3 +142,35 @@ class Execution(unittest.TestCase):
         aMock.expect()
 
         a.execute()
+
+    def testTwoDeepBranches(self):
+        #     a
+        #    / \
+        #   b   c
+        #   |   |
+        #   d   e
+
+        a, aMock = self.__createMockedAction("a")
+        b, bMock = self.__createMockedAction("b")
+        c, cMock = self.__createMockedAction("c")
+        d, dMock = self.__createMockedAction("d")
+        e, eMock = self.__createMockedAction("e")
+        a.addDependency(b)
+        a.addDependency(c)
+        b.addDependency(d)
+        c.addDependency(e)
+
+        with self.mocks.unordered:
+            dMock.expect()
+            eMock.expect()
+        # In previous implementation in ViDE, deepest leaves were
+        # executed first. It is not mandatory, but it make cleaner
+        # executions, because similar tasks are executed at once.
+        # To restore this behavior if needed, uncomment next line
+        # with self.mocks.unordered:
+        # This would have to be done also in getPreview
+            bMock.expect()
+            cMock.expect()
+        aMock.expect()
+
+        a.execute()
