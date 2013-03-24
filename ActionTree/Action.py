@@ -49,6 +49,9 @@ class Action:
             dependencies |= dependency.__getAllDependencies()
         return dependencies
 
+    def getPreview(self):
+        return [self.__label]
+
     def execute(self, jobs=1, keepGoing=False):
         self.__resetBeforeExecution()
         self.__doExecute(jobs, keepGoing)
