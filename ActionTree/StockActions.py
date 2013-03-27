@@ -55,3 +55,5 @@ class DeleteFile(Action):
             print "Caught", e
             if e.errno != errno.ENOENT:
                 raise
+
+### todo TouchFile CopyFile
