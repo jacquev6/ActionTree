@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import errno
 
 from .Action import Action
 
@@ -24,4 +25,8 @@ class CreateDirectory(Action):
         Action.__init__(self, self.__create, "mkdir -p " + self.__name)
 
     def __create(self):
-        os.makedirs(self.__name)
+        try:
+            os.makedirs(self.__name)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise

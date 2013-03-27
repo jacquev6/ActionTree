@@ -15,9 +15,11 @@
 
 import unittest
 import os
+import errno
 import MockMockMock
 
 from ActionTree.StockActions import CreateDirectory
+from ActionTree import CompoundException
 
 class Stock(unittest.TestCase):
     def setUp(self):
@@ -37,5 +39,32 @@ class Stock(unittest.TestCase):
             mockedMakedirs.expect("xxx")
             a = CreateDirectory("xxx")
             a.execute()
+        finally:
+            os.makedirs = oldMakedirs
+
+    def testCreateExistingDirectory(self):
+        oldMakedirs = os.makedirs
+        try:
+            mockedMakedirs = self.mocks.create("os.makedirs")
+            os.makedirs = mockedMakedirs.object
+
+            mockedMakedirs.expect("xxx").andRaise(OSError(errno.EEXIST, "File exists"))
+            a = CreateDirectory("xxx")
+            a.execute()
+        finally:
+            os.makedirs = oldMakedirs
+
+    def testDirectoryCreationFailure(self):
+        oldMakedirs = os.makedirs
+        try:
+            mockedMakedirs = self.mocks.create("os.makedirs")
+            os.makedirs = mockedMakedirs.object
+
+            e = OSError(-1, "Foobar")
+            mockedMakedirs.expect("xxx").andRaise(e)
+            a = CreateDirectory("xxx")
+            with self.assertRaises(CompoundException) as cm:
+                a.execute()
+            self.assertIs(cm.exception.exceptions[0], e)
         finally:
             os.makedirs = oldMakedirs
