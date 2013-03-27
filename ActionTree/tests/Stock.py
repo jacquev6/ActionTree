@@ -19,7 +19,7 @@ import errno
 import subprocess
 import MockMockMock
 
-from ActionTree.StockActions import CreateDirectory, CallSubprocess
+from ActionTree.StockActions import CreateDirectory, CallSubprocess, DeleteFile
 from ActionTree import CompoundException
 
 
@@ -108,3 +108,35 @@ class CallSubprocessTestCase(TestCaseWithMocks):
         self.mockedCheckedCall.expect(["xxx", "yyy"], foo="bar")
         a = CallSubprocess("xxx", "yyy", foo="bar")
         a.execute()
+
+
+class DeleteFileTestCase(TestCaseWithMocks):
+    def setUp(self):
+        TestCaseWithMocks.setUp(self)
+        self.mockedUnlink = self.mocks.create("os.unlink")
+        self.oldUnlink = os.unlink
+        os.unlink = self.mockedUnlink.object
+
+    def tearDown(self):
+        TestCaseWithMocks.tearDown(self)
+        os.unlink = self.oldUnlink
+
+    def testLabel(self):
+        self.assertEqual(DeleteFile("xxx").label, "rm xxx")
+
+    def testSuccess(self):
+        self.mockedUnlink.expect("xxx")
+
+        DeleteFile("xxx").execute()
+
+    def testFileDoesNotExist(self):
+        self.mockedUnlink.expect("xxx").andRaise(OSError(errno.ENOENT, "No such file or directory"))
+
+        DeleteFile("xxx").execute()
+
+    def testOtherFailure(self):
+            self.mockedUnlink.expect("xxx").andRaise(OSError(-1, "Foobar"))
+
+            a = DeleteFile("xxx")
+            with self.assertRaises(CompoundException) as cm:
+                a.execute()

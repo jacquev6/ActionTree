@@ -41,3 +41,17 @@ class CallSubprocess(Action):
 
     def __call(self):
         subprocess.check_call(self.__args, **self.__kwds)
+
+
+class DeleteFile(Action):
+    def __init__(self, name):
+        self.__name = name
+        Action.__init__(self, self.__delete, "rm " + self.__name)
+
+    def __delete(self):
+        try:
+            os.unlink(self.__name)
+        except OSError as e:
+            print "Caught", e
+            if e.errno != errno.ENOENT:
+                raise
