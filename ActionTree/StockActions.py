@@ -28,5 +28,5 @@ class CreateDirectory(Action):
         try:
             os.makedirs(self.__name)
         except OSError as e:
-            if e.errno != errno.EEXIST:
+            if e.errno != errno.EEXIST or not os.path.isdir(self.__name):
                 raise

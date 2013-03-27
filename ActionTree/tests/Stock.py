@@ -21,7 +21,7 @@ import MockMockMock
 from ActionTree.StockActions import CreateDirectory
 from ActionTree import CompoundException
 
-class Stock(unittest.TestCase):
+class CreateDirectoryTestCase(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.mocks = MockMockMock.Engine()
@@ -30,7 +30,7 @@ class Stock(unittest.TestCase):
         unittest.TestCase.tearDown(self)
         self.mocks.tearDown()
 
-    def testCreateDirectory(self):
+    def testSuccess(self):
         oldMakedirs = os.makedirs
         try:
             mockedMakedirs = self.mocks.create("os.makedirs")
@@ -42,29 +42,52 @@ class Stock(unittest.TestCase):
         finally:
             os.makedirs = oldMakedirs
 
-    def testCreateExistingDirectory(self):
+    def testDirectoryExists(self):
         oldMakedirs = os.makedirs
+        oldOsPathIsDir = os.path.isdir
         try:
             mockedMakedirs = self.mocks.create("os.makedirs")
             os.makedirs = mockedMakedirs.object
+            mockedIsDir = self.mocks.create("os.path.isdir")
+            os.path.isdir = mockedIsDir.object
 
             mockedMakedirs.expect("xxx").andRaise(OSError(errno.EEXIST, "File exists"))
+            mockedIsDir.expect("xxx").andReturn(True)
             a = CreateDirectory("xxx")
             a.execute()
         finally:
             os.makedirs = oldMakedirs
+            os.path.isdir = oldOsPathIsDir
 
-    def testDirectoryCreationFailure(self):
+    def testFileExists(self):
+        oldMakedirs = os.makedirs
+        oldOsPathIsDir = os.path.isdir
+        try:
+            mockedMakedirs = self.mocks.create("os.makedirs")
+            os.makedirs = mockedMakedirs.object
+            mockedIsDir = self.mocks.create("os.path.isdir")
+            os.path.isdir = mockedIsDir.object
+
+            mockedMakedirs.expect("xxx").andRaise(OSError(errno.EEXIST, "File exists"))
+            mockedIsDir.expect("xxx").andReturn(False)
+
+            a = CreateDirectory("xxx")
+            with self.assertRaises(CompoundException) as cm:
+                a.execute()
+        finally:
+            os.makedirs = oldMakedirs
+            os.path.isdir = oldOsPathIsDir
+
+    def testOtherFailure(self):
         oldMakedirs = os.makedirs
         try:
             mockedMakedirs = self.mocks.create("os.makedirs")
             os.makedirs = mockedMakedirs.object
 
-            e = OSError(-1, "Foobar")
-            mockedMakedirs.expect("xxx").andRaise(e)
+            mockedMakedirs.expect("xxx").andRaise(OSError(-1, "Foobar"))
+
             a = CreateDirectory("xxx")
             with self.assertRaises(CompoundException) as cm:
                 a.execute()
-            self.assertIs(cm.exception.exceptions[0], e)
         finally:
             os.makedirs = oldMakedirs
