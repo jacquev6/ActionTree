@@ -52,7 +52,6 @@ class DeleteFile(Action):
         try:
             os.unlink(self.__name)
         except OSError as e:
-            print "Caught", e
             if e.errno != errno.ENOENT:
                 raise
 
