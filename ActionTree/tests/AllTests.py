@@ -13,10 +13,10 @@
 
 # You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
 
-from ExceptionsHandling import ExceptionsHandling
-from DependencyCycle import DependencyCycle
-from MultipleExecutions import MultipleExecutions
-from Execution import Execution
-from MultiThreadedExecution import MultiThreadedExecution
-from Timing import Timing
-from Preview import Preview
+from .ExceptionsHandling import ExceptionsHandling
+from .DependencyCycle import DependencyCycle
+from .MultipleExecutions import MultipleExecutions
+from .Execution import Execution
+from .MultiThreadedExecution import MultiThreadedExecution
+from .Timing import Timing
+from .Preview import Preview

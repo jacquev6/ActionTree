@@ -147,7 +147,7 @@ class Action:
             action.beginTime = Action._time()
             try:
                 action.__execute()
-            except Exception, e:
+            except Exception as e:
                 with condition:
                     action.__status = Action.Failed
                     exceptions.append(e)
