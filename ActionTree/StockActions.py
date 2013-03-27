@@ -22,7 +22,7 @@ from .Action import Action
 class CreateDirectory(Action):
     def __init__(self, name):
         self.__name = name
-        Action.__init__(self, self.__create, "mkdir -p " + self.__name)
+        Action.__init__(self, self.__create, "mkdir " + self.__name)
 
     def __create(self):
         try:

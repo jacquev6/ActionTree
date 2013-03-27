@@ -30,6 +30,9 @@ class CreateDirectoryTestCase(unittest.TestCase):
         unittest.TestCase.tearDown(self)
         self.mocks.tearDown()
 
+    def testLabel(self):
+        self.assertEqual(CreateDirectory("xxx").label, "mkdir xxx")
+
     def testSuccess(self):
         oldMakedirs = os.makedirs
         try:
