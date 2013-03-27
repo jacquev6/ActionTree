@@ -35,7 +35,7 @@ class Report(unittest.TestCase):
 
     # Expect several digests because cairo may not produce exactly the same file on
     # all platorms and versions
-    def __checkDrawing(self, r, expectedDigests):
+    def __checkDrawing(self, r, width, expectedDigests):
         testName = None
         for (_, _, functionName, _) in traceback.extract_stack():
             if functionName.startswith("test"):
@@ -43,7 +43,6 @@ class Report(unittest.TestCase):
                 break
         self.assertIsNot(testName, None)
 
-        width = 200
         height = r.getHeight(cairo.Context(cairo.ImageSurface(cairo.FORMAT_RGB24, 1, 1)))
 
         image = cairo.ImageSurface(cairo.FORMAT_RGB24, width, height)
@@ -62,41 +61,54 @@ class Report(unittest.TestCase):
             self.assertTrue(False, "Check file " + fileName + ". If it is OK, modify test " + testName + " to accept digest " + digest)
         f.close()
 
-    def testOneSuccessfulAction(self):
+    def testComplexLabel(self):
         a = self.mocks.create("a")
 
         with self.mocks.unordered:
             a.expect.getDependencies().andReturn([])
-            a.expect.label.andReturn(("a", "complex", ["label"]))
+            a.expect.label.andReturn(("a", "complex", [42, "label"]))
             a.expect.beginTime.andReturn(10.5)
             a.expect.endTime.andReturn(13.5)
             a.expect.status.andReturn(ActionTree.Action.Successful)
 
         r = ExecutionReport(a.object)
-        self.__checkDrawing(r, ["1c2561544692d635c0968b07f29828ec"])
+        self.__checkDrawing(r, 400, ["d3e010597c08e058ac27f6e50369e621"])
+
+    def testOneSuccessfulAction(self):
+        a = self.mocks.create("a")
+
+        with self.mocks.unordered:
+            a.expect.getDependencies().andReturn([])
+            a.expect.label.andReturn("label")
+            a.expect.beginTime.andReturn(10.5)
+            a.expect.endTime.andReturn(13.5)
+            a.expect.status.andReturn(ActionTree.Action.Successful)
+
+        r = ExecutionReport(a.object)
+        self.__checkDrawing(r, 200, ["65815c6bcf05054c98e2b51f2775727f"])
 
     def testOneFailedAction(self):
         a = self.mocks.create("a")
 
         with self.mocks.unordered:
             a.expect.getDependencies().andReturn([])
-            a.expect.label.andReturn(("a", "complex", ["label"]))
+            a.expect.label.andReturn("label")
             a.expect.beginTime.andReturn(10.5)
             a.expect.endTime.andReturn(13.5)
             a.expect.status.andReturn(ActionTree.Action.Failed)
 
         r = ExecutionReport(a.object)
-        self.__checkDrawing(r, ["15e53eecf46a47bb06f253bf780919a6"])
+        self.__checkDrawing(r, 200, ["24e6d627b1b6b7610c75b6a68d9299ab"])
 
     def testOneCanceledAction(self):
         a = self.mocks.create("a")
 
         with self.mocks.unordered:
             a.expect.getDependencies().andReturn([])
-            a.expect.label.andReturn(("a", "complex", ["label"]))
+            a.expect.label.andReturn("label")
             a.expect.beginTime.andReturn(10.5)
             a.expect.endTime.andReturn(13.5)
             a.expect.status.andReturn(ActionTree.Action.Canceled)
 
         r = ExecutionReport(a.object)
-        self.__checkDrawing(r, ["fbd166ddbd7faf46c304d6252e67191b"])
+        self.__checkDrawing(r, 200, ["c4d95f1bb610b3fb7e39bc818c06506e"])
