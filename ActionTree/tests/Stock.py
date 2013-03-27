@@ -34,107 +34,77 @@ class TestCaseWithMocks(unittest.TestCase):
 
 
 class CreateDirectoryTestCase(TestCaseWithMocks):
+    def setUp(self):
+        TestCaseWithMocks.setUp(self)
+        self.mockedMakedirs = self.mocks.create("os.makedirs")
+        self.mockedIsDir = self.mocks.create("os.path.isdir")
+        self.oldMakedirs = os.makedirs
+        self.oldOsPathIsDir = os.path.isdir
+        os.makedirs = self.mockedMakedirs.object
+        os.path.isdir = self.mockedIsDir.object
+
+    def tearDown(self):
+        TestCaseWithMocks.tearDown(self)
+        os.makedirs = self.oldMakedirs
+        os.path.isdir = self.oldOsPathIsDir
+
     def testLabel(self):
         self.assertEqual(CreateDirectory("xxx").label, "mkdir xxx")
 
     def testSuccess(self):
-        oldMakedirs = os.makedirs
-        try:
-            mockedMakedirs = self.mocks.create("os.makedirs")
-            os.makedirs = mockedMakedirs.object
+        self.mockedMakedirs.expect("xxx")
 
-            mockedMakedirs.expect("xxx")
-            a = CreateDirectory("xxx")
-            a.execute()
-        finally:
-            os.makedirs = oldMakedirs
+        a = CreateDirectory("xxx")
+        a.execute()
 
     def testDirectoryExists(self):
-        oldMakedirs = os.makedirs
-        oldOsPathIsDir = os.path.isdir
-        try:
-            mockedMakedirs = self.mocks.create("os.makedirs")
-            os.makedirs = mockedMakedirs.object
-            mockedIsDir = self.mocks.create("os.path.isdir")
-            os.path.isdir = mockedIsDir.object
+        self.mockedMakedirs.expect("xxx").andRaise(OSError(errno.EEXIST, "File exists"))
+        self.mockedIsDir.expect("xxx").andReturn(True)
 
-            mockedMakedirs.expect("xxx").andRaise(OSError(errno.EEXIST, "File exists"))
-            mockedIsDir.expect("xxx").andReturn(True)
-            a = CreateDirectory("xxx")
-            a.execute()
-        finally:
-            os.makedirs = oldMakedirs
-            os.path.isdir = oldOsPathIsDir
+        a = CreateDirectory("xxx")
+        a.execute()
 
     def testFileExists(self):
-        oldMakedirs = os.makedirs
-        oldOsPathIsDir = os.path.isdir
-        try:
-            mockedMakedirs = self.mocks.create("os.makedirs")
-            os.makedirs = mockedMakedirs.object
-            mockedIsDir = self.mocks.create("os.path.isdir")
-            os.path.isdir = mockedIsDir.object
+        self.mockedMakedirs.expect("xxx").andRaise(OSError(errno.EEXIST, "File exists"))
+        self.mockedIsDir.expect("xxx").andReturn(False)
 
-            mockedMakedirs.expect("xxx").andRaise(OSError(errno.EEXIST, "File exists"))
-            mockedIsDir.expect("xxx").andReturn(False)
-
-            a = CreateDirectory("xxx")
-            with self.assertRaises(CompoundException) as cm:
-                a.execute()
-        finally:
-            os.makedirs = oldMakedirs
-            os.path.isdir = oldOsPathIsDir
+        a = CreateDirectory("xxx")
+        with self.assertRaises(CompoundException) as cm:
+            a.execute()
 
     def testOtherFailure(self):
-        oldMakedirs = os.makedirs
-        try:
-            mockedMakedirs = self.mocks.create("os.makedirs")
-            os.makedirs = mockedMakedirs.object
-
-            mockedMakedirs.expect("xxx").andRaise(OSError(-1, "Foobar"))
+            self.mockedMakedirs.expect("xxx").andRaise(OSError(-1, "Foobar"))
 
             a = CreateDirectory("xxx")
             with self.assertRaises(CompoundException) as cm:
                 a.execute()
-        finally:
-            os.makedirs = oldMakedirs
+
 
 class CallSubprocessTestCase(TestCaseWithMocks):
+    def setUp(self):
+        TestCaseWithMocks.setUp(self)
+        self.mockedCheckedCall = self.mocks.create("subprocess.check_call")
+        self.oldCheckCall = subprocess.check_call
+        subprocess.check_call = self.mockedCheckedCall.object
+
+    def tearDown(self):
+        TestCaseWithMocks.tearDown(self)
+        subprocess.check_call = self.oldCheckCall
+
     def testLabel(self):
         self.assertEqual(CallSubprocess("xxx", "yyy").label, "xxx yyy")
 
     def testSimpleCall(self):
-        oldCheckCall = subprocess.check_call
-        try:
-            mockedCheckedCall = self.mocks.create("subprocess.check_call")
-            subprocess.check_call = mockedCheckedCall.object
-
-            mockedCheckedCall.expect(["xxx"])
-            a = CallSubprocess("xxx")
-            a.execute()
-        finally:
-            subprocess.check_call = oldCheckCall
+        self.mockedCheckedCall.expect(["xxx"])
+        a = CallSubprocess("xxx")
+        a.execute()
 
     def testCallWithSeveralArgs(self):
-        oldCheckCall = subprocess.check_call
-        try:
-            mockedCheckedCall = self.mocks.create("subprocess.check_call")
-            subprocess.check_call = mockedCheckedCall.object
-
-            mockedCheckedCall.expect(["xxx", "yyy"])
-            a = CallSubprocess("xxx", "yyy")
-            a.execute()
-        finally:
-            subprocess.check_call = oldCheckCall
+        self.mockedCheckedCall.expect(["xxx", "yyy"])
+        a = CallSubprocess("xxx", "yyy")
+        a.execute()
 
     def testCallWithKwds(self):
-        oldCheckCall = subprocess.check_call
-        try:
-            mockedCheckedCall = self.mocks.create("subprocess.check_call")
-            subprocess.check_call = mockedCheckedCall.object
-
-            mockedCheckedCall.expect(["xxx", "yyy"], foo="bar")
-            a = CallSubprocess("xxx", "yyy", foo="bar")
-            a.execute()
-        finally:
-            subprocess.check_call = oldCheckCall
+        self.mockedCheckedCall.expect(["xxx", "yyy"], foo="bar")
+        a = CallSubprocess("xxx", "yyy", foo="bar")
+        a.execute()
