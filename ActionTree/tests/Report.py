@@ -55,7 +55,7 @@ class Report(unittest.TestCase):
         f = io.BytesIO()
         image.write_to_png(f)
         digest = hashlib.md5(f.getvalue()).hexdigest()
-        if digest not in expectedDigests:
+        if digest not in expectedDigests.values():
             fileName = testName + ".png"
             with open(fileName, "wb") as png:
                 png.write(f.getvalue())
@@ -75,22 +75,22 @@ class Report(unittest.TestCase):
         a = self.__createMockedAction("a", ("a", "complex", [42, "label"]), [], 10.5, 13.5, ActionTree.Action.Successful)
 
         r = ExecutionReport(a)
-        self.__checkDrawing(r, 400, ["d3e010597c08e058ac27f6e50369e621"])
+        self.__checkDrawing(r, 400, {"Python 2.7, Windows": "d3e010597c08e058ac27f6e50369e621", "Python 2.7, Cygwin": "ed21917ada5fea4c79b7548f5aebb329"})
 
     def testOneSuccessfulAction(self):
         a = self.__createMockedAction("a", "label", [], 10.5, 13.5, ActionTree.Action.Successful)
 
         r = ExecutionReport(a)
-        self.__checkDrawing(r, 200, ["65815c6bcf05054c98e2b51f2775727f"])
+        self.__checkDrawing(r, 200, {"Python 2.7, Windows": "65815c6bcf05054c98e2b51f2775727f", "Python 2.7, Cygwin": "ddaae26c8484c33fd4faf421e0fa93d7"})
 
     def testOneFailedAction(self):
         a = self.__createMockedAction("a", "label", [], 10.5, 13.5, ActionTree.Action.Failed)
 
         r = ExecutionReport(a)
-        self.__checkDrawing(r, 200, ["24e6d627b1b6b7610c75b6a68d9299ab"])
+        self.__checkDrawing(r, 200, {"Python 2.7, Windows": "24e6d627b1b6b7610c75b6a68d9299ab", "Python 2.7, Cygwin": "ea13184dcfd75b0835232c22b0e003c8"})
 
     def testOneCanceledAction(self):
         a = self.__createMockedAction("a", "label", [], 10.5, 13.5, ActionTree.Action.Canceled)
 
         r = ExecutionReport(a)
-        self.__checkDrawing(r, 200, ["c4d95f1bb610b3fb7e39bc818c06506e"])
+        self.__checkDrawing(r, 200, {"Python 2.7, Windows": "c4d95f1bb610b3fb7e39bc818c06506e", "Python 2.7, Cygwin": "3c1bd21bf5359dd6edc03bf28f8f3cab"})
