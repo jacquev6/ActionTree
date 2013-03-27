@@ -16,12 +16,14 @@
 import unittest
 import os
 import errno
+import subprocess
 import MockMockMock
 
-from ActionTree.StockActions import CreateDirectory
+from ActionTree.StockActions import CreateDirectory, CallSubprocess
 from ActionTree import CompoundException
 
-class CreateDirectoryTestCase(unittest.TestCase):
+
+class TestCaseWithMocks(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.mocks = MockMockMock.Engine()
@@ -30,6 +32,8 @@ class CreateDirectoryTestCase(unittest.TestCase):
         unittest.TestCase.tearDown(self)
         self.mocks.tearDown()
 
+
+class CreateDirectoryTestCase(TestCaseWithMocks):
     def testLabel(self):
         self.assertEqual(CreateDirectory("xxx").label, "mkdir xxx")
 
@@ -94,3 +98,43 @@ class CreateDirectoryTestCase(unittest.TestCase):
                 a.execute()
         finally:
             os.makedirs = oldMakedirs
+
+class CallSubprocessTestCase(TestCaseWithMocks):
+    def testLabel(self):
+        self.assertEqual(CallSubprocess("xxx", "yyy").label, "xxx yyy")
+
+    def testSimpleCall(self):
+        oldCheckCall = subprocess.check_call
+        try:
+            mockedCheckedCall = self.mocks.create("subprocess.check_call")
+            subprocess.check_call = mockedCheckedCall.object
+
+            mockedCheckedCall.expect(["xxx"])
+            a = CallSubprocess("xxx")
+            a.execute()
+        finally:
+            subprocess.check_call = oldCheckCall
+
+    def testCallWithSeveralArgs(self):
+        oldCheckCall = subprocess.check_call
+        try:
+            mockedCheckedCall = self.mocks.create("subprocess.check_call")
+            subprocess.check_call = mockedCheckedCall.object
+
+            mockedCheckedCall.expect(["xxx", "yyy"])
+            a = CallSubprocess("xxx", "yyy")
+            a.execute()
+        finally:
+            subprocess.check_call = oldCheckCall
+
+    def testCallWithKwds(self):
+        oldCheckCall = subprocess.check_call
+        try:
+            mockedCheckedCall = self.mocks.create("subprocess.check_call")
+            subprocess.check_call = mockedCheckedCall.object
+
+            mockedCheckedCall.expect(["xxx", "yyy"], foo="bar")
+            a = CallSubprocess("xxx", "yyy", foo="bar")
+            a.execute()
+        finally:
+            subprocess.check_call = oldCheckCall

@@ -15,6 +15,7 @@
 
 import os
 import errno
+import subprocess
 
 from .Action import Action
 
@@ -30,3 +31,13 @@ class CreateDirectory(Action):
         except OSError as e:
             if e.errno != errno.EEXIST or not os.path.isdir(self.__name):
                 raise
+
+
+class CallSubprocess(Action):
+    def __init__(self, *args, **kwds):
+        self.__args = list(args)
+        self.__kwds = kwds
+        Action.__init__(self, self.__call, " ".join(args))
+
+    def __call(self):
+        subprocess.check_call(self.__args, **self.__kwds)
