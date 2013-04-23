@@ -16,10 +16,11 @@
 import unittest
 import os
 import errno
+import shutil
 import subprocess
 import MockMockMock
 
-from ActionTree.StockActions import CreateDirectory, CallSubprocess, DeleteFile
+from ActionTree.StockActions import CreateDirectory, CallSubprocess, DeleteFile, CopyFile
 from ActionTree import CompoundException
 
 
@@ -140,3 +141,24 @@ class DeleteFileTestCase(TestCaseWithMocks):
             a = DeleteFile("xxx")
             with self.assertRaises(CompoundException) as cm:
                 a.execute()
+
+class CopyFileTestCase(TestCaseWithMocks):
+    def setUp(self):
+        TestCaseWithMocks.setUp(self)
+        self.mockedCopy = self.mocks.create("shutil.copy")
+        self.oldCopy = shutil.copy
+        shutil.copy = self.mockedCopy.object
+
+    def tearDown(self):
+        TestCaseWithMocks.tearDown(self)
+        shutil.copy = self.oldCopy
+
+    def testSuccess(self):
+        self.mockedCopy.expect("from", "to")
+
+        CopyFile("from", "to").execute()
+
+    def testFailure(self):
+        self.mockedCopy.expect("from", "to").andRaise(OSError(-1, "Foobar"))
+
+        self.assertRaises(CompoundException, CopyFile("from", "to").execute)

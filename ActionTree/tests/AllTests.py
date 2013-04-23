@@ -20,4 +20,4 @@ from .Execution import Execution
 from .MultiThreadedExecution import MultiThreadedExecution
 from .Timing import Timing
 from .Preview import Preview
-from .Stock import CreateDirectoryTestCase, CallSubprocessTestCase, DeleteFileTestCase
+from .Stock import CreateDirectoryTestCase, CallSubprocessTestCase, DeleteFileTestCase, CopyFileTestCase
