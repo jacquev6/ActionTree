@@ -61,7 +61,7 @@ class CopyFile(Action):
     def __init__(self, src, dst):
         self.__src = src
         self.__dst = dst
-        Action.__init__(self, self.__copy, "xxxxxcp " + self.__src + " " + self.__dst)
+        Action.__init__(self, self.__copy, "cp " + self.__src + " " + self.__dst)
 
     def __copy(self):
         shutil.copy(self.__src, self.__dst)

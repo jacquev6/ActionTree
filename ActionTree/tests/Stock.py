@@ -151,3 +151,6 @@ class CopyFileTestCase(TestCaseWithMocks):
         self.mockedCopy.expect("from", "to").andRaise(OSError(-1, "Foobar"))
 
         self.assertRaises(CompoundException, CopyFile("from", "to").execute)
+
+    def testLabel(self):
+        self.assertEqual(CopyFile("from", "to").label, "cp from to")
