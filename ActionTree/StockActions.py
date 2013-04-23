@@ -67,4 +67,13 @@ class CopyFile(Action):
         shutil.copy(self.__src, self.__dst)
 
 
-### todo TouchFile
+class TouchFile(Action):
+    _open = open  # Allow static dependency injection. But keep it private.
+
+    def __init__(self, name):
+        self.__name = name
+        Action.__init__(self, self.__touch, "touch " + self.__name)
+
+    def __touch(self):
+        self._open(self.__name, "ab").close()  # Create the file if needed
+        os.utime(self.__name, None)  # Actually change its time
