@@ -29,7 +29,12 @@ class Timing(unittest.TestCase):
         self.time = self.mocks.create("time")
 
         self.a = Action(self.m.object, "timed")
+        self.oldTime = Action._time
         Action._time = self.time.object
+
+    def tearDown(self):
+        unittest.TestCase.tearDown(self)
+        Action._time = self.oldTime
 
     def testExecution(self):
         self.time.expect().andReturn(1352032735.2)
