@@ -55,30 +55,24 @@ class CreateDirectoryTestCase(TestCaseWithMocks):
     def testSuccess(self):
         self.mockedMakedirs.expect("xxx")
 
-        a = CreateDirectory("xxx")
-        a.execute()
+        CreateDirectory("xxx").execute()
 
     def testDirectoryExists(self):
         self.mockedMakedirs.expect("xxx").andRaise(OSError(errno.EEXIST, "File exists"))
         self.mockedIsDir.expect("xxx").andReturn(True)
 
-        a = CreateDirectory("xxx")
-        a.execute()
+        CreateDirectory("xxx").execute()
 
     def testFileExists(self):
         self.mockedMakedirs.expect("xxx").andRaise(OSError(errno.EEXIST, "File exists"))
         self.mockedIsDir.expect("xxx").andReturn(False)
 
-        a = CreateDirectory("xxx")
-        with self.assertRaises(CompoundException) as cm:
-            a.execute()
+        self.assertRaises(CompoundException, CreateDirectory("xxx").execute)
 
     def testOtherFailure(self):
-            self.mockedMakedirs.expect("xxx").andRaise(OSError(-1, "Foobar"))
+        self.mockedMakedirs.expect("xxx").andRaise(OSError(-1, "Foobar"))
 
-            a = CreateDirectory("xxx")
-            with self.assertRaises(CompoundException) as cm:
-                a.execute()
+        self.assertRaises(CompoundException, CreateDirectory("xxx").execute)
 
 
 class CallSubprocessTestCase(TestCaseWithMocks):
@@ -97,18 +91,15 @@ class CallSubprocessTestCase(TestCaseWithMocks):
 
     def testSimpleCall(self):
         self.mockedCheckedCall.expect(["xxx"])
-        a = CallSubprocess("xxx")
-        a.execute()
+        CallSubprocess("xxx").execute()
 
     def testCallWithSeveralArgs(self):
         self.mockedCheckedCall.expect(["xxx", "yyy"])
-        a = CallSubprocess("xxx", "yyy")
-        a.execute()
+        CallSubprocess("xxx", "yyy").execute()
 
     def testCallWithKwds(self):
         self.mockedCheckedCall.expect(["xxx", "yyy"], foo="bar")
-        a = CallSubprocess("xxx", "yyy", foo="bar")
-        a.execute()
+        CallSubprocess("xxx", "yyy", foo="bar").execute()
 
 
 class DeleteFileTestCase(TestCaseWithMocks):
@@ -136,11 +127,9 @@ class DeleteFileTestCase(TestCaseWithMocks):
         DeleteFile("xxx").execute()
 
     def testOtherFailure(self):
-            self.mockedUnlink.expect("xxx").andRaise(OSError(-1, "Foobar"))
+        self.mockedUnlink.expect("xxx").andRaise(OSError(-1, "Foobar"))
 
-            a = DeleteFile("xxx")
-            with self.assertRaises(CompoundException) as cm:
-                a.execute()
+        self.assertRaises(CompoundException, DeleteFile("xxx").execute)
 
 class CopyFileTestCase(TestCaseWithMocks):
     def setUp(self):
