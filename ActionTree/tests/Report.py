@@ -17,6 +17,7 @@ import unittest
 import cairo
 import MockMockMock
 import io
+import os
 import hashlib
 import traceback
 
@@ -56,10 +57,10 @@ class Report(unittest.TestCase):
         f = io.BytesIO()
         image.write_to_png(f)
         digest = hashlib.md5(f.getvalue()).hexdigest()
+        fileName = os.path.join("drawings", testName + "." + digest + ".png")
+        with open(fileName, "wb") as png:
+            png.write(f.getvalue())
         if digest not in expectedDigests.values():
-            fileName = testName + ".png"
-            with open(fileName, "wb") as png:
-                png.write(f.getvalue())
             self.assertTrue(False, "Check file " + fileName + ". If it is OK, modify test " + testName + " to accept digest " + digest)
         f.close()
 
@@ -91,3 +92,24 @@ class Report(unittest.TestCase):
         a = self.__createMockedAction("a", "label", [], 10.5, 13.5, ActionTree.Action.Canceled)
 
         self.__checkDrawing(a, 200, {"Python 2.7, Windows": "c4d95f1bb610b3fb7e39bc818c06506e", "Python 2.7, Cygwin": "3c1bd21bf5359dd6edc03bf28f8f3cab"})
+
+    def testTwoChainedActions(self):
+        a1 = self.__createMockedAction("a1", "a1", [], 10.5, 13.5, ActionTree.Action.Successful)
+        a2 = self.__createMockedAction("a2", "a2", [a1], 14.0, 15.5, ActionTree.Action.Successful)
+
+        self.__checkDrawing(a2, 200, {"Python 2.7, Cygwin": "4239e7d1f47484c142fc110ad1bdc433"})
+
+    def testActionWithTwoDependencies(self):
+        a1 = self.__createMockedAction("a1", "a1", [], 10.5, 13.5, ActionTree.Action.Successful)
+        a2 = self.__createMockedAction("a2", "a2", [], 11.5, 14.0, ActionTree.Action.Successful)
+        a3 = self.__createMockedAction("a3", "a3", [a1, a2], 14.0, 15.5, ActionTree.Action.Successful)
+
+        self.__checkDrawing(a3, 200, {"Python 2.7, Cygwin": "4bb801a840d43451007c21d29c7a2ba7"})
+
+    def testActionWithTwoDependents(self):
+        a1 = self.__createMockedAction("a1", "a1", [], 12.5, 13.5, ActionTree.Action.Successful)
+        a2 = self.__createMockedAction("a2", "a2", [a1], 15.0, 16.5, ActionTree.Action.Successful)
+        a3 = self.__createMockedAction("a3", "a3", [a1], 14.0, 15.5, ActionTree.Action.Successful)
+        a4 = self.__createMockedAction("a4", "a4", [a2, a3], 17.0, 17.5, ActionTree.Action.Successful)
+
+        self.__checkDrawing(a4, 200, {"Python 2.7, Cygwin": "4624d8f080331b19dfcfd9c53f4dac1c"})

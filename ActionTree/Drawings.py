@@ -14,31 +14,52 @@
 # You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
 
 import math
-import collections
 
 from .Action import Action
 
 
 class ExecutionReport:
-    Action = collections.namedtuple('Action', ['label', 'beginTime', 'endTime', 'status'])
+    class Action:
+        def __init__(self, label, beginTime, endTime, status):
+            self.label = label
+            self.beginTime = beginTime
+            self.endTime = endTime
+            self.status = status
+            self.dependencies = []
+            self.ordinate = 0
 
     def __init__(self, action):
         self.__actions = []
+        self.__root = None
         self.__gatherInformation(action)
         self.__consolidate()
 
-    def __gatherInformation(self, action, seenActions=list()):
-            action.getDependencies()
-        # if action not in seenActions:
-            # seenActions.append(action)
-            # for dependency in action.getDependencies():
-                # dependency.__gatherInformation(seenActions)
-            self.__actions.append(ExecutionReport.Action(str(action.label), action.beginTime, action.endTime, action.status))
+    def __gatherInformation(self, root):
+        seenActions = {}
+        def create(action):
+            actionId = id(action)
+            if actionId not in seenActions:
+                a = ExecutionReport.Action(str(action.label), action.beginTime, action.endTime, action.status)
+                seenActions[actionId] = a
+                for dependency in action.getDependencies():
+                    a.dependencies.append(create(dependency))
+            return seenActions[actionId]
+        self.__root = create(root)
+        self.__actions = seenActions.values()
 
     def __consolidate(self):
         self.__beginTime = math.floor(min(a.beginTime for a in self.__actions))
         self.__endTime = math.ceil(max(a.endTime for a in self.__actions))
         self.__duration = self.__endTime - self.__beginTime
+        self.__computeOrdinates()
+
+    def __computeOrdinates(self):
+        def compute(action, fromOrdinate):
+            action.ordinate = fromOrdinate
+            dependencies = sorted(action.dependencies, key=lambda d: d.endTime)
+            for i, d in enumerate(dependencies):
+                compute(d, fromOrdinate - (i + 1) * 20)
+        compute(self.__root, 20 * (len(self.__actions) - 1))
 
     def getHeight(self, ctx):
         return 10 + len(self.__actions) * 20
@@ -53,10 +74,8 @@ class ExecutionReport:
         self.__drawTimeLine(ctx)
         ctx.translate(0, 10)
 
-        ctx.set_line_width(4)
         for action in self.__actions:
             self.__drawAction(action, ctx, width)
-            ctx.translate(0, 20)
 
         ctx.restore()
 
@@ -66,6 +85,11 @@ class ExecutionReport:
         ctx.stroke()
 
     def __drawAction(self, action, ctx, width):
+        ctx.save()
+        ctx.translate(0, action.ordinate)
+
+        ctx.save()
+        ctx.set_line_width(4)
         ctx.move_to(action.beginTime, 18)
         ctx.line_to(action.endTime, 18)
         if action.status == Action.Successful:
@@ -75,6 +99,17 @@ class ExecutionReport:
         else:
             ctx.set_source_rgb(1, 0, 0)
         ctx.stroke()
+        ctx.restore()
+
+        ctx.save()
+        for d in action.dependencies:
+            ctx.move_to(action.beginTime, 18)
+            ctx.line_to(d.endTime, d.ordinate - action.ordinate + 18)
+        ctx.set_line_width(1)
+        ctx.identity_matrix()
+        ctx.set_source_rgb(0.7, 0.7, 0.7)
+        ctx.stroke()
+        ctx.restore()
 
         ctx.move_to(action.beginTime, 15)
         ctx.save()
@@ -82,4 +117,6 @@ class ExecutionReport:
         ctx.set_font_size(15)
         ctx.set_source_rgb(0, 0, 0)
         ctx.show_text(action.label)
+        ctx.restore()
+
         ctx.restore()
