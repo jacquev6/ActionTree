@@ -47,10 +47,7 @@ class Timing(unittest.TestCase):
         self.m.expect().andRaise(e)
         self.time.expect().andReturn(1352032737.1)
 
-        with self.assertRaises(CompoundException) as cm:
-            self.a.execute()
-        self.assertEqual(len(cm.exception.exceptions), 1)
-        self.assertIs(cm.exception.exceptions[0], e)
+        self.assertRaises(CompoundException, self.a.execute)
 
         self.assertEqual(self.a.beginTime, 1352032735.2)
         self.assertEqual(self.a.endTime, 1352032737.1)
