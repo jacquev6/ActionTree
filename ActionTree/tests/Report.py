@@ -36,7 +36,7 @@ class Report(unittest.TestCase):
 
     # Expect several digests because cairo may not produce exactly the same file on
     # all platorms and versions
-    def __checkDrawing(self, r, width, expectedDigests):
+    def __checkDrawing(self, a, width, expectedDigests):
         testName = None
         for (_, _, functionName, _) in traceback.extract_stack():
             if functionName.startswith("test"):
@@ -44,6 +44,7 @@ class Report(unittest.TestCase):
                 break
         self.assertIsNot(testName, None)
 
+        r = ExecutionReport(a)
         height = r.getHeight(cairo.Context(cairo.ImageSurface(cairo.FORMAT_RGB24, 1, 1)))
 
         image = cairo.ImageSurface(cairo.FORMAT_RGB24, width, height)
@@ -74,23 +75,19 @@ class Report(unittest.TestCase):
     def testComplexLabel(self):
         a = self.__createMockedAction("a", ("a", "complex", [42, "label"]), [], 10.5, 13.5, ActionTree.Action.Successful)
 
-        r = ExecutionReport(a)
-        self.__checkDrawing(r, 400, {"Python 2.7, Windows": "d3e010597c08e058ac27f6e50369e621", "Python 2.7, Cygwin": "ed21917ada5fea4c79b7548f5aebb329"})
+        self.__checkDrawing(a, 400, {"Python 2.7, Windows": "d3e010597c08e058ac27f6e50369e621", "Python 2.7, Cygwin": "ed21917ada5fea4c79b7548f5aebb329"})
 
     def testOneSuccessfulAction(self):
         a = self.__createMockedAction("a", "label", [], 10.5, 13.5, ActionTree.Action.Successful)
 
-        r = ExecutionReport(a)
-        self.__checkDrawing(r, 200, {"Python 2.7, Windows": "65815c6bcf05054c98e2b51f2775727f", "Python 2.7, Cygwin": "ddaae26c8484c33fd4faf421e0fa93d7"})
+        self.__checkDrawing(a, 200, {"Python 2.7, Windows": "65815c6bcf05054c98e2b51f2775727f", "Python 2.7, Cygwin": "ddaae26c8484c33fd4faf421e0fa93d7"})
 
     def testOneFailedAction(self):
         a = self.__createMockedAction("a", "label", [], 10.5, 13.5, ActionTree.Action.Failed)
 
-        r = ExecutionReport(a)
-        self.__checkDrawing(r, 200, {"Python 2.7, Windows": "24e6d627b1b6b7610c75b6a68d9299ab", "Python 2.7, Cygwin": "ea13184dcfd75b0835232c22b0e003c8"})
+        self.__checkDrawing(a, 200, {"Python 2.7, Windows": "24e6d627b1b6b7610c75b6a68d9299ab", "Python 2.7, Cygwin": "ea13184dcfd75b0835232c22b0e003c8"})
 
     def testOneCanceledAction(self):
         a = self.__createMockedAction("a", "label", [], 10.5, 13.5, ActionTree.Action.Canceled)
 
-        r = ExecutionReport(a)
-        self.__checkDrawing(r, 200, {"Python 2.7, Windows": "c4d95f1bb610b3fb7e39bc818c06506e", "Python 2.7, Cygwin": "3c1bd21bf5359dd6edc03bf28f8f3cab"})
+        self.__checkDrawing(a, 200, {"Python 2.7, Windows": "c4d95f1bb610b3fb7e39bc818c06506e", "Python 2.7, Cygwin": "3c1bd21bf5359dd6edc03bf28f8f3cab"})
