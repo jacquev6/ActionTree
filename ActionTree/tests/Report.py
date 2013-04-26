@@ -57,7 +57,7 @@ class Report(unittest.TestCase):
         f = io.BytesIO()
         image.write_to_png(f)
         digest = hashlib.md5(f.getvalue()).hexdigest()
-        fileName = os.path.join("drawings", testName + "." + digest + ".png")
+        fileName = os.path.join("ActionTree", "tests", "drawings", testName + "." + digest + ".png")
         with open(fileName, "wb") as png:
             png.write(f.getvalue())
         if digest not in expectedDigests.values():
@@ -76,35 +76,35 @@ class Report(unittest.TestCase):
     def testComplexLabel(self):
         a = self.__createMockedAction("a", ("a", "complex", [42, "label"]), [], 10.5, 13.5, ActionTree.Action.Successful)
 
-        self.__checkDrawing(a, 400, {"Python 2.7, Windows": "d3e010597c08e058ac27f6e50369e621", "Python 2.7, Cygwin": "ed21917ada5fea4c79b7548f5aebb329"})
+        self.__checkDrawing(a, 400, {"Python 2.7, Cygwin": "5f3cfe117ab21440c9d7bc0f8d1c9e70"})
 
     def testOneSuccessfulAction(self):
         a = self.__createMockedAction("a", "label", [], 10.5, 13.5, ActionTree.Action.Successful)
 
-        self.__checkDrawing(a, 200, {"Python 2.7, Windows": "65815c6bcf05054c98e2b51f2775727f", "Python 2.7, Cygwin": "ddaae26c8484c33fd4faf421e0fa93d7"})
+        self.__checkDrawing(a, 200, {"Python 2.7, Cygwin": "80da16a2a8c0b5a3cfe71566c1d1a750"})
 
     def testOneFailedAction(self):
         a = self.__createMockedAction("a", "label", [], 10.5, 13.5, ActionTree.Action.Failed)
 
-        self.__checkDrawing(a, 200, {"Python 2.7, Windows": "24e6d627b1b6b7610c75b6a68d9299ab", "Python 2.7, Cygwin": "ea13184dcfd75b0835232c22b0e003c8"})
+        self.__checkDrawing(a, 200, {"Python 2.7, Cygwin": "62ad8ef401b9bc37104e58a597e04d13"})
 
     def testOneCanceledAction(self):
         a = self.__createMockedAction("a", "label", [], 10.5, 13.5, ActionTree.Action.Canceled)
 
-        self.__checkDrawing(a, 200, {"Python 2.7, Windows": "c4d95f1bb610b3fb7e39bc818c06506e", "Python 2.7, Cygwin": "3c1bd21bf5359dd6edc03bf28f8f3cab"})
+        self.__checkDrawing(a, 200, {"Python 2.7, Cygwin": "081c688ac8678ec4ea5f1621c4e8044a"})
 
     def testTwoChainedActions(self):
         a1 = self.__createMockedAction("a1", "a1", [], 10.5, 13.5, ActionTree.Action.Successful)
         a2 = self.__createMockedAction("a2", "a2", [a1], 14.0, 15.5, ActionTree.Action.Successful)
 
-        self.__checkDrawing(a2, 200, {"Python 2.7, Cygwin": "4239e7d1f47484c142fc110ad1bdc433"})
+        self.__checkDrawing(a2, 200, {"Python 2.7, Cygwin": "7ed1b75b6c45b594e643bf0128158d83"})
 
     def testActionWithTwoDependencies(self):
         a1 = self.__createMockedAction("a1", "a1", [], 10.5, 13.5, ActionTree.Action.Successful)
         a2 = self.__createMockedAction("a2", "a2", [], 11.5, 14.0, ActionTree.Action.Successful)
         a3 = self.__createMockedAction("a3", "a3", [a1, a2], 14.0, 15.5, ActionTree.Action.Successful)
 
-        self.__checkDrawing(a3, 200, {"Python 2.7, Cygwin": "4bb801a840d43451007c21d29c7a2ba7"})
+        self.__checkDrawing(a3, 200, {"Python 2.7, Cygwin - 1": "e0ee94d2b3e57b05f13d8b0f459c0a2c", "Python 2.7, Cygwin - 2": "95202885fae962f9e652783e111276bb"})
 
     def testActionWithTwoDependents(self):
         a1 = self.__createMockedAction("a1", "a1", [], 12.5, 13.5, ActionTree.Action.Successful)
@@ -112,4 +112,4 @@ class Report(unittest.TestCase):
         a3 = self.__createMockedAction("a3", "a3", [a1], 14.0, 15.5, ActionTree.Action.Successful)
         a4 = self.__createMockedAction("a4", "a4", [a2, a3], 17.0, 17.5, ActionTree.Action.Successful)
 
-        self.__checkDrawing(a4, 200, {"Python 2.7, Cygwin": "4624d8f080331b19dfcfd9c53f4dac1c"})
+        self.__checkDrawing(a4, 200, {"Python 2.7, Cygwin - 1": "4c4362ef3df4b0f631f03afd03ef45e0", "Python 2.7, Cygwin - 2": "240a21cfd5fdd8c22db4640938cb3e8d"})
