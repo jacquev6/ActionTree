@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
 
 import math
+import random
+import AnotherPyGraphvizAgain.Raw as gv
 
 from .Action import Action
 
@@ -120,3 +122,23 @@ class ExecutionReport:
         ctx.restore()
 
         ctx.restore()
+
+
+def ActionGraph(a):
+    g = gv.Graph("action")
+
+    seenNodes = dict()
+
+    def createNode(a):
+        if id(a) not in seenNodes:
+            label = a.label
+            node = gv.Node(gv.makeId(label)).set("label", label)  ### @todo Several actions may have identical label => add some unique identifier
+            g.add(node)
+            for d in a.getDependencies():
+                g.add(gv.Link(node, createNode(d)))
+            seenNodes[id(a)] = node
+        return seenNodes[id(a)]
+
+    createNode(a)
+
+    return g
