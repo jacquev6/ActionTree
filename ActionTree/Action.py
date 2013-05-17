@@ -13,6 +13,7 @@
 
 # You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
 
+import multiprocessing
 import threading
 import time
 
@@ -111,6 +112,8 @@ class Action:
         :param int jobs: number of actions to execute in parallel
         :param bool keepGoing: if True, then :meth:`execute` does not stop on first failure, but executes as many dependencies as possible.
         """
+        if jobs <= 0:
+            jobs = multiprocessing.cpu_count() + 1
         self.__resetBeforeExecution()
         self.__doExecute(jobs, keepGoing)
 
