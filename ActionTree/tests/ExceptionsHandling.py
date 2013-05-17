@@ -126,3 +126,19 @@ class ExceptionsHandling(unittest.TestCase):
         self.assertEqual(a.status, Action.Canceled)
         self.assertEqual(len([x for x in [b, c, d] if x.status == Action.Canceled]), 2)
         self.assertEqual(len([x for x in [b, c, d] if x.status == Action.Failed]), 1)
+
+    def testExceptionInDependency_BeginEndTimeAnyway(self):
+        a, aMock = self.__createMockedAction("a")
+        b, bMock = self.__createMockedAction("b")
+
+        a.addDependency(b)
+
+        bMock.expect().andRaise(Exception("eb"))
+
+        with self.assertRaises(CompoundException):
+            a.execute()
+
+        self.assertTrue(hasattr(b, "beginTime"))
+        self.assertTrue(hasattr(b, "endTime"))
+        self.assertTrue(hasattr(a, "beginTime"))
+        self.assertTrue(hasattr(a, "endTime"))

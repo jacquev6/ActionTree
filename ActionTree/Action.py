@@ -155,7 +155,7 @@ class Action:
                     action.__status = Action.Failed
                     exceptions.append(e)
                     if not keepGoing and action is not self:
-                        self.__status = Action.Canceled
+                        self.__cancelAction(self)
             finally:
                 action.endTime = Action._time()
             with condition:
@@ -190,7 +190,7 @@ class Action:
 
     def __prepareExecution(self, action):
         if any(d.__isFailure() for d in action.__dependencies):
-            action.__status = Action.Canceled
+            self.__cancelAction(action)
             return False
         else:
             action.__status = Action.__Executing
@@ -200,7 +200,12 @@ class Action:
         for dependency in self.__dependencies:
             dependency.__markCanceledActions()
         if not self.__isFinished():
-            self.__status = Action.Canceled
+            self.__cancelAction(self)
+
+    def __cancelAction(self, action):
+        action.__status = Action.Canceled
+        action.beginTime = Action._time()
+        action.endTime = action.beginTime
 
     def __isFinished(self):
         return self.__status in [Action.Successful, Action.Failed, Action.Canceled]
