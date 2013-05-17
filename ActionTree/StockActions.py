@@ -17,9 +17,17 @@ import os
 import errno
 import subprocess
 import shutil
+# import time
 
 from .Action import Action
 
+
+class NullAction(Action):
+    def __init__(self):
+        Action.__init__(self, self.__doNothing, "nop")
+
+    def __doNothing(self):
+        pass
 
 class CreateDirectory(Action):
     def __init__(self, name):
@@ -65,6 +73,7 @@ class CopyFile(Action):
 
     def __copy(self):
         shutil.copy(self.__src, self.__dst)
+        # time.sleep(1)  # Race condition ? Microsoft cl doesn't see the file when called just after the copy...
 
 
 class TouchFile(Action):
@@ -75,5 +84,6 @@ class TouchFile(Action):
         Action.__init__(self, self.__touch, "touch " + self.__name)
 
     def __touch(self):
+        # time.sleep(1)  # Ensure file will be more recent than any other touched files
         self._open(self.__name, "ab").close()  # Create the file if needed
         os.utime(self.__name, None)  # Actually change its time
