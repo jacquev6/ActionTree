@@ -22,6 +22,11 @@ import shutil
 from .Action import Action
 
 
+class Sleep(Action):
+    def __init__(self, duration):
+        Action.__init__(self, lambda: time.sleep(duration), "sleep " + str(duration))
+
+
 class NullAction(Action):
     def __init__(self):
         Action.__init__(self, self.__doNothing, "nop")
