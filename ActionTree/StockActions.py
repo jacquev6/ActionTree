@@ -34,6 +34,7 @@ class NullAction(Action):
     def __doNothing(self):
         pass
 
+
 class CreateDirectory(Action):
     def __init__(self, name):
         self.__name = name

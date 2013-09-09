@@ -131,6 +131,7 @@ class DeleteFileTestCase(TestCaseWithMocks):
 
         self.assertRaises(CompoundException, DeleteFile("xxx").execute)
 
+
 class CopyFileTestCase(TestCaseWithMocks):
     def setUp(self):
         TestCaseWithMocks.setUp(self)
