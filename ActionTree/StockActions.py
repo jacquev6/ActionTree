@@ -29,7 +29,7 @@ class Sleep(Action):
 
 class NullAction(Action):
     def __init__(self):
-        Action.__init__(self, self.__doNothing, "nop")
+        Action.__init__(self, self.__doNothing, None)
 
     def __doNothing(self):
         pass

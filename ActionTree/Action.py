@@ -92,7 +92,7 @@ class Action:
         """
         Returns the labels of this action and its dependencies, in an order that could be the execution order.
         """
-        return [action.__label for action in self.__getPossibleExecutionOrder()]
+        return [action.__label for action in self.__getPossibleExecutionOrder() if action.__label is not None]
 
     def __getPossibleExecutionOrder(self, seenActions=set()):
         actions = []
