@@ -160,18 +160,9 @@ class CopyFileTestCase(TestCaseWithMocks):
 class TouchFileTestCase(TestCaseWithMocks):
     def setUp(self):
         TestCaseWithMocks.setUp(self)
-        self.mockedOpen = self.mocks.create("open")
+        self.mockedOpen = self.mocks.replace("TouchFiles._open")
         self.mockedFile = self.mocks.create("FileLikeObject")
-        self.mockedUtime = self.mocks.create("os.utime")
-        self.oldOpen = TouchFiles._open
-        self.oldUtime = os.utime
-        TouchFiles._open = self.mockedOpen.object
-        os.utime = self.mockedUtime.object
-
-    def tearDown(self):
-        TestCaseWithMocks.tearDown(self)
-        TouchFiles._open = self.oldOpen
-        os.utime = self.oldUtime
+        self.mockedUtime = self.mocks.replace("os.utime")
 
     def testSuccess(self):
         self.mockedOpen.expect("xxx", "ab").andReturn(self.mockedFile.object)
