@@ -82,14 +82,16 @@ class CopyFile(Action):
         # time.sleep(1)  # Race condition ? Microsoft cl doesn't see the file when called just after the copy...
 
 
-class TouchFile(Action):
+class TouchFiles(Action):
     _open = open  # Allow static dependency injection. But keep it private.
 
-    def __init__(self, name):
-        self.__name = name
-        Action.__init__(self, self.__touch, "touch " + self.__name)
+    def __init__(self, names):
+        assert len(names) != 0
+        self.__names = names
+        Action.__init__(self, self.__touch, "touch " + " ".join(self.__names))
 
     def __touch(self):
         # time.sleep(1)  # Ensure file will be more recent than any other touched files
-        self._open(self.__name, "ab").close()  # Create the file if needed
-        os.utime(self.__name, None)  # Actually change its time
+        for name in self.__names:
+            self._open(name, "ab").close()  # Create the file if needed
+            os.utime(name, None)  # Actually change its time

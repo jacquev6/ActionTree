@@ -20,7 +20,7 @@ import shutil
 import subprocess
 import MockMockMock
 
-from ActionTree.StockActions import CreateDirectory, CallSubprocess, DeleteFile, CopyFile, TouchFile
+from ActionTree.StockActions import CreateDirectory, CallSubprocess, DeleteFile, CopyFile, TouchFiles
 from ActionTree import CompoundException
 
 
@@ -163,22 +163,25 @@ class TouchFileTestCase(TestCaseWithMocks):
         self.mockedOpen = self.mocks.create("open")
         self.mockedFile = self.mocks.create("FileLikeObject")
         self.mockedUtime = self.mocks.create("os.utime")
-        self.oldOpen = TouchFile._open
+        self.oldOpen = TouchFiles._open
         self.oldUtime = os.utime
-        TouchFile._open = self.mockedOpen.object
+        TouchFiles._open = self.mockedOpen.object
         os.utime = self.mockedUtime.object
 
     def tearDown(self):
         TestCaseWithMocks.tearDown(self)
-        TouchFile._open = self.oldOpen
+        TouchFiles._open = self.oldOpen
         os.utime = self.oldUtime
 
     def testSuccess(self):
         self.mockedOpen.expect("xxx", "ab").andReturn(self.mockedFile.object)
         self.mockedFile.expect.close()
         self.mockedUtime.expect("xxx", None)
+        self.mockedOpen.expect("yyy", "ab").andReturn(self.mockedFile.object)
+        self.mockedFile.expect.close()
+        self.mockedUtime.expect("yyy", None)
 
-        TouchFile("xxx").execute()
+        TouchFiles(["xxx", "yyy"]).execute()
 
     def testLabel(self):
-        self.assertEqual(TouchFile("xxx").label, "touch xxx")
+        self.assertEqual(TouchFiles(["xxx", "yyy"]).label, "touch xxx yyy")
