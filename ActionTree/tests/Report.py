@@ -37,7 +37,7 @@ class Report(unittest.TestCase):
 
     # Expect several digests because cairo may not produce exactly the same file on
     # all platorms and versions
-    def __checkDrawing(self, a, width):
+    def __checkDrawing(self, a, width, *allowedDigests):
         testName = None
         for (_, _, functionName, _) in traceback.extract_stack():
             if functionName.startswith("test"):
@@ -57,8 +57,8 @@ class Report(unittest.TestCase):
         f = io.BytesIO()
         image.write_to_png(f)
         digest = hashlib.md5(f.getvalue()).hexdigest()
-        fileName = os.path.join("ActionTree", "tests", "drawings", testName + "." + digest + ".png")
-        if not os.path.exists(fileName):
+        if digest not in allowedDigests:
+            fileName = os.path.join("ActionTree", "tests", "drawings", testName + "." + digest + ".png")
             with open(fileName, "wb") as png:
                 png.write(f.getvalue())
             self.assertTrue(False, "Check file " + fileName + ".")
@@ -76,35 +76,35 @@ class Report(unittest.TestCase):
     def testComplexLabel(self):
         a = self.__createMockedAction("a", ("a", "complex", [42, "label"]), [], 10.5, 13.5, ActionTree.Action.Successful)
 
-        self.__checkDrawing(a, 400)
+        self.__checkDrawing(a, 400, "49633bf6bbc7396c801504e3de64ff2e")
 
     def testOneSuccessfulAction(self):
         a = self.__createMockedAction("a", "label", [], 10.5, 13.5, ActionTree.Action.Successful)
 
-        self.__checkDrawing(a, 200)
+        self.__checkDrawing(a, 200, "0d141dc36bd75e0a326981afbb60bd32")
 
     def testOneFailedAction(self):
         a = self.__createMockedAction("a", "label", [], 10.5, 13.5, ActionTree.Action.Failed)
 
-        self.__checkDrawing(a, 200)
+        self.__checkDrawing(a, 200, "7a4ab05cce5a6481d39624b0be845a77")
 
     def testOneCanceledAction(self):
         a = self.__createMockedAction("a", "label", [], 10.5, 13.5, ActionTree.Action.Canceled)
 
-        self.__checkDrawing(a, 200)
+        self.__checkDrawing(a, 200, "04dfd9439857807e91f149379c197586")
 
     def testTwoChainedActions(self):
         a1 = self.__createMockedAction("a1", "a1", [], 10.5, 13.5, ActionTree.Action.Successful)
         a2 = self.__createMockedAction("a2", "a2", [a1], 14.0, 15.5, ActionTree.Action.Successful)
 
-        self.__checkDrawing(a2, 200)
+        self.__checkDrawing(a2, 200, "0c61091279a919b19a6a9c70f7c18bf7")
 
     def testActionWithTwoDependencies(self):
         a1 = self.__createMockedAction("a1", "a1", [], 10.5, 13.5, ActionTree.Action.Successful)
         a2 = self.__createMockedAction("a2", "a2", [], 11.5, 14.0, ActionTree.Action.Successful)
         a3 = self.__createMockedAction("a3", "a3", [a1, a2], 14.0, 15.5, ActionTree.Action.Successful)
 
-        self.__checkDrawing(a3, 200)
+        self.__checkDrawing(a3, 200, "18dbd9c8afc79f7a1a6f211c35a4e919")
 
     def testActionWithTwoDependents(self):
         a1 = self.__createMockedAction("a1", "a1", [], 12.5, 13.5, ActionTree.Action.Successful)
@@ -112,4 +112,4 @@ class Report(unittest.TestCase):
         a3 = self.__createMockedAction("a3", "a3", [a1], 14.0, 15.5, ActionTree.Action.Successful)
         a4 = self.__createMockedAction("a4", "a4", [a2, a3], 17.0, 17.5, ActionTree.Action.Successful)
 
-        self.__checkDrawing(a4, 200)
+        self.__checkDrawing(a4, 200, "e674fc65f495622102995619f4c2c1ed", "962c7cc9360019320895399bb15b23df")
