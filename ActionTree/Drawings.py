@@ -47,7 +47,7 @@ class ExecutionReport:
                     a.dependencies.append(create(dependency))
             return seenActions[actionId]
         self.__root = create(root)
-        self.__actions = seenActions.values()
+        self.__actions = list(seenActions.values())
 
     def __consolidate(self):
         self.__beginTime = math.floor(min(a.beginTime for a in self.__actions))
@@ -124,21 +124,21 @@ class ExecutionReport:
         ctx.restore()
 
 
-def ActionGraph(a):
-    g = gv.Graph("action")
+class ActionGraph(gv.Graph):
+    def __init__(self, action):
+        gv.Graph.__init__(self, "action")
+        self.nodeAttr.set("shape", "box")
 
-    seenNodes = dict()
+        self.__seenNodes = dict()
+        self.__nextNodeId = 0
+        self.__createNode(action)
 
-    def createNode(a):
-        if id(a) not in seenNodes:
-            label = a.label
-            node = gv.Node(gv.makeId(label)).set("label", label)  ### @todo Several actions may have identical label => add some unique identifier
-            g.add(node)
+    def __createNode(self, a):
+        if id(a) not in self.__seenNodes:
+            node = gv.Node(str(self.__nextNodeId)).set("label", a.label or "")
+            self.__nextNodeId += 1
+            self.add(node)
             for d in a.getDependencies():
-                g.add(gv.Link(node, createNode(d)))
-            seenNodes[id(a)] = node
-        return seenNodes[id(a)]
-
-    createNode(a)
-
-    return g
+                self.add(gv.Link(node, self.__createNode(d)))
+            self.__seenNodes[id(a)] = node
+        return self.__seenNodes[id(a)]

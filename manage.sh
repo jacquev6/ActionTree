@@ -79,7 +79,7 @@ function push {
 }
 
 function run2to3 {
-    2to3 --write --nobackups AnotherPyGraphvizAgain
+    2to3 --write --nobackups ActionTree
 }
 
 $1

@@ -41,17 +41,17 @@ class Graph(unittest.TestCase):
 
     def __createEmptyGraph(self):
         g = gv.Graph("action")
-        # g.nodeAttr.set("shape", "box")
+        g.nodeAttr.set("shape", "box")
         return g
 
-    def __createNode(self, name):
-        return gv.Node(name).set("label", name)
+    def __createNode(self, id, name):
+        return gv.Node(str(id)).set("label", name)
 
     def testSingleAction(self):
         a = self.__createMockedAction("a", "a", [])
 
         g = self.__createEmptyGraph()
-        aN = self.__createNode("a")
+        aN = self.__createNode(0, "a")
         g.add(aN)
 
         self.__assertGraphEqual(a, g)
@@ -60,8 +60,8 @@ class Graph(unittest.TestCase):
         b = self.__createMockedAction("b", "b", [])
         a = self.__createMockedAction("a", "a", [b])
 
-        aN = self.__createNode("a")
-        bN = self.__createNode("b")
+        aN = self.__createNode(0, "a")
+        bN = self.__createNode(1, "b")
         g = self.__createEmptyGraph()
         g.add(aN).add(bN)
         g.add(gv.Link(aN, bN))
@@ -75,10 +75,10 @@ class Graph(unittest.TestCase):
         d = self.__createMockedAction("d", "d", [b, c])
 
         g = self.__createEmptyGraph()
-        aN = self.__createNode("a")
-        bN = self.__createNode("b")
-        cN = self.__createNode("c")
-        dN = self.__createNode("d")
+        aN = self.__createNode(2, "a")
+        bN = self.__createNode(1, "b")
+        cN = self.__createNode(3, "c")
+        dN = self.__createNode(0, "d")
         g.add(aN).add(bN).add(cN).add(dN)
         g.add(gv.Link(bN, aN)).add(gv.Link(cN, aN))
         g.add(gv.Link(dN, bN)).add(gv.Link(dN, cN))
