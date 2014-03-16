@@ -13,14 +13,16 @@
 
 # You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
 
-import unittest
-import os
+import datetime
 import errno
+import os
 import shutil
 import subprocess
+import unittest
+
 import MockMockMock
 
-from ActionTree.StockActions import CreateDirectory, CallSubprocess, DeleteFile, CopyFile, TouchFiles
+from ActionTree.StockActions import *
 from ActionTree import CompoundException
 
 
@@ -176,3 +178,15 @@ class TouchFileTestCase(TestCaseWithMocks):
 
     def testLabel(self):
         self.assertEqual(TouchFiles(["xxx", "yyy"]).label, "touch xxx yyy")
+
+
+class NullActionTestCase(unittest.TestCase):
+    def test(self):
+        NullAction().execute()
+
+
+class SleepTestCase(unittest.TestCase):
+    def test(self):
+        before = datetime.datetime.now()
+        Sleep(1).execute()
+        self.assertGreater(datetime.datetime.now() - before, datetime.timedelta(seconds=1))

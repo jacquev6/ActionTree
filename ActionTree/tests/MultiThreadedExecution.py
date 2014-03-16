@@ -72,7 +72,7 @@ class MultiThreadedExecution(unittest.TestCase):
         aMock.expect.begin()
         aMock.expect.end()
 
-        a.execute(jobs=3)
+        a.execute(jobs=-1)
 
     def testDeepDependencies(self):
         #  a

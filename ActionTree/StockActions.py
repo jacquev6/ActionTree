@@ -13,11 +13,11 @@
 
 # You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import errno
-import subprocess
+import os
 import shutil
-# import time
+import subprocess
+import time
 
 from .Action import Action
 
@@ -29,10 +29,7 @@ class Sleep(Action):
 
 class NullAction(Action):
     def __init__(self):
-        Action.__init__(self, self.__doNothing, None)
-
-    def __doNothing(self):
-        pass
+        Action.__init__(self, lambda: None, None)
 
 
 class CreateDirectory(Action):
