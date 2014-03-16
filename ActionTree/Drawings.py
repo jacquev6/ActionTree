@@ -38,6 +38,7 @@ class ExecutionReport:
 
     def __gatherInformation(self, root):
         seenActions = {}
+
         def create(action):
             actionId = id(action)
             if actionId not in seenActions:
@@ -46,6 +47,7 @@ class ExecutionReport:
                 for dependency in action.getDependencies():
                     a.dependencies.append(create(dependency))
             return seenActions[actionId]
+
         self.__root = create(root)
         self.__actions = list(seenActions.values())
 
