@@ -16,7 +16,7 @@ before_install:
 install:
 - pip install sphinx coveralls
 script:
-- coverage run "--include=ActionTree/*" python setup.py test
+- coverage run "--include=ActionTree/*" setup.py test
 - if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ]; then python setup.py build_sphinx --builder=doctest; fi
 after_success:
 - coveralls
