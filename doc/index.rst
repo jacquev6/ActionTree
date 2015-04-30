@@ -1,2 +1,19 @@
+==========
+ActionTree
+==========
+
+.. include:: ../README.rst
+
+User guide
+==========
+
 .. automodule:: ActionTree
-   :members:
+
+Reference
+=========
+
+.. autoclass:: Action
+    :members:
+
+.. autoclass:: CompoundException()
+    :members:

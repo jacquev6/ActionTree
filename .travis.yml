@@ -1,16 +1,31 @@
 language: python
 python:
-  - "2.7"
-  - "3.3"
+- 2.7
+- 3.3
+- 3.4
 before_install:
-  - sudo apt-get install libcairo2-dev
-  - if [ $(python -c "import sys; print(sys.version_info.major)") == 2 ]; then wget http://www.cairographics.org/releases/py2cairo-1.10.0.tar.bz2; fi
-  - if [ $(python -c "import sys; print(sys.version_info.major)") == 3 ]; then wget http://www.cairographics.org/releases/pycairo-1.10.0.tar.bz2; fi
-  - tar xf py*cairo-1.10.0.tar.bz2
-  - cd py*cairo-1.10.0
-  - ./waf configure --prefix=$(python -c "import sys; print(sys.prefix)")
-  - ./waf build
-  - ./waf install
-  - cd ..
+- sudo apt-get install libcairo2-dev
+- if [ $(python -c "import sys; print(sys.version_info.major)") == 2 ]; then wget http://www.cairographics.org/releases/py2cairo-1.10.0.tar.bz2; fi
+- if [ $(python -c "import sys; print(sys.version_info.major)") == 3 ]; then wget http://www.cairographics.org/releases/pycairo-1.10.0.tar.bz2; fi
+- tar xf py*cairo-1.10.0.tar.bz2
+- cd py*cairo-1.10.0
+- ./waf configure --prefix=$(python -c "import sys; print(sys.prefix)")
+- ./waf build
+- ./waf install
+- cd ..
+install:
+- pip install sphinx coveralls
 script:
-  - python setup.py test
+- coverage run "--include=ActionTree/*" python setup.py test
+- if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ]; then python setup.py build_sphinx --builder=doctest; fi
+after_success:
+- coveralls
+deploy:
+  provider: pypi
+  user: jacquev6
+  password:
+    secure: d3UoCrv3O53EeMhnhcfplSzc6R3aQqWES7d6gMwfeHlVib+k0GWKCMJqwKhrgMiqWxzW/DhK2t0fckwHgId2Fr6NyUZnIIto8X2wbQtbIIxV033y1DsVJgmEi2UjyJ5E7uI8+cnFLa8p7YgPXNt0cKajxHXSfBJY492nlQL1YRc=
+  on:
+    tags: true
+    repo: jacquev6/ActionTree
+    python: 2.7

@@ -1,24 +1,9 @@
-# -*- coding: utf-8 -*-
+# coding: utf8
 
-# Copyright 2013 Vincent Jacques
-# vincent@vincent-jacques.net
-
-# This file is part of ActionTree. http://jacquev6.github.com/ActionTree
-
-# ActionTree is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License
-# as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-
-# ActionTree is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
-
-# You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
+# Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
 """
-ActionTree
-==========
-
-Introduction
-------------
+@todoc doctests
 
 ActionTree executes (long) actions in parallel, respecting dependencies between those actions.
 
@@ -60,28 +45,6 @@ are all finished before the ``concatFiles`` action starts.
 You can execute them in parallel, keeping the same guaranties::
 
     concat.execute(jobs=3)
-
-Installation
-------------
-
-ActionTree is on `the Python Package Index <https://pypi.python.org/pypi/ActionTree>`_,
-so ``easy_install ActionTree`` or ``pip install ActionTree`` should be enough.
-You can also `clone it on Github <https://github.com/jacquev6/ActionTree>`_.
-
-Licensing
----------
-
-ActionTree is distributed under the GNU Lesser General Public Licence.
-See files COPYING and COPYING.LESSER, as requested by `GNU <http://www.gnu.org/licenses/gpl-howto.html>`_.
-
-Reference
----------
-
-.. autoclass:: Action
-    :members:
-
-.. autoclass:: CompoundException()
-    :members:
 """
 
 from .Action import Action

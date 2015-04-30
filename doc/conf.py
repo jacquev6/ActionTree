@@ -1,44 +1,49 @@
-# -*- coding: utf-8 -*-
+# coding: utf8
 
-# Copyright 2013 Vincent Jacques
-# vincent@vincent-jacques.net
-
-# This file is part of ActionTree. http://jacquev6.github.com/ActionTree
-
-# ActionTree is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License
-# as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-
-# ActionTree is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
-
-# You should have received a copy of the GNU Lesser General Public License along with ActionTree.  If not, see <http://www.gnu.org/licenses/>.
+# Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
 import sys, os
 
-sys.path.insert(0, os.path.abspath('..'))
-from setup import version as setupVersion
+master_doc = "index"
+project = "ActionTree"
+author = '<a href="http://vincent-jacques.net/contact">Vincent Jacques</a>'
+copyright = "2013-2015 {}".format(author)
+extensions = []
 
-extensions = ['sphinx.ext.autodoc']
 
-# The suffix of source filenames.
-source_suffix = '.rst'
+nitpicky = True
+# nitpick_ignore
 
-# The master toctree document.
-master_doc = 'index'
 
-# General information about the project.
-project = u'ActionTree'
-copyright = u'2013, Vincent Jacques'
+# https://github.com/bitprophet/alabaster
+# html_theme_path
+extensions.append("alabaster")
+html_theme = "alabaster"
+html_sidebars = {
+    "**": ["about.html", "navigation.html", "searchbox.html"],
+}
+html_theme_options = {
+    "github_user": "jacquev6",
+    "github_repo": project,
+    "github_banner": True,
+    "travis_button": True,
+}
 
-# The version info for the project you're documenting, acts as replacement for
-# |version| and |release|, also used in various other places throughout the
-# built documents.
-#
-# The short X.Y version.
-version = setupVersion
-# The full version, including alpha/beta/rc tags.
-release = setupVersion
 
-autodoc_default_flags = ["members"]
-autodoc_member_order = "bysource"
+# http://sphinx-doc.org/ext/autodoc.html
+extensions.append("sphinx.ext.autodoc")
 autoclass_content = "both"
+autodoc_member_order = "bysource"
+autodoc_default_flags = ["members"]
+# autodoc_docstring_signature
+# autodoc_mock_imports
+add_module_names = False
+add_class_names = False
+
+
+# http://sphinx-doc.org/ext/doctest.html
+extensions.append("sphinx.ext.doctest")
+# doctest_path
+# doctest_global_setup
+# doctest_global_cleanup
+doctest_test_doctest_blocks=True
