@@ -3,14 +3,30 @@ python:
 - 2.7
 - 3.3
 - 3.4
+before_install:
+- sudo apt-get install libcairo2-dev
+- if [ "v${TRAVIS_PYTHON_VERSION%%.*}" == "v2" ];
+    then wget http://www.cairographics.org/releases/py2cairo-1.10.0.tar.bz2;
+  fi
+- if [ "v${TRAVIS_PYTHON_VERSION%%.*}" == "v3" ];
+    then wget http://www.cairographics.org/releases/pycairo-1.10.0.tar.bz2;
+  fi
 install:
+- tar xf py*cairo-1.10.0.tar.bz2
+- cd py*cairo-1.10.0
+- if [ "v$TRAVIS_PYTHON_VERSION" == "v3.4" ];
+    then export PYTHON_CONFIG=/opt/python/3.4.2/lib/python3.4/config-3.4m/python-config.py;
+  fi
+- ./waf configure --prefix=$(python -c "import sys; print(sys.prefix)")
+- ./waf build
+- ./waf install
+- cd ..
 - pip install sphinx coveralls
-- if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ]; then ln -s /usr/lib/python2.7/dist-packages/cairo ~/virtualenv/python2.7/lib/python2.7; fi
-- if [ "v$TRAVIS_PYTHON_VERSION" == "v3.3" ]; then ln -s /usr/lib/python3/dist-packages/cairo ~/virtualenv/python3.3/lib/python3.3; fi
-- if [ "v$TRAVIS_PYTHON_VERSION" == "v3.4" ]; then ln -s /usr/lib/python3/dist-packages/cairo ~/virtualenv/python3.4/lib/python3.4; fi
 script:
 - coverage run "--include=ActionTree/*" setup.py test
-- if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ]; then python setup.py build_sphinx --builder=doctest; fi
+- if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ];
+    then python setup.py build_sphinx --builder=doctest;
+  fi
 after_success:
 - coveralls
 deploy:
