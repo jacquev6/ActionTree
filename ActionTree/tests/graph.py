@@ -6,7 +6,7 @@ import unittest
 import MockMockMock
 import AnotherPyGraphvizAgain.Raw as gv
 
-from ActionTree.Drawings import ActionGraph
+from ActionTree.drawings import ActionGraph
 
 
 class Graph(unittest.TestCase):

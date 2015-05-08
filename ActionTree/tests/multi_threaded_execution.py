@@ -29,14 +29,14 @@ class MultiThreadedExecution(unittest.TestCase):
         self.mocks = MockMockMock.Engine()
 
     def __createMockedAction(self, name):
-        mock = self.mocks.create(name + "Mock")
+        mock = self.mocks.create(name)
         action = Action(ExecuteMock(mock.object), name)
         return action, mock
 
     def tearDown(self):
         self.mocks.tearDown()
 
-    def testManyDependencies(self):
+    def test_many_dependencies(self):
         #     a
         #    /|\
         #   / | \
@@ -46,9 +46,9 @@ class MultiThreadedExecution(unittest.TestCase):
         b, bMock = self.__createMockedAction("b")
         c, cMock = self.__createMockedAction("c")
         d, dMock = self.__createMockedAction("d")
-        a.addDependency(b)
-        a.addDependency(c)
-        a.addDependency(d)
+        a.add_dependency(b)
+        a.add_dependency(c)
+        a.add_dependency(d)
 
         with self.mocks.unordered:
             bMock.expect.begin()
@@ -63,7 +63,7 @@ class MultiThreadedExecution(unittest.TestCase):
 
         a.execute(jobs=-1)
 
-    def testDeepDependencies(self):
+    def test_deep_dependencies(self):
         #  a
         #  |
         #  b
@@ -82,11 +82,11 @@ class MultiThreadedExecution(unittest.TestCase):
         d, dMock = self.__createMockedAction("d")
         e, eMock = self.__createMockedAction("e")
         f, fMock = self.__createMockedAction("f")
-        a.addDependency(b)
-        b.addDependency(c)
-        c.addDependency(d)
-        d.addDependency(e)
-        e.addDependency(f)
+        a.add_dependency(b)
+        b.add_dependency(c)
+        c.add_dependency(d)
+        d.add_dependency(e)
+        e.add_dependency(f)
 
         fMock.expect.begin()
         fMock.expect.end()
@@ -103,7 +103,7 @@ class MultiThreadedExecution(unittest.TestCase):
 
         a.execute(jobs=3)
 
-    def testDiamondDependencies(self):
+    def test_diamond_dependencies(self):
         #     a
         #    / \
         #   b   c
@@ -114,10 +114,10 @@ class MultiThreadedExecution(unittest.TestCase):
         b, bMock = self.__createMockedAction("b")
         c, cMock = self.__createMockedAction("c")
         d, dMock = self.__createMockedAction("d")
-        a.addDependency(b)
-        a.addDependency(c)
-        b.addDependency(d)
-        c.addDependency(d)
+        a.add_dependency(b)
+        a.add_dependency(c)
+        b.add_dependency(d)
+        c.add_dependency(d)
 
         dMock.expect.begin()
         dMock.expect.end()
@@ -132,7 +132,7 @@ class MultiThreadedExecution(unittest.TestCase):
 
         a.execute(jobs=3)
 
-    def testHalfDiamondDependency(self):
+    def test_half_diamond_dependency(self):
         #     a
         #    /|
         #   b |
@@ -142,9 +142,9 @@ class MultiThreadedExecution(unittest.TestCase):
         a, aMock = self.__createMockedAction("a")
         b, bMock = self.__createMockedAction("b")
         d, dMock = self.__createMockedAction("d")
-        a.addDependency(b)
-        a.addDependency(d)
-        b.addDependency(d)
+        a.add_dependency(b)
+        a.add_dependency(d)
+        b.add_dependency(d)
 
         dMock.expect.begin()
         dMock.expect.end()

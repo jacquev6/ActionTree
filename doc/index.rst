@@ -4,16 +4,11 @@ ActionTree
 
 .. include:: ../README.rst
 
-User guide
-==========
 
-.. automodule:: ActionTree
+Contents
+========
 
-Reference
-=========
+.. toctree::
 
-.. autoclass:: Action
-    :members:
-
-.. autoclass:: CompoundException()
-    :members:
+    user_guide
+    reference

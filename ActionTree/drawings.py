@@ -6,7 +6,7 @@ import math
 import random
 import AnotherPyGraphvizAgain.Raw as gv
 
-from .Action import Action
+from .action import Action
 
 
 class ExecutionReport:

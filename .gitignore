@@ -7,3 +7,4 @@
 /doc/build/
 *.png
 /.eggs/
+/htmlcov/

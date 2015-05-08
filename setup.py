@@ -5,7 +5,7 @@
 
 import setuptools
 
-version = "0.4.1"
+version = "0.5.0"
 
 
 setuptools.setup(
@@ -14,7 +14,7 @@ setuptools.setup(
     description="Executes (long) actions in parallel, respecting dependencies between those actions",
     author="Vincent Jacques",
     author_email="vincent@vincent-jacques.net",
-    url="http://pythonhosted.org/ActionTree",
+    url="http://pythonhosted.org/ActionTree/",
     packages=setuptools.find_packages(),
     license="MIT",
     classifiers=[
@@ -33,7 +33,7 @@ setuptools.setup(
     ],
     install_requires=["AnotherPyGraphvizAgain"],
     tests_require=["MockMockMock"],
-    test_suite="ActionTree.tests.AllTests",
+    test_suite="ActionTree.tests",
     use_2to3=True,
     command_options={
         "build_sphinx": {

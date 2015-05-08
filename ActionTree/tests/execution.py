@@ -15,16 +15,16 @@ class Execution(unittest.TestCase):
         unittest.TestCase.setUp(self)
         self.mocks = MockMockMock.Engine()
 
-    def __createMockedAction(self, name):
-        mock = self.mocks.create(name + "Mock")
+    def __create_mocked_action(self, name):
+        mock = self.mocks.create(name)
         action = Action(mock.object, name)
         return action, mock
 
     def tearDown(self):
         self.mocks.tearDown()
 
-    def testSimpleExecution(self):
-        a, aMock = self.__createMockedAction("a")
+    def test_simple_execution(self):
+        a, aMock = self.__create_mocked_action("a")
 
         aMock.expect()
 
@@ -32,19 +32,19 @@ class Execution(unittest.TestCase):
         a.execute()
         self.assertEqual(a.status, Action.Successful)
 
-    def testManyDependencies(self):
+    def test_many_dependencies(self):
         #     a
         #    /|\
         #   / | \
         #  b  c  d
 
-        a, aMock = self.__createMockedAction("a")
-        b, bMock = self.__createMockedAction("b")
-        c, cMock = self.__createMockedAction("c")
-        d, dMock = self.__createMockedAction("d")
-        a.addDependency(b)
-        a.addDependency(c)
-        a.addDependency(d)
+        a, aMock = self.__create_mocked_action("a")
+        b, bMock = self.__create_mocked_action("b")
+        c, cMock = self.__create_mocked_action("c")
+        d, dMock = self.__create_mocked_action("d")
+        a.add_dependency(b)
+        a.add_dependency(c)
+        a.add_dependency(d)
 
         with self.mocks.unordered:
             bMock.expect()
@@ -54,7 +54,7 @@ class Execution(unittest.TestCase):
 
         a.execute()
 
-    def testDeepDependencies(self):
+    def test_deep_dependencies(self):
         #  a
         #  |
         #  b
@@ -67,17 +67,17 @@ class Execution(unittest.TestCase):
         #  |
         #  f
 
-        a, aMock = self.__createMockedAction("a")
-        b, bMock = self.__createMockedAction("b")
-        c, cMock = self.__createMockedAction("c")
-        d, dMock = self.__createMockedAction("d")
-        e, eMock = self.__createMockedAction("e")
-        f, fMock = self.__createMockedAction("f")
-        a.addDependency(b)
-        b.addDependency(c)
-        c.addDependency(d)
-        d.addDependency(e)
-        e.addDependency(f)
+        a, aMock = self.__create_mocked_action("a")
+        b, bMock = self.__create_mocked_action("b")
+        c, cMock = self.__create_mocked_action("c")
+        d, dMock = self.__create_mocked_action("d")
+        e, eMock = self.__create_mocked_action("e")
+        f, fMock = self.__create_mocked_action("f")
+        a.add_dependency(b)
+        b.add_dependency(c)
+        c.add_dependency(d)
+        d.add_dependency(e)
+        e.add_dependency(f)
 
         fMock.expect()
         eMock.expect()
@@ -88,21 +88,21 @@ class Execution(unittest.TestCase):
 
         a.execute()
 
-    def testDiamondDependencies(self):
+    def test_diamond_dependencies(self):
         #     a
         #    / \
         #   b   c
         #    \ /
         #     d
 
-        a, aMock = self.__createMockedAction("a")
-        b, bMock = self.__createMockedAction("b")
-        c, cMock = self.__createMockedAction("c")
-        d, dMock = self.__createMockedAction("d")
-        a.addDependency(b)
-        a.addDependency(c)
-        b.addDependency(d)
-        c.addDependency(d)
+        a, aMock = self.__create_mocked_action("a")
+        b, bMock = self.__create_mocked_action("b")
+        c, cMock = self.__create_mocked_action("c")
+        d, dMock = self.__create_mocked_action("d")
+        a.add_dependency(b)
+        a.add_dependency(c)
+        b.add_dependency(d)
+        c.add_dependency(d)
 
         dMock.expect()
         with self.mocks.unordered:
@@ -112,19 +112,19 @@ class Execution(unittest.TestCase):
 
         a.execute()
 
-    def testHalfDiamondDependency(self):
+    def test_half_diamond_dependency(self):
         #     a
         #    /|
         #   b |
         #    \|
         #     d
 
-        a, aMock = self.__createMockedAction("a")
-        b, bMock = self.__createMockedAction("b")
-        d, dMock = self.__createMockedAction("d")
-        a.addDependency(b)
-        a.addDependency(d)
-        b.addDependency(d)
+        a, aMock = self.__create_mocked_action("a")
+        b, bMock = self.__create_mocked_action("b")
+        d, dMock = self.__create_mocked_action("d")
+        a.add_dependency(b)
+        a.add_dependency(d)
+        b.add_dependency(d)
 
         dMock.expect()
         bMock.expect()
@@ -132,22 +132,22 @@ class Execution(unittest.TestCase):
 
         a.execute()
 
-    def testTwoDeepBranches(self):
+    def test_two_deep_branches(self):
         #     a
         #    / \
         #   b   c
         #   |   |
         #   d   e
 
-        a, aMock = self.__createMockedAction("a")
-        b, bMock = self.__createMockedAction("b")
-        c, cMock = self.__createMockedAction("c")
-        d, dMock = self.__createMockedAction("d")
-        e, eMock = self.__createMockedAction("e")
-        a.addDependency(b)
-        a.addDependency(c)
-        b.addDependency(d)
-        c.addDependency(e)
+        a, aMock = self.__create_mocked_action("a")
+        b, bMock = self.__create_mocked_action("b")
+        c, cMock = self.__create_mocked_action("c")
+        d, dMock = self.__create_mocked_action("d")
+        e, eMock = self.__create_mocked_action("e")
+        a.add_dependency(b)
+        a.add_dependency(c)
+        b.add_dependency(d)
+        c.add_dependency(e)
 
         with self.mocks.unordered:
             dMock.expect()

@@ -47,3 +47,9 @@ extensions.append("sphinx.ext.doctest")
 # doctest_global_setup
 # doctest_global_cleanup
 doctest_test_doctest_blocks=True
+
+
+# http://sphinx-doc.org/latest/ext/intersphinx.html
+extensions.append("sphinx.ext.intersphinx")
+intersphinx_mapping = {"python": ("https://docs.python.org/2", None)}
+# intersphinx_cache_limit

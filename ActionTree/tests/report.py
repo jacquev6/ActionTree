@@ -11,7 +11,7 @@ import hashlib
 import traceback
 
 import ActionTree
-from ActionTree.Drawings import ExecutionReport
+from ActionTree.drawings import ExecutionReport
 
 
 class Report(unittest.TestCase):

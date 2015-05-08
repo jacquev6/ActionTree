@@ -30,6 +30,12 @@ Questions? Remarks? Bugs? Want to contribute? `Open an issue <https://github.com
 .. image:: https://img.shields.io/pypi/v/ActionTree.svg
     :target: https://pypi.python.org/pypi/ActionTree
 
+.. image:: https://pypip.in/py_versions/ActionTree/badge.svg
+    :target: https://pypi.python.org/pypi/ActionTree
+
+.. image:: https://pypip.in/status/ActionTree/badge.svg
+    :target: https://pypi.python.org/pypi/ActionTree
+
 .. image:: https://img.shields.io/github/issues/jacquev6/ActionTree.svg
     :target: https://github.com/jacquev6/ActionTree/issues
 
@@ -49,12 +55,14 @@ Install from PyPI::
 
     $ pip install ActionTree
 
-.. Warning, these are NOT doctests because doctests aren't displayed on GitHub.
+Import:
 
-Import::
+>>> from ActionTree import *
+>>> from ActionTree.stock import *
 
-    >>> from ActionTree import *
+Execute some action:
 
-Execute some action::
-
-    @todoc
+>>> link = CallSubprocess(["g++", "-o", "test", "a.o", "b.o"])
+>>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/a.cpp", "-o", "a.o"]))
+>>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/b.cpp", "-o", "b.o"]))
+>>> link.execute(jobs=2)

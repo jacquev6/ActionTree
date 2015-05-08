@@ -13,17 +13,17 @@ class MultipleExecutions(unittest.TestCase):
         unittest.TestCase.setUp(self)
         self.mocks = MockMockMock.Engine()
 
-    def __createMockedAction(self, name):
-        mock = self.mocks.create(name + "Mock")
+    def __create_mocked_action(self, name):
+        mock = self.mocks.create(name)
         action = Action(mock.object, name)
         return action, mock
 
     def tearDown(self):
         self.mocks.tearDown()
 
-    def testSimpleSuccess(self):
+    def test_simple_success(self):
         repeat = 5
-        a, aMock = self.__createMockedAction("a")
+        a, aMock = self.__create_mocked_action("a")
 
         for i in range(repeat):
             aMock.expect()
@@ -32,12 +32,12 @@ class MultipleExecutions(unittest.TestCase):
             a.execute()
             self.assertEqual(a.status, Action.Successful)
 
-    def testFailureInMiddle(self):
-        a, aMock = self.__createMockedAction("a")
-        b, bMock = self.__createMockedAction("b")
-        c, cMock = self.__createMockedAction("c")
-        a.addDependency(b)
-        b.addDependency(c)
+    def test_failure_in_middle(self):
+        a, aMock = self.__create_mocked_action("a")
+        b, bMock = self.__create_mocked_action("b")
+        c, cMock = self.__create_mocked_action("c")
+        a.add_dependency(b)
+        b.add_dependency(c)
 
         repeat = 5
         for i in range(repeat):

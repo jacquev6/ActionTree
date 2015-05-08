@@ -1,0 +1,5 @@
+==========
+User guide
+==========
+
+.. automodule:: ActionTree

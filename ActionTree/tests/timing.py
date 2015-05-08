@@ -15,26 +15,23 @@ class Timing(unittest.TestCase):
 
         self.mocks = MockMockMock.Engine()
         self.m = self.mocks.create("m")
-        self.time = self.mocks.create("time")
-
+        self.time = self.mocks.replace("Action._time")
         self.a = Action(self.m.object, "timed")
-        self.oldTime = Action._time
-        Action._time = self.time.object
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
-        Action._time = self.oldTime
+        self.mocks.tearDown()
 
-    def testExecution(self):
+    def test_success(self):
         self.time.expect().andReturn(1352032735.2)
         self.m.expect()
         self.time.expect().andReturn(1352032737.1)
 
         self.a.execute()
-        self.assertEqual(self.a.beginTime, 1352032735.2)
-        self.assertEqual(self.a.endTime, 1352032737.1)
+        self.assertEqual(self.a.begin_time, 1352032735.2)
+        self.assertEqual(self.a.end_time, 1352032737.1)
 
-    def testFailure(self):
+    def test_failure(self):
         e = Exception()
 
         self.time.expect().andReturn(1352032735.2)
@@ -43,5 +40,5 @@ class Timing(unittest.TestCase):
 
         self.assertRaises(CompoundException, self.a.execute)
 
-        self.assertEqual(self.a.beginTime, 1352032735.2)
-        self.assertEqual(self.a.endTime, 1352032737.1)
+        self.assertEqual(self.a.begin_time, 1352032735.2)
+        self.assertEqual(self.a.end_time, 1352032737.1)
