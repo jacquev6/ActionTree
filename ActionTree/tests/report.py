@@ -2,13 +2,14 @@
 
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
-import unittest
 import cairo
-import MockMockMock
+import hashlib
 import io
 import os
-import hashlib
 import traceback
+import unittest
+
+import MockMockMock
 
 import ActionTree
 from ActionTree.drawings import ExecutionReport
