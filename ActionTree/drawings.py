@@ -26,8 +26,6 @@ class ExecutionReport:
             self.ordinate = 0
 
     def __init__(self, action):
-        self.__actions = []
-        self.__root = None
         self.__gather_information(action)
         self.__consolidate()
 
@@ -53,6 +51,8 @@ class ExecutionReport:
         self.__compute_ordinates()
 
     def __compute_ordinates(self):
+        # @todo Understand and comment.
+        # In particular, what happens when a dependency's ordinate is assigned several times?
         def compute(action, from_ordinate):
             action.ordinate = from_ordinate
             dependencies = sorted(action.dependencies, key=lambda d: d.end_time)
@@ -84,6 +84,8 @@ class ExecutionReport:
         :param cairo.Context ctx:
         :param int width: the width in logical units of the image to produce.
         """
+        # @todo Use Matplotlib instead of Cairo. Drawings will be more flexible and look nicer.
+        # http://stackoverflow.com/questions/7684475/plotting-labeled-intervals-in-matplotlib-gnuplot
         ctx.save()
 
         ctx.translate(10, 0)
