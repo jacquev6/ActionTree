@@ -6,15 +6,14 @@ Action
 ======
 
 .. automodule:: ActionTree.action
-    :members:
 
 .. toctree::
     :hidden:
 
     reference/stock
+    reference/drawings
 
 Exceptions
 ==========
 
 .. automodule:: ActionTree.exceptions
-    :members:

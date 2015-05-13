@@ -4,7 +4,7 @@
 
 import math
 import random
-import AnotherPyGraphvizAgain.Raw as gv
+import graphviz
 
 from .action import Action
 
@@ -115,21 +115,29 @@ class ExecutionReport:
         ctx.restore()
 
 
-class ActionGraph(gv.Graph):
+class GraphBuilder(object):
     def __init__(self, action):
-        gv.Graph.__init__(self, "action")
-        self.nodeAttr.set("shape", "box")
+        self.__nodes = dict()
+        self.__next_node = 0
+        self.graph = graphviz.Digraph("action", node_attr={"shape": "box"})
+        self.__create_node(action)
 
-        self.__seenNodes = dict()
-        self.__nextNodeId = 0
-        self.__createNode(action)
+    def __create_node(self, a):
+        if id(a) not in self.__nodes:
+            node = str(self.__next_node)
+            label = str(a.label)
+            self.graph.node(node, label)
+            self.__next_node += 1
+            for d in a.get_dependencies():
+                self.graph.edge(node, self.__create_node(d))
+            self.__nodes[id(a)] = node
+        return self.__nodes[id(a)]
 
-    def __createNode(self, a):
-        if id(a) not in self.__seenNodes:
-            node = gv.Node(str(self.__nextNodeId)).set("label", a.label or "")
-            self.__nextNodeId += 1
-            self.add(node)
-            for d in a.getDependencies():
-                self.add(gv.Link(node, self.__createNode(d)))
-            self.__seenNodes[id(a)] = node
-        return self.__seenNodes[id(a)]
+
+def make_graph(action, format="png"):
+    """
+    Build a :class:`graphviz.Digraph` representing the action and its dependencies.
+    """
+    g = GraphBuilder(action).graph
+    g.format = format
+    return g

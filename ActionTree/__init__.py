@@ -74,6 +74,21 @@ Say you want to compile two C++ files and link them:
 >>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/a.cpp", "-o", "a.o"]))
 >>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/b.cpp", "-o", "b.o"]))
 >>> link.execute(jobs=2)
+
+Drawings
+========
+
+You can easily draw a graph of your action and its dependencies with :func:`.make_graph`:
+
+>>> from ActionTree.drawings import make_graph
+>>> g = make_graph(concat)
+>>> g.render(directory="doc/doctest", filename="concat")
+'doc/doctest/concat.png'
+
+.. figure:: doctest/concat.png
+    :align: center
+
+    ``doc/doctest/concat.png``
 """
 
 from .action import Action
