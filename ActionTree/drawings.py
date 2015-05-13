@@ -3,17 +3,24 @@
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
 import math
+
+import cairo
 import graphviz
 
 from . import Action
 
 
 class ExecutionReport:
+    """
+    Draw a report of the execution of the action, showing successes and failures as well as timing information.
+
+    :param Action action: the subject of the report.
+    """
     class Action:
-        def __init__(self, label, beginTime, endTime, status):
+        def __init__(self, label, begin_time, end_time, status):
             self.label = label
-            self.beginTime = beginTime
-            self.endTime = endTime
+            self.begin_time = begin_time
+            self.end_time = end_time
             self.status = status
             self.dependencies = []
             self.ordinate = 0
@@ -21,69 +28,107 @@ class ExecutionReport:
     def __init__(self, action):
         self.__actions = []
         self.__root = None
-        self.__gatherInformation(action)
+        self.__gather_information(action)
         self.__consolidate()
 
-    def __gatherInformation(self, root):
-        seenActions = {}
+    def __gather_information(self, root):
+        seen_actions = {}
 
         def create(action):
-            actionId = id(action)
-            if actionId not in seenActions:
-                a = ExecutionReport.Action(str(action.label), action.beginTime, action.endTime, action.status)
-                seenActions[actionId] = a
-                for dependency in action.getDependencies():
+            action_id = id(action)
+            if action_id not in seen_actions:
+                a = ExecutionReport.Action(str(action.label), action.begin_time, action.end_time, action.status)
+                seen_actions[action_id] = a
+                for dependency in action.get_dependencies():
                     a.dependencies.append(create(dependency))
-            return seenActions[actionId]
+            return seen_actions[action_id]
 
         self.__root = create(root)
-        self.__actions = list(seenActions.values())
+        self.__actions = list(seen_actions.values())
 
     def __consolidate(self):
-        self.__beginTime = math.floor(min(a.beginTime for a in self.__actions))
-        self.__endTime = math.ceil(max(a.endTime for a in self.__actions))
-        self.__duration = self.__endTime - self.__beginTime
-        self.__computeOrdinates()
+        self.__begin_time = math.floor(min(a.begin_time for a in self.__actions))
+        self.__end_time = math.ceil(max(a.end_time for a in self.__actions))
+        self.__duration = self.__end_time - self.__begin_time
+        self.__compute_ordinates()
 
-    def __computeOrdinates(self):
-        def compute(action, fromOrdinate):
-            action.ordinate = fromOrdinate
-            dependencies = sorted(action.dependencies, key=lambda d: d.endTime)
+    def __compute_ordinates(self):
+        def compute(action, from_ordinate):
+            action.ordinate = from_ordinate
+            dependencies = sorted(action.dependencies, key=lambda d: d.end_time)
             for i, d in enumerate(dependencies):
-                compute(d, fromOrdinate - (i + 1) * 20)
+                compute(d, from_ordinate - (i + 1) * 20)
         compute(self.__root, 20 * (len(self.__actions) - 1))
 
-    def getHeight(self, ctx):
-        return 10 + len(self.__actions) * 20
+    def write_to_png(self, fobj, width=800):
+        """
+        Write the report as a PNG image.
 
-    def draw(self, ctx, width):
+        :param fobj: a file name or an open file, passed to :meth:`cairo.Surface.write_to_png`.
+        :param int width: the width in pixel of the image to produce. (Its height will be computed internaly.)
+        """
+        height = self.get_height(cairo.Context(cairo.ImageSurface(cairo.FORMAT_RGB24, 1, 1)))
+        image = cairo.ImageSurface(cairo.FORMAT_RGB24, width, height)
+        ctx = cairo.Context(image)
+        ctx.set_source_rgb(1, 1, 1)
+        ctx.paint()
+        ctx.set_source_rgb(0, 0, 0)
+        self.draw(ctx, width)
+        image.write_to_png(fobj)
+
+    def draw(self, ctx, width=800):
+        """
+        Draw the report to a :class:`cairo.Context`.
+        You'll probably want to use :meth:`get_height` to know what will be inked.
+
+        :param cairo.Context ctx:
+        :param int width: the width in logical units of the image to produce.
+        """
         ctx.save()
 
         ctx.translate(10, 0)
         ctx.scale((width - 20) / self.__duration, 1)
-        ctx.translate(-self.__beginTime, 0)
+        ctx.translate(-self.__begin_time, 0)
 
-        self.__drawTimeLine(ctx)
+        self.__draw_time_line(ctx)
         ctx.translate(0, 10)
 
         for action in self.__actions:
-            self.__drawAction(action, ctx, width)
+            self.__draw_action(action, ctx, width)
 
         ctx.restore()
 
-    def __drawTimeLine(self, ctx):
-        ctx.move_to(self.__beginTime, 5)
-        ctx.line_to(self.__endTime, 5)
+    def get_height(self, ctx):
+        """
+        Return the height that would be occupied by the report if drawn on ``ctx``.
+
+        Typical usage::
+
+            width = 800
+            height = report.get_height(cairo.Context(cairo.ImageSurface(cairo.FORMAT_RGB24, 1, 1)))
+            image = cairo.ImageSurface(cairo.FORMAT_RGB24, width, height)
+            ctx = cairo.Context(image)
+            report.draw(ctx, width)
+
+        (But :meth:`write_to_png` does that for you, so this method is useful to draw on an arbitrary :class:`cairo.Context`.)
+
+        :param cairo.Context ctx:
+        """
+        return 10 + len(self.__actions) * 20
+
+    def __draw_time_line(self, ctx):
+        ctx.move_to(self.__begin_time, 5)
+        ctx.line_to(self.__end_time, 5)
         ctx.stroke()
 
-    def __drawAction(self, action, ctx, width):
+    def __draw_action(self, action, ctx, width):
         ctx.save()
         ctx.translate(0, action.ordinate)
 
         ctx.save()
         ctx.set_line_width(4)
-        ctx.move_to(action.beginTime, 18)
-        ctx.line_to(action.endTime, 18)
+        ctx.move_to(action.begin_time, 18)
+        ctx.line_to(action.end_time, 18)
         if action.status == Action.Successful:
             ctx.set_source_rgb(0, 0, 0)
         elif action.status == Action.Canceled:
@@ -95,15 +140,15 @@ class ExecutionReport:
 
         ctx.save()
         for d in action.dependencies:
-            ctx.move_to(action.beginTime, 18)
-            ctx.line_to(d.endTime, d.ordinate - action.ordinate + 18)
+            ctx.move_to(action.begin_time, 18)
+            ctx.line_to(d.end_time, d.ordinate - action.ordinate + 18)
         ctx.set_line_width(1)
         ctx.identity_matrix()
         ctx.set_source_rgb(0.7, 0.7, 0.7)
         ctx.stroke()
         ctx.restore()
 
-        ctx.move_to(action.beginTime, 15)
+        ctx.move_to(action.begin_time, 15)
         ctx.save()
         ctx.identity_matrix()
         ctx.set_font_size(15)

@@ -21,15 +21,8 @@ class ReportTestCase(TestCaseWithMocks):
     # Expect several digests because cairo may not produce exactly the same file on
     # all platorms and versions
     def __check_drawing(self, a, width, *allowedDigests):
-        testName = None
-        for (_, _, functionName, _) in traceback.extract_stack():
-            if functionName.startswith("test"):
-                testName = "Report." + functionName
-                break
-        self.assertIsNot(testName, None)
-
         r = ExecutionReport(a)
-        height = r.getHeight(cairo.Context(cairo.ImageSurface(cairo.FORMAT_RGB24, 1, 1)))
+        height = r.get_height(cairo.Context(cairo.ImageSurface(cairo.FORMAT_RGB24, 1, 1)))
 
         image = cairo.ImageSurface(cairo.FORMAT_RGB24, width, height)
         ctx = cairo.Context(image)
@@ -41,20 +34,20 @@ class ReportTestCase(TestCaseWithMocks):
         image.write_to_png(f)
         digest = hashlib.md5(f.getvalue()).hexdigest()
         if digest not in allowedDigests:
-            fileName = os.path.join("ActionTree", "tests", "drawings", testName + "." + digest + ".png")
+            fileName = os.path.join("ActionTree", "tests", "drawings", self._testMethodName + "." + digest + ".png")
             with open(fileName, "wb") as png:
                 png.write(f.getvalue())
             self.assertTrue(False, "Check file " + fileName + ".")
         f.close()
 
-    def __create_mocked_action(self, name, label, dependencies, beginTime, endTime, status):
+    def __create_mocked_action(self, name, label, dependencies, begin_time, end_time, status):
         # @todo Use namedtuples instead of mocks
         a = self.mocks.create(name)
         a.expect.label.andReturn(label)
-        a.expect.beginTime.andReturn(beginTime)
-        a.expect.endTime.andReturn(endTime)
+        a.expect.begin_time.andReturn(begin_time)
+        a.expect.end_time.andReturn(end_time)
         a.expect.status.andReturn(status)
-        a.expect.getDependencies().andReturn(dependencies)
+        a.expect.get_dependencies().andReturn(dependencies)
         return a.object
 
     def test_complex_label(self):

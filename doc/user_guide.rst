@@ -102,3 +102,15 @@ You can easily draw a graph of your action and its dependencies with :func:`.mak
     :align: center
 
     ``doc/doctest/concat.png``
+
+You can draw an execution report with :class:`.ExecutionReport`:
+
+>>> from ActionTree.drawings import ExecutionReport
+>>> r = ExecutionReport(link)
+>>> r.write_to_png("doc/doctest/link_report.png")
+
+
+.. figure:: doctest/link_report.png
+    :align: center
+
+    ``doc/doctest/link_report.png``

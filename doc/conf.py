@@ -54,5 +54,6 @@ extensions.append("sphinx.ext.intersphinx")
 intersphinx_mapping = {
     "python": ("https://docs.python.org/2/", None),
     "graphviz": ("http://graphviz.readthedocs.org/en/stable/", None),
+    "cairo": ("http://www.cairographics.org/documentation/pycairo/2/", None),
 }
 # intersphinx_cache_limit
