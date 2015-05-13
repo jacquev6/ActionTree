@@ -3,10 +3,9 @@
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
 import math
-import random
 import graphviz
 
-from .action import Action
+from . import Action
 
 
 class ExecutionReport:

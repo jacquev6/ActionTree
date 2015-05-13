@@ -2,18 +2,15 @@
 Reference
 =========
 
-Action
-======
+Core
+====
 
-.. automodule:: ActionTree.action
+.. automodule:: ActionTree
+
+Additions
+=========
 
 .. toctree::
-    :hidden:
 
     reference/stock
     reference/drawings
-
-Exceptions
-==========
-
-.. automodule:: ActionTree.exceptions

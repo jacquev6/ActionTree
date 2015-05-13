@@ -13,7 +13,7 @@ import subprocess
 import time
 from functools import partial
 
-from .action import Action
+from . import Action
 
 
 class NullAction(Action):

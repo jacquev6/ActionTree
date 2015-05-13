@@ -2,94 +2,225 @@
 
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
-"""
-Introduction
-============
-
-In ActionTree, you create the graph of the actions to be executed and then call the ``execute`` method of its root.
-
-For example, let's say you want to generate three files, and then concatenate them to a fourth file.
-
-Let's start by the utility functions, not related to ActionTree:
-
->>> def create_file(name):
-...   with open(name, "w") as f:
-...     f.write("This is {}\\n".format(name))
-
->>> def concat_files(files, name):
-...   with open(name, "w") as output:
-...     for file in files:
-...       with open(file) as input:
-...         output.write(input.read())
+import multiprocessing
+import threading
+import time
 
 
-Then, here is how you use them with ActionTree. Import it:
+class Action:
+    """
+    The main class of ActionTree.
+    An action to be started after all its dependencies are finished.
+    """
 
->>> from ActionTree import *
+    _time = time.time  # Allow static dependency injection. But keep it private.
 
-Create the graph of actions:
+    def __init__(self, execute, label):
+        """
+        :param callable execute: the function to execute the action
+        :param label: whatever you want to attach to the action. Can be retrieved by :attr:`label` and :meth:`get_preview`.
+        """
+        self.__execute = execute
+        self.__label = label
+        self.__dependencies = set()
+        self.__status = Action.Pending
 
->>> from functools import partial
+    @property
+    def status(self):
+        """
+        The status of the action.
 
->>> concat = Action(partial(concat_files, ["first", "second", "third"], "fourth"), "concat")
->>> concat.add_dependency(Action(partial(create_file, "first"), "create first"))
->>> concat.add_dependency(Action(partial(create_file, "second"), "create second"))
->>> concat.add_dependency(Action(partial(create_file, "third"), "create third"))
+        Possible values: :attr:`Pending`, :attr:`Successful`, :attr:`Failed`, :attr:`Canceled`.
+        """
+        return self.__status
 
-Execute the actions:
+    Pending = 0
+    "The initial :attr:`status`."
+    Successful = 1
+    "The :attr:`status` after a successful execution."
+    Canceled = 2
+    "The :attr:`status` after a failed execution where a dependency raised an exception."
+    Failed = 3
+    "The :attr:`status` after a failed execution whre this action raised an exception."
+    __Executing = 4
 
->>> concat.execute()
+    @property
+    def label(self):
+        """
+        The label passed to the constructor.
+        """
+        return self.__label
 
-You have no guaranty about the order of execution of the ``create_file`` actions,
-but you are sure that they are all finished before the ``concat_files`` action starts.
+    def add_dependency(self, dependency):
+        """
+        Add a dependency to be executed before this action.
+        Order of insertion of dependencies is not important.
 
-You can execute them in parallel, keeping the same guaranties:
+        :param Action dependency:
+        """
+        if self in dependency.__get_all_dependencies():
+            raise DependencyCycleException()
+        self.__dependencies.add(dependency)
 
->>> concat.execute(jobs=3)
+    def get_dependencies(self):
+        """
+        Return the list of this action's dependencies.
+        """
+        return list(self.__dependencies)
 
-Preview
-=======
+    def __get_all_dependencies(self):
+        dependencies = set([self])
+        for dependency in self.__dependencies:
+            dependencies |= dependency.__get_all_dependencies()
+        return dependencies
 
-If you just want to know what *would* be done, use :meth:`.Action.get_preview`:
+    def get_preview(self):
+        """
+        Return the labels of this action and its dependencies, in an order that could be the execution order.
+        """
+        return [action.__label for action in self.__get_possible_execution_order() if action.__label is not None]
 
->>> concat.get_preview()
-['create ...', 'create ...', 'create ...', 'concat']
+    def __get_possible_execution_order(self, seen_actions=set()):
+        actions = []
+        if self not in seen_actions:
+            seen_actions.add(self)
+            for dependency in self.__dependencies:
+                actions += dependency.__get_possible_execution_order(seen_actions)
+            actions.append(self)
+        return actions
 
-As said earlier, you have no guaranty about the order of the first three actions,
-so :meth:`~.Action.get_preview` returns one possible order.
+    def execute(self, jobs=1, keep_going=False):
+        """
+        Recursively execute this action's dependencies then this action.
 
-The values returned by :meth:`~.Action.get_preview` are the labels passed in the constructor of :class:`.Action`,
-so they can be anything you want, not just strings.
+        If dependencies raise exceptions, these exceptions are encapsulated in a :exc:`.CompoundException` and thrown.
 
-Stock actions
-=============
+        :param int jobs: number of actions to execute in parallel
+        :param bool keep_going: if True, then execution does not stop on first failure, but executes as many dependencies as possible.
+        """
+        if jobs <= 0:
+            jobs = multiprocessing.cpu_count() + 1
+        self.__reset_before_execution()
+        self.__do_execute(jobs, keep_going)
 
-ActionTree is shipped with some :mod:`~ActionTree.stock` actions for common tasks.
+    def __reset_before_execution(self):
+        self.__status = Action.Pending
+        for dependency in self.__dependencies:
+            dependency.__reset_before_execution()
 
-Say you want to compile two C++ files and link them:
+    def __do_execute(self, jobs, keep_going):
+        condition = threading.Condition()
+        exceptions = []
+        threads = []
+        for i in range(jobs):
+            thread = threading.Thread(target=self.__execute_in_one_thread, args=(condition, exceptions, keep_going))
+            thread.start()
+            threads.append(thread)
+        for thread in threads:
+            thread.join()
+        if len(exceptions) > 0:
+            self.__mark_canceled_actions()
+            raise CompoundException(exceptions)
 
->>> from ActionTree.stock import CallSubprocess
+    def __execute_in_one_thread(self, condition, exceptions, keep_going):
+        while not self.__is_finished():
+            self.__execute_one_action(condition, exceptions, keep_going)
 
->>> link = CallSubprocess(["g++", "-o", "test", "a.o", "b.o"])
->>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/a.cpp", "-o", "a.o"]))
->>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/b.cpp", "-o", "b.o"]))
->>> link.execute(jobs=2)
+    def __execute_one_action(self, condition, exceptions, keep_going):
+        with condition:
+            action = self.__wait_for_action_to_execute_now(condition)
+            if action is None:
+                return
+            go_on = self.__prepare_execution(action)
+        if go_on:
+            action.begin_time = Action._time()
+            try:
+                action.__execute()
+            except Exception as e:
+                with condition:
+                    action.__status = Action.Failed
+                    exceptions.append(e)
+                    if not keep_going and action is not self:
+                        self.__cancel_action(self)
+            finally:
+                action.end_time = Action._time()
+            with condition:
+                if action.__status != Action.Failed:
+                    action.__status = Action.Successful
+                condition.notify_all()
 
-Drawings
-========
+    def __wait_for_action_to_execute_now(self, condition):
+        action = None
+        while action is None:
+            action = self.__get_action_to_execute_now()
+            if self.__is_finished():
+                return None
+            if action is None:
+                condition.wait()
+        return action
 
-You can easily draw a graph of your action and its dependencies with :func:`.make_graph`:
+    ### Returns None in two cases:
+    ###  - when self is finished or failed
+    ###  - when nothing can be started yet, because dependencies are still being executed
+    def __get_action_to_execute_now(self):
+        if self.__status == Action.__Executing or self.__is_finished():
+            return None
+        for dependency in self.__dependencies:
+            action = dependency.__get_action_to_execute_now()
+            if action is not None:
+                return action
+        if all(dependency.__is_finished() for dependency in self.__dependencies):
+            return self
+        else:
+            return None
 
->>> from ActionTree.drawings import make_graph
->>> g = make_graph(concat)
->>> g.render(directory="doc/doctest", filename="concat")
-'doc/doctest/concat.png'
+    def __prepare_execution(self, action):
+        if any(d.__is_failure() for d in action.__dependencies):
+            self.__cancel_action(action)
+            return False
+        else:
+            action.__status = Action.__Executing
+            return True
 
-.. figure:: doctest/concat.png
-    :align: center
+    def __mark_canceled_actions(self):
+        for dependency in self.__dependencies:
+            dependency.__mark_canceled_actions()
+        if not self.__is_finished():
+            self.__cancel_action(self)
 
-    ``doc/doctest/concat.png``
-"""
+    def __cancel_action(self, action):
+        action.__status = Action.Canceled
+        action.begin_time = Action._time()
+        action.end_time = action.begin_time
 
-from .action import Action
-from .exceptions import CompoundException
+    def __is_finished(self):
+        return self.__status in [Action.Successful, Action.Failed, Action.Canceled]
+
+    def __is_failure(self):
+        return self.__status in [Action.Failed, Action.Canceled]
+
+
+class CompoundException(Exception):
+    """
+    Exception thrown by :meth:`.Action.execute` when a dependeny raises an exception.
+    """
+
+    def __init__(self, exceptions):
+        super(CompoundException, self).__init__(exceptions)
+        self.__exceptions = exceptions
+
+    @property
+    def exceptions(self):
+        """
+        The list of the encapsulated exceptions.
+        """
+        return self.__exceptions
+
+
+class DependencyCycleException(Exception):
+    """
+    Exception thrown by :meth:`.Action.add_dependency` when adding the new dependency would create a cycle.
+    """
+
+    def __init__(self):
+        super(DependencyCycleException, self).__init__("Dependency cycle")
