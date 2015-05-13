@@ -23,12 +23,12 @@ class ExecuteMock:
             self.__mock.end()
 
 
-class MultiThreadedExecution(unittest.TestCase):
+class MultiThreadedExecutionTestCase(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.mocks = MockMockMock.Engine()
 
-    def __createMockedAction(self, name):
+    def __create_mocked_action(self, name):
         mock = self.mocks.create(name)
         action = Action(ExecuteMock(mock.object), name)
         return action, mock
@@ -42,10 +42,10 @@ class MultiThreadedExecution(unittest.TestCase):
         #   / | \
         #  b  c  d
 
-        a, aMock = self.__createMockedAction("a")
-        b, bMock = self.__createMockedAction("b")
-        c, cMock = self.__createMockedAction("c")
-        d, dMock = self.__createMockedAction("d")
+        a, aMock = self.__create_mocked_action("a")
+        b, bMock = self.__create_mocked_action("b")
+        c, cMock = self.__create_mocked_action("c")
+        d, dMock = self.__create_mocked_action("d")
         a.add_dependency(b)
         a.add_dependency(c)
         a.add_dependency(d)
@@ -76,12 +76,12 @@ class MultiThreadedExecution(unittest.TestCase):
         #  |
         #  f
 
-        a, aMock = self.__createMockedAction("a")
-        b, bMock = self.__createMockedAction("b")
-        c, cMock = self.__createMockedAction("c")
-        d, dMock = self.__createMockedAction("d")
-        e, eMock = self.__createMockedAction("e")
-        f, fMock = self.__createMockedAction("f")
+        a, aMock = self.__create_mocked_action("a")
+        b, bMock = self.__create_mocked_action("b")
+        c, cMock = self.__create_mocked_action("c")
+        d, dMock = self.__create_mocked_action("d")
+        e, eMock = self.__create_mocked_action("e")
+        f, fMock = self.__create_mocked_action("f")
         a.add_dependency(b)
         b.add_dependency(c)
         c.add_dependency(d)
@@ -110,10 +110,10 @@ class MultiThreadedExecution(unittest.TestCase):
         #    \ /
         #     d
 
-        a, aMock = self.__createMockedAction("a")
-        b, bMock = self.__createMockedAction("b")
-        c, cMock = self.__createMockedAction("c")
-        d, dMock = self.__createMockedAction("d")
+        a, aMock = self.__create_mocked_action("a")
+        b, bMock = self.__create_mocked_action("b")
+        c, cMock = self.__create_mocked_action("c")
+        d, dMock = self.__create_mocked_action("d")
         a.add_dependency(b)
         a.add_dependency(c)
         b.add_dependency(d)
@@ -139,9 +139,9 @@ class MultiThreadedExecution(unittest.TestCase):
         #    \|
         #     d
 
-        a, aMock = self.__createMockedAction("a")
-        b, bMock = self.__createMockedAction("b")
-        d, dMock = self.__createMockedAction("d")
+        a, aMock = self.__create_mocked_action("a")
+        b, bMock = self.__create_mocked_action("b")
+        d, dMock = self.__create_mocked_action("d")
         a.add_dependency(b)
         a.add_dependency(d)
         b.add_dependency(d)

@@ -10,7 +10,7 @@ import MockMockMock
 from ActionTree import Action
 
 
-class Execution(unittest.TestCase):
+class ExecutionTestCase(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.mocks = MockMockMock.Engine()

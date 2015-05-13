@@ -8,7 +8,7 @@ import MockMockMock
 from ActionTree import Action, CompoundException
 
 
-class MultipleExecutions(unittest.TestCase):
+class MultipleExecutionsTestCase(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.mocks = MockMockMock.Engine()

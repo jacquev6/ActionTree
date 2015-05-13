@@ -9,7 +9,7 @@ import MockMockMock
 from ActionTree import Action, CompoundException
 
 
-class Timing(unittest.TestCase):
+class TimingTestCase(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
 

@@ -7,14 +7,14 @@ import unittest
 from ActionTree import Action
 
 
-class DependencyCycle(unittest.TestCase):
-    def testSelfDependency(self):
+class DependencyCycleTestCase(unittest.TestCase):
+    def test_self_dependency(self):
         a = Action(lambda: 0, "a")
         with self.assertRaises(Exception) as cm:
             a.add_dependency(a)
         self.assertEqual(cm.exception.args[0], "Dependency cycle")
 
-    def testShortCycle(self):
+    def test_short_cycle(self):
         a = Action(lambda: 0, "a")
         b = Action(lambda: 0, "b")
         a.add_dependency(b)
@@ -22,7 +22,7 @@ class DependencyCycle(unittest.TestCase):
             b.add_dependency(a)
         self.assertEqual(cm.exception.args[0], "Dependency cycle")
 
-    def testLongCycle(self):
+    def test_long_cycle(self):
         a = Action(lambda: 0, "a")
         b = Action(lambda: 0, "b")
         c = Action(lambda: 0, "c")

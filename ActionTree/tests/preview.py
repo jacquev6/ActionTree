@@ -7,7 +7,7 @@ import unittest
 from ActionTree import Action
 
 
-class Preview(unittest.TestCase):
+class PreviewTestCase(unittest.TestCase):
     def test_get_dependencies_and_labels_are_not_only_equal_but_same(self):
         bLabel = ("b",)
         a = Action(lambda: 0, "a")
