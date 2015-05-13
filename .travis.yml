@@ -22,6 +22,7 @@ install:
 - ./waf install
 - cd ..
 - pip install sphinx coveralls
+- pip install graphviz
 script:
 - coverage run "--include=ActionTree/*" setup.py test
 - if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ];
