@@ -114,9 +114,11 @@ class ExecutionReport:
 
         :param cairo.Context ctx:
         """
+        # @todo Compute a proper height based on size of font used for labels
         return 10 + len(self.__actions) * 20
 
     def __draw_time_line(self, ctx):
+        # @todo Draw ticks and label them
         ctx.move_to(self.__begin_time, 5)
         ctx.line_to(self.__end_time, 5)
         ctx.stroke()

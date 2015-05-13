@@ -109,6 +109,7 @@ You can draw an execution report with :class:`.ExecutionReport`:
 >>> r = ExecutionReport(link)
 >>> r.write_to_png("doc/doctest/link_report.png")
 
+@todo Understand why, in the next figure, the actions are not aligned to the left. Fix.
 
 .. figure:: doctest/link_report.png
     :align: center
