@@ -47,6 +47,20 @@ You can execute them in parallel, keeping the same guaranties:
 
 >>> concat.execute(jobs=3)
 
+Preview
+=======
+
+If you just want to know what *would* be done, use :meth:`.Action.get_preview`:
+
+>>> concat.get_preview()
+['create ...', 'create ...', 'create ...', 'concat']
+
+As said earlier, you have no guaranty about the order of the first three actions,
+so :meth:`~.Action.get_preview` returns one possible order.
+
+The values returned by :meth:`~.Action.get_preview` are the labels passed in the constructor of :class:`.Action`,
+so they can be anything you want, not just strings.
+
 Stock actions
 =============
 
