@@ -20,25 +20,18 @@ class ReportTestCase(TestCaseWithMocks):
 
     # Expect several digests because cairo may not produce exactly the same file on
     # all platorms and versions
-    def __check_drawing(self, a, width, *allowedDigests):
-        r = ExecutionReport(a)
-        height = r.get_height(cairo.Context(cairo.ImageSurface(cairo.FORMAT_RGB24, 1, 1)))
-
-        image = cairo.ImageSurface(cairo.FORMAT_RGB24, width, height)
-        ctx = cairo.Context(image)
-        ctx.set_source_rgb(1, 1, 1)
-        ctx.paint()
-        ctx.set_source_rgb(0, 0, 0)
-        r.draw(ctx, width)
+    def __check_drawing(self, a, width, *allowed_digests):
         f = io.BytesIO()
-        image.write_to_png(f)
+        ExecutionReport(a).write_to_png(f, width)
         digest = hashlib.md5(f.getvalue()).hexdigest()
-        if digest not in allowedDigests:
-            fileName = os.path.join("ActionTree", "tests", "drawings", self._testMethodName + "." + digest + ".png")
-            with open(fileName, "wb") as png:
-                png.write(f.getvalue())
-            self.assertTrue(False, "Check file " + fileName + ".")
-        f.close()
+        if digest not in allowed_digests:
+            self.__save_drawing_to_check(f, digest)  # pragma no cover (Test code)
+
+    def __save_drawing_to_check(self, f, digest):  # pragma no cover (Test code)
+        file_name = os.path.join("ActionTree", "tests", "drawings", "{}.{}.png".format(self._testMethodName, digest))
+        with open(file_name, "wb") as png:
+            png.write(f.getvalue())
+        self.fail("Check file {}.".format(file_name))
 
     def __create_mocked_action(self, name, label, dependencies, begin_time, end_time, status):
         # @todo Use namedtuples instead of mocks
