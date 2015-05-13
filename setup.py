@@ -5,7 +5,7 @@
 
 import setuptools
 
-version = "0.5.0"
+version = "0.6.0"
 
 
 setuptools.setup(
@@ -31,7 +31,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.4",
         "Topic :: Software Development",
     ],
-    install_requires=["AnotherPyGraphvizAgain"],
+    install_requires=["graphviz"],
     tests_require=["MockMockMock"],
     test_suite="ActionTree.tests",
     use_2to3=True,

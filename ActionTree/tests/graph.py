@@ -2,10 +2,12 @@
 
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
+import textwrap
 import unittest
+
 import MockMockMock
 
-from ActionTree.drawings import ActionGraph
+from ActionTree.drawings import make_graph
 
 
 class GraphTestCase(unittest.TestCase):
@@ -21,22 +23,32 @@ class GraphTestCase(unittest.TestCase):
     def __create_mocked_action(self, name, label, dependencies):
         a = self.mocks.create(name)
         a.expect.label.andReturn(label)
-        a.expect.getDependencies().andReturn(dependencies)
+        a.expect.get_dependencies().andReturn(dependencies)
         return a.object
 
     def __assert_graph_equal(self, a, g):
-        self.assertEqual(ActionGraph(a).dotString(), g)
+        self.assertEqual(make_graph(a).source, g)
 
     def test_single_action(self):
         a = self.__create_mocked_action("a", "a", [])
 
-        self.__assert_graph_equal(a, 'digraph "action" {node [shape="box"];0[label="a"];}')
+        self.__assert_graph_equal(a, textwrap.dedent("""\
+            digraph action {
+            \tnode [shape=box]
+            \t\t0 [label=a]
+            }"""))
 
     def test_dependency(self):
         b = self.__create_mocked_action("b", "b", [])
         a = self.__create_mocked_action("a", "a", [b])
 
-        self.__assert_graph_equal(a, 'digraph "action" {node [shape="box"];0[label="a"];1[label="b"];0->1;}')
+        self.__assert_graph_equal(a, textwrap.dedent("""\
+            digraph action {
+            \tnode [shape=box]
+            \t\t0 [label=a]
+            \t\t1 [label=b]
+            \t\t\t0 -> 1
+            }"""))
 
     def test_diamond(self):
         a = self.__create_mocked_action("a", "a", [])
@@ -44,4 +56,15 @@ class GraphTestCase(unittest.TestCase):
         c = self.__create_mocked_action("c", "c", [a])
         d = self.__create_mocked_action("d", "d", [b, c])
 
-        self.__assert_graph_equal(d, 'digraph "action" {node [shape="box"];0[label="d"];1[label="b"];2[label="a"];3[label="c"];0->1;0->3;1->2;3->2;}')
+        self.__assert_graph_equal(d, textwrap.dedent("""\
+            digraph action {
+            \tnode [shape=box]
+            \t\t0 [label=d]
+            \t\t1 [label=b]
+            \t\t2 [label=a]
+            \t\t\t1 -> 2
+            \t\t\t0 -> 1
+            \t\t3 [label=c]
+            \t\t\t3 -> 2
+            \t\t\t0 -> 3
+            }"""))
