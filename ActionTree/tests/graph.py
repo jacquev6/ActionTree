@@ -4,7 +4,6 @@
 
 import unittest
 import MockMockMock
-import AnotherPyGraphvizAgain.Raw as gv
 
 from ActionTree.drawings import ActionGraph
 
@@ -26,36 +25,18 @@ class GraphTestCase(unittest.TestCase):
         return a.object
 
     def __assert_graph_equal(self, a, g):
-        self.assertEqual(ActionGraph(a).dotString(), g.dotString())
-
-    def __create_empty_graph(self):
-        g = gv.Graph("action")
-        g.nodeAttr.set("shape", "box")
-        return g
-
-    def __createNode(self, id, name):
-        return gv.Node(str(id)).set("label", name)
+        self.assertEqual(ActionGraph(a).dotString(), g)
 
     def test_single_action(self):
         a = self.__create_mocked_action("a", "a", [])
 
-        g = self.__create_empty_graph()
-        aN = self.__createNode(0, "a")
-        g.add(aN)
-
-        self.__assert_graph_equal(a, g)
+        self.__assert_graph_equal(a, 'digraph "action" {node [shape="box"];0[label="a"];}')
 
     def test_dependency(self):
         b = self.__create_mocked_action("b", "b", [])
         a = self.__create_mocked_action("a", "a", [b])
 
-        aN = self.__createNode(0, "a")
-        bN = self.__createNode(1, "b")
-        g = self.__create_empty_graph()
-        g.add(aN).add(bN)
-        g.add(gv.Link(aN, bN))
-
-        self.__assert_graph_equal(a, g)
+        self.__assert_graph_equal(a, 'digraph "action" {node [shape="box"];0[label="a"];1[label="b"];0->1;}')
 
     def test_diamond(self):
         a = self.__create_mocked_action("a", "a", [])
@@ -63,13 +44,4 @@ class GraphTestCase(unittest.TestCase):
         c = self.__create_mocked_action("c", "c", [a])
         d = self.__create_mocked_action("d", "d", [b, c])
 
-        g = self.__create_empty_graph()
-        aN = self.__createNode(2, "a")
-        bN = self.__createNode(1, "b")
-        cN = self.__createNode(3, "c")
-        dN = self.__createNode(0, "d")
-        g.add(aN).add(bN).add(cN).add(dN)
-        g.add(gv.Link(bN, aN)).add(gv.Link(cN, aN))
-        g.add(gv.Link(dN, bN)).add(gv.Link(dN, cN))
-
-        self.__assert_graph_equal(d, g)
+        self.__assert_graph_equal(d, 'digraph "action" {node [shape="box"];0[label="d"];1[label="b"];2[label="a"];3[label="c"];0->1;0->3;1->2;3->2;}')
