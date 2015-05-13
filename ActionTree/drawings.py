@@ -134,5 +134,10 @@ class GraphBuilder(object):
         return self.__nodes[id(a)]
 
 
-def make_graph(action):
-    return GraphBuilder(action).graph
+def make_graph(action, format="png"):
+    """
+    Build a :class:`graphviz.Digraph` representing the action and its dependencies.
+    """
+    g = GraphBuilder(action).graph
+    g.format = format
+    return g

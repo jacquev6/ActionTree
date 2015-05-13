@@ -37,7 +37,7 @@ autodoc_member_order = "bysource"
 autodoc_default_flags = ["members"]
 # autodoc_docstring_signature
 # autodoc_mock_imports
-add_module_names = False
+add_module_names = True
 add_class_names = False
 
 
@@ -51,5 +51,8 @@ doctest_test_doctest_blocks=True
 
 # http://sphinx-doc.org/latest/ext/intersphinx.html
 extensions.append("sphinx.ext.intersphinx")
-intersphinx_mapping = {"python": ("https://docs.python.org/2", None)}
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/2/", None),
+    "graphviz": ("http://graphviz.readthedocs.org/en/stable/", None),
+}
 # intersphinx_cache_limit

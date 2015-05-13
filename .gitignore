@@ -5,6 +5,5 @@
 /*.egg-info/
 /.coverage
 /doc/build/
-*.png
 /.eggs/
 /htmlcov/
