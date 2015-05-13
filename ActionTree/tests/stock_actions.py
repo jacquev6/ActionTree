@@ -4,25 +4,11 @@
 
 import datetime
 import errno
-import os
-import shutil
-import subprocess
 import unittest
-
-import MockMockMock
 
 from ActionTree.stock import *
 from ActionTree import CompoundException
-
-
-class TestCaseWithMocks(unittest.TestCase):
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.mocks = MockMockMock.Engine()
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.mocks.tearDown()
+from . import TestCaseWithMocks
 
 
 class CreateDirectoryTestCase(TestCaseWithMocks):

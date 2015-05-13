@@ -4,25 +4,16 @@
 
 import threading
 import time
-import unittest
-
-import MockMockMock
 
 from ActionTree import Action
+from . import TestCaseWithMocks
 
 
-class ExecutionTestCase(unittest.TestCase):
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.mocks = MockMockMock.Engine()
-
+class ExecutionTestCase(TestCaseWithMocks):
     def __create_mocked_action(self, name):
         mock = self.mocks.create(name)
         action = Action(mock.object, name)
         return action, mock
-
-    def tearDown(self):
-        self.mocks.tearDown()
 
     def test_simple_execution(self):
         a, aMock = self.__create_mocked_action("a")

@@ -7,23 +7,16 @@ import hashlib
 import io
 import os
 import traceback
-import unittest
-
-import MockMockMock
 
 import ActionTree
 from ActionTree.drawings import ExecutionReport
+from . import TestCaseWithMocks
 
 
-class ReportTestCase(unittest.TestCase):
+class ReportTestCase(TestCaseWithMocks):
     def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.actionMocks = MockMockMock.Engine()
-        self.actionMocks.unordered  # @todo in MockMockMock, find a better syntax to use grouping without "with" keyword
-
-    def tearDown(self):
-        self.actionMocks.tearDown()
-        unittest.TestCase.tearDown(self)
+        super(ReportTestCase, self).setUp()
+        self.mocks.unordered  # @todo in MockMockMock, find a better syntax to use grouping without "with" keyword
 
     # Expect several digests because cairo may not produce exactly the same file on
     # all platorms and versions
@@ -55,7 +48,7 @@ class ReportTestCase(unittest.TestCase):
         f.close()
 
     def __create_mocked_action(self, name, label, dependencies, beginTime, endTime, status):
-        a = self.actionMocks.create(name)
+        a = self.mocks.create(name)
         a.expect.label.andReturn(label)
         a.expect.beginTime.andReturn(beginTime)
         a.expect.endTime.andReturn(endTime)

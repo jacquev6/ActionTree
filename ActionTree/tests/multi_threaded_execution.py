@@ -4,11 +4,9 @@
 
 import threading
 import time
-import unittest
-
-import MockMockMock
 
 from ActionTree import Action
+from . import TestCaseWithMocks
 
 
 class ExecuteMock:
@@ -24,18 +22,11 @@ class ExecuteMock:
             self.__mock.end()
 
 
-class MultiThreadedExecutionTestCase(unittest.TestCase):
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.mocks = MockMockMock.Engine()
-
+class MultiThreadedExecutionTestCase(TestCaseWithMocks):
     def __create_mocked_action(self, name):
         mock = self.mocks.create(name)
         action = Action(ExecuteMock(mock.object), name)
         return action, mock
-
-    def tearDown(self):
-        self.mocks.tearDown()
 
     def test_many_dependencies(self):
         #     a

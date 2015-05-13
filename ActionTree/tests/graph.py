@@ -3,22 +3,15 @@
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
 import textwrap
-import unittest
-
-import MockMockMock
 
 from ActionTree.drawings import make_graph
+from . import TestCaseWithMocks
 
 
-class GraphTestCase(unittest.TestCase):
+class GraphTestCase(TestCaseWithMocks):
     def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.mocks = MockMockMock.Engine()
+        super(GraphTestCase, self).setUp()
         self.mocks.unordered  # @todo in MockMockMock, find a better syntax to use grouping without "with" keyword
-
-    def tearDown(self):
-        self.mocks.tearDown()
-        unittest.TestCase.tearDown(self)
 
     def __create_mocked_action(self, name, label, dependencies):
         a = self.mocks.create(name)

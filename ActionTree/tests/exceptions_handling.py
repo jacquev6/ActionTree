@@ -2,25 +2,15 @@
 
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
-import unittest
-
-import MockMockMock
-
 from ActionTree import Action, CompoundException
+from . import TestCaseWithMocks
 
 
-class ExceptionsHandlingTestCase(unittest.TestCase):
-    def setUp(self):
-        unittest.TestCase.setUp(self)
-        self.mocks = MockMockMock.Engine()
-
+class ExceptionsHandlingTestCase(TestCaseWithMocks):
     def __create_mocked_action(self, name):
         mock = self.mocks.create(name)
         action = Action(mock.object, name)
         return action, mock
-
-    def tearDown(self):
-        self.mocks.tearDown()
 
     def test_simple_failure(self):
         a, aMock = self.__create_mocked_action("a")

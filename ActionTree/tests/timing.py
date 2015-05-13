@@ -2,25 +2,16 @@
 
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
-import unittest
-
-import MockMockMock
-
 from ActionTree import Action, CompoundException
+from . import TestCaseWithMocks
 
 
-class TimingTestCase(unittest.TestCase):
+class TimingTestCase(TestCaseWithMocks):
     def setUp(self):
-        unittest.TestCase.setUp(self)
-
-        self.mocks = MockMockMock.Engine()
+        super(TimingTestCase, self).setUp()
         self.m = self.mocks.create("m")
         self.time = self.mocks.replace("Action._time")
         self.a = Action(self.m.object, "timed")
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        self.mocks.tearDown()
 
     def test_success(self):
         self.time.expect().andReturn(1352032735.2)
