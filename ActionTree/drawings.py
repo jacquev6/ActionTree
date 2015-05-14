@@ -22,15 +22,19 @@ class ExecutionReport(object):
         self.end_time = max(a.end_time for a in self.actions)
         self.duration = self.end_time - self.begin_time
 
-    def __sort_actions(self, action):
+    def __sort_actions(self, root):
         # @todo Handle diamond dependencies
         seen = set()
-        if id(action) not in seen:
-            seen.add(id(action))
-            for d in sorted(action.dependencies, key=lambda a: a.end_time, reverse=True):
-                for a in self.__sort_actions(d):
-                    yield a
-            yield action
+
+        def walk(action):
+            if id(action) not in seen:
+                seen.add(id(action))
+                for d in sorted(action.dependencies, key=lambda d: d.end_time, reverse=True):
+                    for a in walk(d):
+                        yield a
+                yield action
+
+        return walk(root)
 
 
 def make_report(action):  # pragma no cover (Untestable? But small.)

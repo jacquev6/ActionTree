@@ -90,7 +90,7 @@ class ExecutionReportVisualTestCase(unittest.TestCase):
         yield MockAction(
             "a",
             [
-                MockAction("b", [x], 2, 3, successful),
+                MockAction("b", [x, MockAction("y", [], 0, 2, successful)], 2, 3, successful),
                 MockAction("c", [x], 1, 4, successful),
             ],
             4, 5,
@@ -99,12 +99,13 @@ class ExecutionReportVisualTestCase(unittest.TestCase):
 
         # Triamond?
         x = MockAction("x", [], 0, 1, successful)
+        y = MockAction("y", [], 0, 2, successful)
         yield MockAction(
             "a",
             [
-                MockAction("b", [x], 2, 3, successful),
+                MockAction("b", [x, y], 2, 3, successful),
                 MockAction("c", [x], 1, 4, successful),
-                MockAction("d", [x], 2, 5, successful),
+                MockAction("d", [x, y], 2, 5, successful),
             ],
             5, 6,
             successful
