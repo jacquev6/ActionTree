@@ -17,24 +17,38 @@ from . import Action
 class ExecutionReport(object):
     def __init__(self, action):
         self.root_action = action
-        self.actions = list(self.__sort_actions(action))
+        self.actions = self.__sort_actions(action)
         self.begin_time = min(a.begin_time for a in self.actions)
         self.end_time = max(a.end_time for a in self.actions)
         self.duration = self.end_time - self.begin_time
 
     def __sort_actions(self, root):
-        # @todo Handle diamond dependencies
-        seen = set()
-
+        actions = []
+        dependents = {}
         def walk(action):
-            if id(action) not in seen:
-                seen.add(id(action))
-                for d in sorted(action.dependencies, key=lambda d: d.end_time, reverse=True):
-                    for a in walk(d):
-                        yield a
-                yield action
+            if action not in actions:
+                actions.append(action)
+                for d in action.dependencies:
+                    dependents.setdefault(id(d), set()).add(id(action))
+                    walk(d)
+        walk(root)
 
-        return walk(root)
+        ordinates = {}
+        def compute(action, ordinate):
+            ordinates[id(action)] = ordinate
+            for d in sorted(action.dependencies, key=lambda d: d.end_time):
+                if len(dependents[id(d)]) == 1:
+                    ordinate = compute(d, ordinate - 1)
+                else:
+                    dependents[id(d)].remove(id(action))
+            return ordinate
+        last_ordinate = compute(root, len(actions) - 1)
+
+        assert last_ordinate == 0
+        assert sorted(ordinates.values()) == range(len(actions))
+
+        return sorted(actions, key=lambda a: ordinates[id(a)])
+        # @todo Maybe count intersections and do a local search (two-three steps) to find if we can remove some of them.
 
 
 def make_report(action):  # pragma no cover (Untestable? But small.)
