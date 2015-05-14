@@ -15,7 +15,7 @@ from . import Action
 
 # @todo Capture last execution in an immutable copy of the action.
 # Currently "a.execute(); r = make_report(a); a.execute()" will modify (and invalidate if timing changes a lot) the report.
-# Same for Graph? Yes if we implement the Graph class as suggested in following todo.
+# Same for Graph? Yes if we stop building the Graphviz graph in the ctor.
 # Adding a new dependency would be reflected in the graph after its creation.
 
 
