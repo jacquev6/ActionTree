@@ -133,6 +133,11 @@ class GraphBuilder(object):
         return self.__nodes[id(a)]
 
 
+# @todo Should there be a class Graph with a method get_graphviz_graph?
+# This would allow implementing graphs in other libraries without creating more free functions.
+# Same for execution reports.
+
+
 def make_graph(action, format="png"):
     """
     Build a :class:`graphviz.Digraph` representing the action and its dependencies.
