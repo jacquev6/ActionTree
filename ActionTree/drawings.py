@@ -2,116 +2,133 @@
 
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
-import math
+import datetime
+
 import graphviz
+import matplotlib.dates
+import matplotlib.figure as mpl
 
 from . import Action
 
 
-class ExecutionReport:
-    class Action:
-        def __init__(self, label, beginTime, endTime, status):
-            self.label = label
-            self.beginTime = beginTime
-            self.endTime = endTime
-            self.status = status
-            self.dependencies = []
-            self.ordinate = 0
+# @todo Capture last execution in an immutable copy of the action.
+# Currently "a.execute(); r = make_report(a); a.execute()" will modify (and invalidate if timing changes a lot) the report.
+# Same for Graph? Yes if we implement the Graph class as suggested in following todo.
+# Adding a new dependency would be reflected in the graph after its creation.
 
-    def __init__(self, action):
-        self.__actions = []
-        self.__root = None
-        self.__gatherInformation(action)
-        self.__consolidate()
 
-    def __gatherInformation(self, root):
-        seenActions = {}
-
-        def create(action):
-            actionId = id(action)
-            if actionId not in seenActions:
-                a = ExecutionReport.Action(str(action.label), action.beginTime, action.endTime, action.status)
-                seenActions[actionId] = a
-                for dependency in action.getDependencies():
-                    a.dependencies.append(create(dependency))
-            return seenActions[actionId]
-
-        self.__root = create(root)
-        self.__actions = list(seenActions.values())
-
-    def __consolidate(self):
-        self.__beginTime = math.floor(min(a.beginTime for a in self.__actions))
-        self.__endTime = math.ceil(max(a.endTime for a in self.__actions))
-        self.__duration = self.__endTime - self.__beginTime
-        self.__computeOrdinates()
-
-    def __computeOrdinates(self):
-        def compute(action, fromOrdinate):
-            action.ordinate = fromOrdinate
-            dependencies = sorted(action.dependencies, key=lambda d: d.endTime)
-            for i, d in enumerate(dependencies):
-                compute(d, fromOrdinate - (i + 1) * 20)
-        compute(self.__root, 20 * (len(self.__actions) - 1))
-
-    def getHeight(self, ctx):
-        return 10 + len(self.__actions) * 20
-
-    def draw(self, ctx, width):
-        ctx.save()
-
-        ctx.translate(10, 0)
-        ctx.scale((width - 20) / self.__duration, 1)
-        ctx.translate(-self.__beginTime, 0)
-
-        self.__drawTimeLine(ctx)
-        ctx.translate(0, 10)
-
-        for action in self.__actions:
-            self.__drawAction(action, ctx, width)
-
-        ctx.restore()
-
-    def __drawTimeLine(self, ctx):
-        ctx.move_to(self.__beginTime, 5)
-        ctx.line_to(self.__endTime, 5)
-        ctx.stroke()
-
-    def __drawAction(self, action, ctx, width):
-        ctx.save()
-        ctx.translate(0, action.ordinate)
-
-        ctx.save()
-        ctx.set_line_width(4)
-        ctx.move_to(action.beginTime, 18)
-        ctx.line_to(action.endTime, 18)
-        if action.status == Action.Successful:
-            ctx.set_source_rgb(0, 0, 0)
-        elif action.status == Action.Canceled:
-            ctx.set_source_rgb(.4, .4, .4)
+def nearest(v, values):
+    for i, value in enumerate(values):
+        if v < value:
+            break
+    if i == 0:
+        return values[0]
+    else:
+        assert values[i - 1] <= v < values[i], (i, values[i - 1], v, values[i])
+        if v - values[i - 1] <= values[i] - v:
+            return values[i - 1]
         else:
-            ctx.set_source_rgb(1, 0, 0)
-        ctx.stroke()
-        ctx.restore()
+            return values[i]
 
-        ctx.save()
-        for d in action.dependencies:
-            ctx.move_to(action.beginTime, 18)
-            ctx.line_to(d.endTime, d.ordinate - action.ordinate + 18)
-        ctx.set_line_width(1)
-        ctx.identity_matrix()
-        ctx.set_source_rgb(0.7, 0.7, 0.7)
-        ctx.stroke()
-        ctx.restore()
+intervals = [
+    1, 2, 5, 10, 15, 30, 60,
+    2 * 60, 10 * 60, 30 * 60, 3600,
+    2 * 3600, 3 * 3600, 6 * 3600, 12 * 3600, 24 * 3600,
+]
 
-        ctx.move_to(action.beginTime, 15)
-        ctx.save()
-        ctx.identity_matrix()
-        ctx.set_font_size(15)
-        ctx.set_source_rgb(0, 0, 0)
-        ctx.show_text(action.label)
-        ctx.restore()
 
-        ctx.restore()
+class ExecutionReport(object):
+    def __init__(self, action):
+        self.root_action = action
+        self.actions = self.__sort_actions(action)
+        self.begin_time = min(a.begin_time for a in self.actions)
+        self.end_time = max(a.end_time for a in self.actions)
+        self.duration = self.end_time - self.begin_time
+
+    def __sort_actions(self, root):
+        actions = []
+        dependents = {}
+        def walk(action):
+            if action not in actions:
+                actions.append(action)
+                for d in action.dependencies:
+                    dependents.setdefault(id(d), set()).add(id(action))
+                    walk(d)
+        walk(root)
+
+        ordinates = {}
+        def compute(action, ordinate):
+            ordinates[id(action)] = ordinate
+            for d in sorted(action.dependencies, key=lambda d: d.end_time):
+                if len(dependents[id(d)]) == 1:
+                    ordinate = compute(d, ordinate - 1)
+                else:
+                    dependents[id(d)].remove(id(action))
+            return ordinate
+        last_ordinate = compute(root, len(actions) - 1)
+
+        assert last_ordinate == 0
+        assert sorted(ordinates.values()) == range(len(actions))
+
+        return sorted(actions, key=lambda a: ordinates[id(a)])
+        # @todo Maybe count intersections and do a local search (two-three steps) to find if we can remove some of them.
+
+
+def make_report(action):  # pragma no cover (Untestable? But small.)
+    """
+    Build a :class:`matplotlib.figure.Figure` about the execution of the action,
+    showing successes and failures as well as timing information.
+
+    See also :func:`.plot_report` if you want to draw the report on your own matplotlib figure.
+    """
+    fig = mpl.Figure()
+    ax = fig.add_subplot(1, 1, 1)
+
+    plot_report(action, ax)
+
+    return fig
+
+
+def plot_report(action, ax):
+    """
+    Plot a report about the execution of the action,
+    showing successes and failures as well as timing information on the provided :class:`matplotlib.axes.Axes`.
+    """
+    report = ExecutionReport(action)
+
+    ordinates = {id(a): len(report.actions) - i for i, a in enumerate(report.actions)}
+
+    for a in report.actions:
+        if a.status == Action.Successful:
+            color = "blue"
+        elif a.status == Action.Failed:
+            color = "red"
+        else:  # Canceled
+            color = "gray"
+        ax.plot([a.begin_time, a.end_time], [ordinates[id(a)], ordinates[id(a)]], color=color, lw=4)
+        ax.annotate(str(a.label), xy=(a.begin_time, ordinates[id(a)]), xytext=(0, 3), textcoords="offset points")
+        for d in a.dependencies:
+            ax.plot([d.end_time, a.begin_time], [ordinates[id(d)], ordinates[id(a)]], "k:", lw=1)
+
+    ax.get_yaxis().set_ticklabels([])
+    ax.set_ylim(0.5, len(report.actions) + 1)
+
+    min_time = report.begin_time.replace(microsecond=0)
+    max_time = report.end_time.replace(microsecond=0) + datetime.timedelta(seconds=1)
+    duration = int((max_time - min_time).total_seconds())
+
+    ax.set_xlabel("Local time")
+    ax.set_xlim(min_time, max_time)
+    ax.xaxis_date()
+    ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%H:%M:%S"))
+    ax.xaxis.set_major_locator(matplotlib.dates.AutoDateLocator(maxticks=4, minticks=5))
+
+    ax2 = ax.twiny()
+    ax2.set_xlabel("Relative time")
+    ax2.set_xlim(min_time, max_time)
+    ticks = range(0, duration, nearest(duration // 5, intervals))
+    ax2.xaxis.set_ticks([report.begin_time + datetime.timedelta(seconds=s) for s in ticks])
+    ax2.xaxis.set_ticklabels(ticks)
 
 
 class GraphBuilder(object):

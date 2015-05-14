@@ -78,8 +78,12 @@ Say you want to compile two C++ files and link them:
 >>> from ActionTree.stock import CallSubprocess
 
 >>> link = CallSubprocess(["g++", "-o", "test", "a.o", "b.o"])
->>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/a.cpp", "-o", "a.o"]))
->>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/b.cpp", "-o", "b.o"]))
+>>> link.add_dependency(
+...   CallSubprocess(["g++", "-c", "doc/a.cpp", "-o", "a.o"])
+... )
+>>> link.add_dependency(
+...   CallSubprocess(["g++", "-c", "doc/b.cpp", "-o", "b.o"])
+... )
 >>> link.execute(jobs=2)
 
 .. testcleanup::
@@ -95,6 +99,8 @@ You can easily draw a graph of your action and its dependencies with :func:`.mak
 
 >>> from ActionTree.drawings import make_graph
 >>> g = make_graph(concat)
+>>> g
+<graphviz.dot.Digraph ...>
 >>> g.render(directory="doc/doctest", filename="concat")
 'doc/doctest/concat.png'
 
@@ -102,3 +108,35 @@ You can easily draw a graph of your action and its dependencies with :func:`.mak
     :align: center
 
     ``doc/doctest/concat.png``
+
+You can draw an execution report with :func:`.make_report`:
+
+>>> from ActionTree.drawings import make_report
+>>> r = make_report(link)
+>>> r
+<matplotlib.figure.Figure ...>
+>>> from matplotlib.backends.backend_agg import FigureCanvasAgg
+>>> canvas = FigureCanvasAgg(r)
+>>> canvas.print_figure("doc/doctest/link_report.png")
+
+.. figure:: doctest/link_report.png
+    :align: center
+
+    ``doc/doctest/link_report.png``
+
+And if some action fails, you get:
+
+>>> link.add_dependency(
+...   CallSubprocess(["g++", "-c", "doc/c.cpp", "-o", "c.o"])
+... )
+>>> link.execute(keep_going=True)
+Traceback (most recent call last):
+  ...
+CompoundException: [CalledProcessError()]
+>>> canvas = FigureCanvasAgg(make_report(link))
+>>> canvas.print_figure("doc/doctest/failed_link_report.png")
+
+.. figure:: doctest/failed_link_report.png
+    :align: center
+
+    ``doc/doctest/failed_link_report.png``

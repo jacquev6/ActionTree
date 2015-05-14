@@ -31,7 +31,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.4",
         "Topic :: Software Development",
     ],
-    install_requires=["graphviz"],
+    install_requires=["graphviz", "matplotlib"],
     tests_require=["MockMockMock"],
     test_suite="ActionTree.tests",
     use_2to3=True,

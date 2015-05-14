@@ -27,6 +27,7 @@ html_theme_options = {
     "github_repo": project,
     "github_banner": True,
     "travis_button": True,
+    # @todo Use an execution report as logo
 }
 
 
@@ -54,5 +55,6 @@ extensions.append("sphinx.ext.intersphinx")
 intersphinx_mapping = {
     "python": ("https://docs.python.org/2/", None),
     "graphviz": ("http://graphviz.readthedocs.org/en/stable/", None),
+    "matplotlib": ("http://matplotlib.org/", None),
 }
 # intersphinx_cache_limit
