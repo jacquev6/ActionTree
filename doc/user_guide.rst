@@ -78,8 +78,12 @@ Say you want to compile two C++ files and link them:
 >>> from ActionTree.stock import CallSubprocess
 
 >>> link = CallSubprocess(["g++", "-o", "test", "a.o", "b.o"])
->>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/a.cpp", "-o", "a.o"]))
->>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/b.cpp", "-o", "b.o"]))
+>>> link.add_dependency(
+...   CallSubprocess(["g++", "-c", "doc/a.cpp", "-o", "a.o"])
+... )
+>>> link.add_dependency(
+...   CallSubprocess(["g++", "-c", "doc/b.cpp", "-o", "b.o"])
+... )
 >>> link.execute(jobs=2)
 
 .. testcleanup::
@@ -122,12 +126,15 @@ You can draw an execution report with :func:`.make_report`:
 
 And if some action fails, you get:
 
->>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/c.cpp", "-o", "c.o"]))
+>>> link.add_dependency(
+...   CallSubprocess(["g++", "-c", "doc/c.cpp", "-o", "c.o"])
+... )
 >>> link.execute(keep_going=True)
 Traceback (most recent call last):
   ...
 CompoundException: [CalledProcessError()]
->>> FigureCanvasAgg(make_report(link)).print_figure("doc/doctest/failed_link_report.png")
+>>> canvas = FigureCanvasAgg(make_report(link))
+>>> canvas.print_figure("doc/doctest/failed_link_report.png")
 
 .. figure:: doctest/failed_link_report.png
     :align: center
