@@ -13,6 +13,10 @@ class TimingTestCase(TestCaseWithMocks):
         self.time = self.mocks.replace("Action._time")
         self.a = Action(self.m.object, "timed")
 
+    def test_before_execution(self):
+        self.assertIsNone(self.a.begin_time)
+        self.assertIsNone(self.a.end_time)
+
     def test_success(self):
         self.time.expect().andReturn(1352032735.2)
         self.m.expect()

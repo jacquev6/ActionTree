@@ -24,6 +24,8 @@ class Action(object):
         self.__label = label
         self.__dependencies = set()
         self.__status = Action.Pending
+        self.__begin_time = None
+        self.__end_time = None
 
     @property
     def status(self):
