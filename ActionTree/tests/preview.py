@@ -7,15 +7,11 @@ import unittest
 from ActionTree import Action
 
 
-def noop():  # pragma no cover (Test code)
-    pass
-
-
 class PreviewTestCase(unittest.TestCase):
     def test_dependencies_and_labels_are_not_only_equal_but_same(self):
         bLabel = ("b",)
-        a = Action(noop, "a")
-        b = Action(noop, bLabel)
+        a = Action(None, "a")
+        b = Action(None, bLabel)
         a.add_dependency(b)
 
         otherB, = a.dependencies
@@ -23,22 +19,22 @@ class PreviewTestCase(unittest.TestCase):
         self.assertIs(otherB.label, bLabel)
 
     def test_simple_preview(self):
-        a = Action(noop, "a")
+        a = Action(None, "a")
         self.assertEqual(a.get_preview(), ["a"])
 
     def test_typed_label(self):
-        a = Action(noop, ("a", "curious", "label", 42))
+        a = Action(None, ("a", "curious", "label", 42))
         self.assertEqual(a.get_preview(), [("a", "curious", "label", 42)])
 
     def test_none_label(self):
-        a = Action(noop, None)
+        a = Action(None, None)
         self.assertEqual(a.get_preview(), [])
 
     def test_deep_dependency(self):
-        a = Action(noop, "a")
-        b = Action(noop, "b")
-        c = Action(noop, "c")
-        d = Action(noop, "d")
+        a = Action(None, "a")
+        b = Action(None, "b")
+        c = Action(None, "c")
+        d = Action(None, "d")
         a.add_dependency(b)
         b.add_dependency(c)
         c.add_dependency(d)
@@ -46,10 +42,10 @@ class PreviewTestCase(unittest.TestCase):
         self.assertEqual(a.get_preview(), ["d", "c", "b", "a"])
 
     def test_deep_dependency_with_duplicated_label(self):
-        a = Action(noop, "label")
-        b = Action(noop, "label")
-        c = Action(noop, "label")
-        d = Action(noop, "label")
+        a = Action(None, "label")
+        b = Action(None, "label")
+        c = Action(None, "label")
+        d = Action(None, "label")
         a.add_dependency(b)
         b.add_dependency(c)
         c.add_dependency(d)
@@ -63,10 +59,10 @@ class PreviewTestCase(unittest.TestCase):
         #    \ /
         #     d
 
-        a = Action(noop, "a")
-        b = Action(noop, "b")
-        c = Action(noop, "c")
-        d = Action(noop, "d")
+        a = Action(None, "a")
+        b = Action(None, "b")
+        c = Action(None, "c")
+        d = Action(None, "d")
         a.add_dependency(b)
         a.add_dependency(c)
         b.add_dependency(d)
