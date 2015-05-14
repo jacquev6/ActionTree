@@ -2,6 +2,7 @@
 
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
+import collections
 import datetime
 import os.path
 
@@ -11,12 +12,6 @@ import matplotlib.dates
 import matplotlib.figure as mpl
 
 from . import Action
-
-
-# @todo Capture last execution in an immutable copy of the action.
-# Currently "a.execute(); r = make_report(a); a.execute()" will modify (and invalidate if timing changes a lot) the report.
-# Same for Graph? Yes if we stop building the Graphviz graph in the ctor.
-# Adding a new dependency would be reflected in the graph after its creation.
 
 
 def nearest(v, values):
@@ -38,43 +33,67 @@ intervals = [
 ]
 
 
+FrozenAction = collections.namedtuple(
+    "FrozenAction",
+    "label, dependencies, dependents, begin_time, end_time, status, notes"
+)
+
+
+def freeze(action, notes_factory, seen=None):
+    if seen is None:
+        seen = {}
+    if id(action) not in seen:
+        dependencies = [freeze(d, notes_factory, seen)[id(d)] for d in action.dependencies]
+        a = FrozenAction(
+            str(action.label),
+            dependencies,
+            [],
+            action.begin_time,
+            action.end_time,
+            action.status,
+            notes_factory()
+        )
+        for d in dependencies:
+            d.dependents.append(a)
+        seen[id(action)] = a
+    return seen
+
+
 class ExecutionReport(object):
     """
     Report about the execution of the action, containing successes and failures as well as timing information.
     """
+
+    class Annotations(object):
+        def __init__(self):
+            self.dependents = set()
+            self.ordinate = None
+
     def __init__(self, action):
-        self.root_action = action
-        self.actions = self.__sort_actions(action)
+        actions = freeze(action, self.Annotations)
+        self.root_action = actions[id(action)]
+        self.actions = self.__sort_actions(actions.values())
         self.begin_time = min(a.begin_time for a in self.actions)
         self.end_time = max(a.end_time for a in self.actions)
         self.duration = self.end_time - self.begin_time
 
-    def __sort_actions(self, root):
-        actions = []
-        dependents = {}
-        def walk(action):
-            if action not in actions:
-                actions.append(action)
-                for d in action.dependencies:
-                    dependents.setdefault(id(d), set()).add(id(action))
-                    walk(d)
-        walk(root)
+    def __sort_actions(self, actions):
+        for action in actions:
+            action.notes.dependents = set(id(d) for d in action.dependents)
 
-        ordinates = {}
         def compute(action, ordinate):
-            ordinates[id(action)] = ordinate
+            action.notes.ordinate = ordinate
             for d in sorted(action.dependencies, key=lambda d: d.end_time):
-                if len(dependents[id(d)]) == 1:
+                if len(d.notes.dependents) == 1:
                     ordinate = compute(d, ordinate - 1)
                 else:
-                    dependents[id(d)].remove(id(action))
+                    d.notes.dependents.remove(id(action))
             return ordinate
-        last_ordinate = compute(root, len(actions) - 1)
+        last_ordinate = compute(self.root_action, len(actions) - 1)
 
-        assert last_ordinate == 0
-        assert sorted(ordinates.values()) == range(len(actions))
+        assert last_ordinate == 0, last_ordinate
 
-        return sorted(actions, key=lambda a: ordinates[id(a)])
+        return sorted(actions, key=lambda a: a.notes.ordinate)
         # @todo Maybe count intersections and do a local search (two-three steps) to find if we can remove some of them.
 
     def write_to_png(self, filename):  # pragma no cover (Untestable? But small.)
@@ -118,7 +137,7 @@ class ExecutionReport(object):
             else:  # Canceled
                 color = "gray"
             ax.plot([a.begin_time, a.end_time], [ordinates[id(a)], ordinates[id(a)]], color=color, lw=4)
-            ax.annotate(str(a.label), xy=(a.begin_time, ordinates[id(a)]), xytext=(0, 3), textcoords="offset points")
+            ax.annotate(a.label, xy=(a.begin_time, ordinates[id(a)]), xytext=(0, 3), textcoords="offset points")
             for d in a.dependencies:
                 ax.plot([d.end_time, a.begin_time], [ordinates[id(d)], ordinates[id(a)]], "k:", lw=1)
 
@@ -147,22 +166,17 @@ class DependencyGraph(object):
     """
     The dependencies of the action.
     """
-    def __init__(self, action):
-        self.__nodes = dict()
-        self.__next_node = 0
-        self.__graph = graphviz.Digraph("action", node_attr={"shape": "box"})
-        self.__create_node(action)
+    _sorted = lambda self, x: x  # sorted only for unit tests stability
 
-    def __create_node(self, a):
-        if id(a) not in self.__nodes:
-            node = str(self.__next_node)
-            label = str(a.label)
-            self.__graph.node(node, label)
-            self.__next_node += 1
-            for d in a.dependencies:
-                self.__graph.edge(node, self.__create_node(d))
-            self.__nodes[id(a)] = node
-        return self.__nodes[id(a)]
+    Annotations = collections.namedtuple("Annotations", "node")
+
+    def __init__(self, action):
+        self.__next_node = -1
+        self.__actions = self._sorted(freeze(action, self.__annotate).values())
+
+    def __annotate(self):
+        self.__next_node += 1
+        return self.Annotations(str(self.__next_node))
 
     def write_to_png(self, filename):  # pragma no cover (Untestable? But small.)
         """
@@ -170,11 +184,12 @@ class DependencyGraph(object):
 
         See also :meth:`get_graphviz_graph` if you want to draw the graph somewhere else.
         """
-        self.__graph.format = "png"
         directory = os.path.dirname(filename)
         filename = os.path.basename(filename)
         filename, ext = os.path.splitext(filename)
-        self.__graph.render(directory=directory, filename=filename)
+        g = self.get_graphviz_graph()
+        g.format = "png"
+        g.render(directory=directory, filename=filename)
 
     def get_graphviz_graph(self):
         """
@@ -182,4 +197,10 @@ class DependencyGraph(object):
 
         See also :meth:`write_to_png` for the simplest use-case.
         """
-        return self.__graph
+        g = graphviz.Digraph("action", node_attr={"shape": "box"})
+        for action in self.__actions:
+            g.node(action.notes.node, action.label)
+        for action in self.__actions:
+            for d in action.dependencies:
+                g.edge(action.notes.node, d.notes.node)
+        return g

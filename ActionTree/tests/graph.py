@@ -9,12 +9,22 @@ import unittest
 from ActionTree.drawings import *
 
 
-MockAction = collections.namedtuple("MockAction", "label, dependencies")
+MockAction = collections.namedtuple("MockAction", "label, dependencies, begin_time, end_time, status")
+
+def mock_action(label, dependencies):
+    return MockAction(label, dependencies, None, None, None)
 
 
 class GraphTestCase(unittest.TestCase):
+    def setUp(self):
+        self.previous_sorted = DependencyGraph._sorted
+        DependencyGraph._sorted = sorted
+
+    def tearDown(self):
+        DependencyGraph._sorted = self.previous_sorted
+
     def test_single_action(self):
-        a = MockAction("a", [])
+        a = mock_action("a", [])
 
         self.assertEqual(
             DependencyGraph(a).get_graphviz_graph().source,
@@ -27,46 +37,46 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def test_dependency(self):
-        b = MockAction("b", [])
-        a = MockAction("a", [b])
+        b = mock_action("b", [])
+        a = mock_action("a", [b])
 
         self.assertEqual(
             DependencyGraph(a).get_graphviz_graph().source,
             textwrap.dedent("""\
                 digraph action {
                 \tnode [shape=box]
-                \t\t0 [label=a]
-                \t\t1 [label=b]
-                \t\t\t0 -> 1
+                \t\t1 [label=a]
+                \t\t0 [label=b]
+                \t\t\t1 -> 0
                 }"""
             )
         )
 
     def test_diamond(self):
-        a = MockAction("a", [])
-        b = MockAction("b", [a])
-        c = MockAction("c", [a])
-        d = MockAction("d", [b, c])
+        a = mock_action("a", [])
+        b = mock_action("b", [a])
+        c = mock_action("c", [a])
+        d = mock_action("d", [b, c])
 
         self.assertEqual(
             DependencyGraph(d).get_graphviz_graph().source,
             textwrap.dedent("""\
                 digraph action {
                 \tnode [shape=box]
-                \t\t0 [label=d]
+                \t\t0 [label=a]
                 \t\t1 [label=b]
-                \t\t2 [label=a]
-                \t\t\t1 -> 2
-                \t\t\t0 -> 1
-                \t\t3 [label=c]
+                \t\t2 [label=c]
+                \t\t3 [label=d]
+                \t\t\t1 -> 0
+                \t\t\t2 -> 0
+                \t\t\t3 -> 1
                 \t\t\t3 -> 2
-                \t\t\t0 -> 3
                 }"""
             )
         )
 
     def test_weird_label(self):
-        a = MockAction("spaces and; semi=columns", [])
+        a = mock_action("spaces and; semi=columns", [])
 
         self.assertEqual(
             DependencyGraph(a).get_graphviz_graph().source,

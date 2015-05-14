@@ -42,7 +42,7 @@ class ExecutionReportTestCase(TestCaseWithMocks):
         c = MockAction("c", [a, b], 11.8, 13.7, successful)
 
         r = ExecutionReport(c)
-        self.assertIs(r.root_action, c)
+        self.assertEqual(r.root_action.label, "c")
         self.assertEqual(len(r.actions), 3)
         self.assertEqual(r.begin_time, 10.5)
         self.assertEqual(r.end_time, 13.7)
