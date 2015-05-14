@@ -2,63 +2,65 @@
 
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
+import collections
 import textwrap
+import unittest
 
 from ActionTree.drawings import make_graph
-from . import TestCaseWithMocks
 
 
-class GraphTestCase(TestCaseWithMocks):
-    def setUp(self):
-        super(GraphTestCase, self).setUp()
-        self.mocks.unordered  # @todo in MockMockMock, find a better syntax to use grouping without "with" keyword
+MockAction = collections.namedtuple("MockAction", "label, dependencies")
 
-    def __create_mocked_action(self, name, label, dependencies):
-        # @todo Use namedtuples instead of mocks
-        a = self.mocks.create(name)
-        a.expect.label.andReturn(label)
-        a.expect.dependencies.andReturn(dependencies)
-        return a.object
 
-    def __assert_graph_equal(self, a, g):
-        self.assertEqual(make_graph(a).source, g)
-
+class GraphTestCase(unittest.TestCase):
     def test_single_action(self):
-        a = self.__create_mocked_action("a", "a", [])
+        a = MockAction("a", [])
 
-        self.__assert_graph_equal(a, textwrap.dedent("""\
-            digraph action {
-            \tnode [shape=box]
-            \t\t0 [label=a]
-            }"""))
+        self.assertEqual(
+            make_graph(a).source,
+            textwrap.dedent("""\
+                digraph action {
+                \tnode [shape=box]
+                \t\t0 [label=a]
+                }"""
+            )
+        )
 
     def test_dependency(self):
-        b = self.__create_mocked_action("b", "b", [])
-        a = self.__create_mocked_action("a", "a", [b])
+        b = MockAction("b", [])
+        a = MockAction("a", [b])
 
-        self.__assert_graph_equal(a, textwrap.dedent("""\
-            digraph action {
-            \tnode [shape=box]
-            \t\t0 [label=a]
-            \t\t1 [label=b]
-            \t\t\t0 -> 1
-            }"""))
+        self.assertEqual(
+            make_graph(a).source,
+            textwrap.dedent("""\
+                digraph action {
+                \tnode [shape=box]
+                \t\t0 [label=a]
+                \t\t1 [label=b]
+                \t\t\t0 -> 1
+                }"""
+            )
+        )
 
     def test_diamond(self):
-        a = self.__create_mocked_action("a", "a", [])
-        b = self.__create_mocked_action("b", "b", [a])
-        c = self.__create_mocked_action("c", "c", [a])
-        d = self.__create_mocked_action("d", "d", [b, c])
+        a = MockAction("a", [])
+        b = MockAction("b", [a])
+        c = MockAction("c", [a])
+        d = MockAction("d", [b, c])
 
-        self.__assert_graph_equal(d, textwrap.dedent("""\
-            digraph action {
-            \tnode [shape=box]
-            \t\t0 [label=d]
-            \t\t1 [label=b]
-            \t\t2 [label=a]
-            \t\t\t1 -> 2
-            \t\t\t0 -> 1
-            \t\t3 [label=c]
-            \t\t\t3 -> 2
-            \t\t\t0 -> 3
-            }"""))
+        self.assertEqual(
+            make_graph(d).source,
+            textwrap.dedent("""\
+                digraph action {
+                \tnode [shape=box]
+                \t\t0 [label=d]
+                \t\t1 [label=b]
+                \t\t2 [label=a]
+                \t\t\t1 -> 2
+                \t\t\t0 -> 1
+                \t\t3 [label=c]
+                \t\t\t3 -> 2
+                \t\t\t0 -> 3
+                }"""
+            )
+        )
