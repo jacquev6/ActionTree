@@ -5,20 +5,62 @@
 import matplotlib.figure as mpl
 import graphviz
 
+from . import Action
 
-def make_report(action):
+
+class ExecutionReport(object):
+    def __init__(self, action):
+        self.root_action = action
+        self.actions = list(self.__sort_actions(action))
+        self.begin_time = min(a.begin_time for a in self.actions)
+        self.end_time = max(a.end_time for a in self.actions)
+        self.duration = self.end_time - self.begin_time
+
+    def __sort_actions(self, action):
+        # @todo Handle diamond dependencies
+        seen = set()
+        if id(action) not in seen:
+            seen.add(id(action))
+            for d in sorted(action.dependencies, key=lambda a: a.end_time, reverse=True):
+                for a in self.__sort_actions(d):
+                    yield a
+            yield action
+
+
+def make_report(action):  # pragma no cover (Untestable? But small.)
     """
     Build a :class:`matplotlib.figure.Figure` about the execution of the action,
     showing successes and failures as well as timing information.
+
+    See also :func:`.plot_report` if you want to draw the report on your own matplotlib figure.
     """
     fig = mpl.Figure()
     ax = fig.add_subplot(1, 1, 1)
-    ax.plot([1, 2.5, 3], [4, 5, 6])
-    ax.set_title('hi mom')
-    ax.grid(True)
-    ax.set_xlabel('time')
-    ax.set_ylabel('volts')
+
+    plot_report(action, ax)
+
     return fig
+
+
+def plot_report(action, ax):
+    """
+    Plot a report about the execution of the action,
+    showing successes and failures as well as timing information on the provided :class:`matplotlib.axes.Axes`.
+    """
+    report = ExecutionReport(action)
+
+    ordinates = {id(a): len(report.actions) - i for i, a in enumerate(report.actions)}
+
+    for a in report.actions:
+        if action.status == Action.Successful:
+            style = "b-"
+        else:
+            style = "r-"
+        ax.plot([a.begin_time, a.end_time], [ordinates[id(a)], ordinates[id(a)]], style, lw=4)
+        for d in a.dependencies:
+            ax.plot([d.end_time, a.begin_time], [ordinates[id(d)], ordinates[id(a)]], "k:", lw=1)
+
+    ax.set_ylim(0.5, len(report.actions) + 0.5)
 
 
 class GraphBuilder(object):
