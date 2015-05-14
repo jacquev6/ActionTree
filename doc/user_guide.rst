@@ -95,6 +95,8 @@ You can easily draw a graph of your action and its dependencies with :func:`.mak
 
 >>> from ActionTree.drawings import make_graph
 >>> g = make_graph(concat)
+>>> g
+<graphviz.dot.Digraph ...>
 >>> g.render(directory="doc/doctest", filename="concat")
 'doc/doctest/concat.png'
 
@@ -103,13 +105,15 @@ You can easily draw a graph of your action and its dependencies with :func:`.mak
 
     ``doc/doctest/concat.png``
 
-You can draw an execution report with :class:`.ExecutionReport`:
+You can draw an execution report with :func:`.make_report`:
 
->>> from ActionTree.drawings import ExecutionReport
->>> r = ExecutionReport(link)
->>> r.write_to_png("doc/doctest/link_report.png")
-
-@todo Understand why, in the next figure, the actions are not aligned to the left. Fix.
+>>> from ActionTree.drawings import make_report
+>>> r = make_report(link)
+>>> r
+<matplotlib.figure.Figure ...>
+>>> from matplotlib.backends.backend_agg import FigureCanvasAgg
+>>> canvas = FigureCanvasAgg(r)
+>>> canvas.print_figure("doc/doctest/link_report.png")
 
 .. figure:: doctest/link_report.png
     :align: center
