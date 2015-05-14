@@ -54,6 +54,40 @@ You can execute them in parallel, keeping the same guaranties:
     os.unlink("third")
     os.unlink("fourth")
 
+Specialized actions
+===================
+
+:class:`.Action` accepts a callable in its constructor to be usable without subclassing,
+but it's also easy to specialize. The previous example could be rewriten like:
+
+>>> class CreateFile(Action):
+...   def __init__(self, name):
+...     super(CreateFile, self).__init__(self.__create, "create {}".format(name))
+...     self.__name = name
+...
+...   def __create(self):
+...     with open(self.__name, "w") as f:
+...       f.write("This is {}\\n".format(self.__name))
+
+>>> class ConcatFiles(Action):
+...   def __init__(self, files, name):
+...     super(ConcatFiles, self).__init__(self.__concat, "concat")
+...     self.__files = files
+...     self.__name = name
+...
+...   def __concat(self):
+...     with open(self.__name, "w") as output:
+...       for file in self.__files:
+...         with open(file) as input:
+...           output.write(input.read())
+
+>>> concat = ConcatFiles(["first", "second", "third"], "fourth")
+>>> concat.add_dependency(CreateFile("first"))
+>>> concat.add_dependency(CreateFile("second"))
+>>> concat.add_dependency(CreateFile("third"))
+
+>>> concat.execute()
+
 Preview
 =======
 
