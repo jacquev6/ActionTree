@@ -46,6 +46,14 @@ You can execute them in parallel, keeping the same guaranties:
 
 >>> concat.execute(jobs=3)
 
+.. testcleanup::
+
+    import os
+    os.unlink("first")
+    os.unlink("second")
+    os.unlink("third")
+    os.unlink("fourth")
+
 Preview
 =======
 
@@ -73,6 +81,12 @@ Say you want to compile two C++ files and link them:
 >>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/a.cpp", "-o", "a.o"]))
 >>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/b.cpp", "-o", "b.o"]))
 >>> link.execute(jobs=2)
+
+.. testcleanup::
+
+    os.unlink("a.o")
+    os.unlink("b.o")
+    os.unlink("test")
 
 Drawings
 ========
