@@ -133,6 +133,8 @@ class Action:
                 return
             go_on = self.__prepare_execution(action)
         if go_on:
+            # @todo Document begin_time and end_time
+            # @todo Use datetime.datetime.utc_now?
             action.begin_time = Action._time()
             try:
                 action.__execute()

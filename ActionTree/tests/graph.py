@@ -14,6 +14,7 @@ class GraphTestCase(TestCaseWithMocks):
         self.mocks.unordered  # @todo in MockMockMock, find a better syntax to use grouping without "with" keyword
 
     def __create_mocked_action(self, name, label, dependencies):
+        # @todo Use namedtuples instead of mocks
         a = self.mocks.create(name)
         a.expect.label.andReturn(label)
         a.expect.get_dependencies().andReturn(dependencies)

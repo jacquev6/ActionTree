@@ -48,6 +48,7 @@ class ReportTestCase(TestCaseWithMocks):
         f.close()
 
     def __create_mocked_action(self, name, label, dependencies, beginTime, endTime, status):
+        # @todo Use namedtuples instead of mocks
         a = self.mocks.create(name)
         a.expect.label.andReturn(label)
         a.expect.beginTime.andReturn(beginTime)
