@@ -26,7 +26,6 @@ def nearest(v, values):
     if i == 0:
         return values[0]
     else:
-        assert values[i - 1] <= v < values[i], (i, values[i - 1], v, values[i])
         if v - values[i - 1] <= values[i] - v:
             return values[i - 1]
         else:
@@ -78,7 +77,7 @@ class ExecutionReport(object):
         return sorted(actions, key=lambda a: ordinates[id(a)])
         # @todo Maybe count intersections and do a local search (two-three steps) to find if we can remove some of them.
 
-    def write_to_png(self, filename):
+    def write_to_png(self, filename):  # pragma no cover (Untestable? But small.)
         """
         Write the report as a PNG image to the specified file.
 
@@ -165,7 +164,7 @@ class DependencyGraph(object):
             self.__nodes[id(a)] = node
         return self.__nodes[id(a)]
 
-    def write_to_png(self, filename):
+    def write_to_png(self, filename):  # pragma no cover (Untestable? But small.)
         """
         Write the graph as a PNG image to the specified file.
 
