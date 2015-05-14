@@ -4,7 +4,7 @@
 
 import multiprocessing
 import threading
-import time
+import datetime
 
 
 class Action(object):
@@ -13,7 +13,7 @@ class Action(object):
     An action to be started after all its dependencies are finished.
     """
 
-    _time = time.time  # Allow static dependency injection. But keep it private.
+    _time = datetime.datetime.now  # Allow static dependency injection. But keep it private.
 
     def __init__(self, execute, label):
         """
@@ -104,6 +104,20 @@ class Action(object):
         self.__reset_before_execution()
         self.__do_execute(jobs, keep_going)
 
+    @property
+    def begin_time(self):
+        """
+        The local :class:`~datetime.datetime` at the begining of the execution of this action.
+        """
+        return self.__begin_time
+
+    @property
+    def end_time(self):
+        """
+        The local :class:`~datetime.datetime` at the end of the execution of this action.
+        """
+        return self.__end_time
+
     def __reset_before_execution(self):
         self.__status = Action.Pending
         for dependency in self.__dependencies:
@@ -134,9 +148,7 @@ class Action(object):
                 return
             go_on = self.__prepare_execution(action)
         if go_on:
-            # @todo Document begin_time and end_time
-            # @todo Use datetime.datetime.utc_now?
-            action.begin_time = Action._time()
+            action.__begin_time = Action._time()
             try:
                 action.__execute()
             except Exception as e:
@@ -146,7 +158,7 @@ class Action(object):
                     if not keep_going and action is not self:
                         self.__cancel_action(self)
             finally:
-                action.end_time = Action._time()
+                action.__end_time = Action._time()
             with condition:
                 if action.__status != Action.Failed:
                     action.__status = Action.Successful
@@ -193,8 +205,8 @@ class Action(object):
 
     def __cancel_action(self, action):
         action.__status = Action.Canceled
-        action.begin_time = Action._time()
-        action.end_time = action.begin_time
+        action.__begin_time = Action._time()
+        action.__end_time = action.__begin_time
 
     def __is_finished(self):
         return self.__status in [Action.Successful, Action.Failed, Action.Canceled]

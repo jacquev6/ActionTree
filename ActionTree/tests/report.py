@@ -3,6 +3,7 @@
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
 import collections
+import datetime
 import math
 import unittest
 
@@ -52,30 +53,35 @@ class ExecutionReportTestCase(unittest.TestCase):
 
 
 class ExecutionReportVisualTestCase(unittest.TestCase):
+    now = datetime.datetime.now()
+
+    def make_action(self, label, dependencies, begin_time, end_time, status):
+        return MockAction(label, dependencies, self.now + datetime.timedelta(seconds=begin_time), self.now + datetime.timedelta(seconds=end_time), status)
+
     def make_actions(self):
         # Single
-        yield MockAction("a", [], 0, 1, successful)
+        yield self.make_action("a", [], 0, 1, successful)
 
         # Tree
-        yield MockAction(
+        yield self.make_action(
             "a",
             [
-                MockAction(
+                self.make_action(
                     "b",
                     [
-                        MockAction("c", [], 0, 1, successful),
-                        MockAction("d", [], 0, 2, successful),
-                        MockAction("e", [], 0, 3, successful),
+                        self.make_action("c", [], 0, 1, successful),
+                        self.make_action("d", [], 0, 2, successful),
+                        self.make_action("e", [], 0, 3, successful),
                     ],
                     4, 5,
                     successful
                 ),
-                MockAction(
+                self.make_action(
                     "f",
                     [
-                        MockAction("g", [], 1, 2, successful),
-                        MockAction("h", [], 1, 3, successful),
-                        MockAction("i", [], 1, 4, successful),
+                        self.make_action("g", [], 1, 2, successful),
+                        self.make_action("h", [], 1, 3, successful),
+                        self.make_action("i", [], 1, 4, successful),
                     ],
                     4, 6,
                     successful
@@ -86,26 +92,26 @@ class ExecutionReportVisualTestCase(unittest.TestCase):
         )
 
         # Diamond
-        x = MockAction("x", [], 0, 1, successful)
-        yield MockAction(
+        x = self.make_action("x", [], 0, 1, successful)
+        yield self.make_action(
             "a",
             [
-                MockAction("b", [x, MockAction("y", [], 0, 2, successful)], 2, 3, successful),
-                MockAction("c", [x], 1, 4, successful),
+                self.make_action("b", [x, self.make_action("y", [], 0, 2, successful)], 2, 3, successful),
+                self.make_action("c", [x], 1, 4, successful),
             ],
             4, 5,
             successful
         )
 
         # Triamond?
-        x = MockAction("x", [], 0, 1, successful)
-        y = MockAction("y", [], 0, 2, successful)
-        yield MockAction(
+        x = self.make_action("x", [], 0, 1, successful)
+        y = self.make_action("y", [], 0, 2, successful)
+        yield self.make_action(
             "a",
             [
-                MockAction("b", [x, y], 2, 3, successful),
-                MockAction("c", [x], 1, 4, successful),
-                MockAction("d", [x, y], 2, 5, successful),
+                self.make_action("b", [x, y], 2, 3, successful),
+                self.make_action("c", [x], 1, 4, successful),
+                self.make_action("d", [x, y], 2, 5, successful),
             ],
             5, 6,
             successful
