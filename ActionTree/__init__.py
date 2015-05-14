@@ -7,7 +7,7 @@ import threading
 import time
 
 
-class Action:
+class Action(object):
     """
     The main class of ActionTree.
     An action to be started after all its dependencies are finished.
@@ -62,7 +62,8 @@ class Action:
             raise DependencyCycleException()
         self.__dependencies.add(dependency)
 
-    def get_dependencies(self):
+    @property
+    def dependencies(self):
         """
         Return the list of this action's dependencies.
         """

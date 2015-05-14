@@ -127,7 +127,7 @@ class GraphBuilder(object):
             label = str(a.label)
             self.graph.node(node, label)
             self.__next_node += 1
-            for d in a.get_dependencies():
+            for d in a.dependencies:
                 self.graph.edge(node, self.__create_node(d))
             self.__nodes[id(a)] = node
         return self.__nodes[id(a)]

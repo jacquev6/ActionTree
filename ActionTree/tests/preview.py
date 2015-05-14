@@ -12,13 +12,13 @@ def noop():  # pragma no cover (Test code)
 
 
 class PreviewTestCase(unittest.TestCase):
-    def test_get_dependencies_and_labels_are_not_only_equal_but_same(self):
+    def test_dependencies_and_labels_are_not_only_equal_but_same(self):
         bLabel = ("b",)
         a = Action(noop, "a")
         b = Action(noop, bLabel)
         a.add_dependency(b)
 
-        otherB, = a.get_dependencies()
+        otherB, = a.dependencies
         self.assertIs(otherB, b)
         self.assertIs(otherB.label, bLabel)
 

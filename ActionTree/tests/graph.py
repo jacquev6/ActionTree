@@ -17,7 +17,7 @@ class GraphTestCase(TestCaseWithMocks):
         # @todo Use namedtuples instead of mocks
         a = self.mocks.create(name)
         a.expect.label.andReturn(label)
-        a.expect.get_dependencies().andReturn(dependencies)
+        a.expect.dependencies.andReturn(dependencies)
         return a.object
 
     def __assert_graph_equal(self, a, g):
