@@ -7,3 +7,5 @@
 /doc/build/
 /.eggs/
 /htmlcov/
+
+/execution_report_visual_test_case.png

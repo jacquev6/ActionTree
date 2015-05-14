@@ -3,7 +3,11 @@
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
 import collections
+import math
 import unittest
+
+import matplotlib.backends.backend_agg
+import matplotlib.figure
 
 import ActionTree
 from ActionTree.drawings import *
@@ -45,3 +49,75 @@ class ExecutionReportTestCase(unittest.TestCase):
             [a.label for a in r.actions],
             ["a14", "a13", "a12", "b46", "a03", "a02", "a01", "b45", "c"]
         )
+
+
+class ExecutionReportVisualTestCase(unittest.TestCase):
+    def make_actions(self):
+        # Single
+        yield MockAction("a", [], 0, 1, successful)
+
+        # Tree
+        yield MockAction(
+            "a",
+            [
+                MockAction(
+                    "b",
+                    [
+                        MockAction("c", [], 0, 1, successful),
+                        MockAction("d", [], 0, 2, successful),
+                        MockAction("e", [], 0, 3, successful),
+                    ],
+                    4, 5,
+                    successful
+                ),
+                MockAction(
+                    "f",
+                    [
+                        MockAction("g", [], 1, 2, successful),
+                        MockAction("h", [], 1, 3, successful),
+                        MockAction("i", [], 1, 4, successful),
+                    ],
+                    4, 6,
+                    successful
+                ),
+            ],
+            6, 7,
+            successful
+        )
+
+        # Diamond
+        x = MockAction("x", [], 0, 1, successful)
+        yield MockAction(
+            "a",
+            [
+                MockAction("b", [x], 2, 3, successful),
+                MockAction("c", [x], 1, 4, successful),
+            ],
+            4, 5,
+            successful
+        )
+
+        # Triamond?
+        x = MockAction("x", [], 0, 1, successful)
+        yield MockAction(
+            "a",
+            [
+                MockAction("b", [x], 2, 3, successful),
+                MockAction("c", [x], 1, 4, successful),
+                MockAction("d", [x], 2, 5, successful),
+            ],
+            5, 6,
+            successful
+        )
+
+    def test(self):
+        figure = matplotlib.figure.Figure((16, 12))
+
+        roots = list(self.make_actions())
+        s = int(math.ceil(math.sqrt(len(roots))))
+        for i, a in enumerate(roots):
+            plot_report(a, figure.add_subplot(s, s, i + 1))
+
+        figure.tight_layout()
+        canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
+        canvas.print_figure("execution_report_visual_test_case.png")
