@@ -219,7 +219,7 @@ class Action(object):
 
 class CompoundException(Exception):
     """
-    Exception thrown by :meth:`.Action.execute` when a dependeny raises an exception.
+    Exception thrown by :meth:`.Action.execute` when a dependency raises an exception.
     """
 
     def __init__(self, exceptions):
