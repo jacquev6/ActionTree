@@ -131,7 +131,7 @@ class ExecutionReportVisualTestCase(unittest.TestCase):
         roots = list(self.make_actions())
         s = int(math.ceil(math.sqrt(len(roots))))
         for i, a in enumerate(roots):
-            plot_report(a, figure.add_subplot(s, s, i + 1))
+            ExecutionReport(a).plot_on_mpl_axes(figure.add_subplot(s, s, i + 1))
 
         figure.tight_layout()
         canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)

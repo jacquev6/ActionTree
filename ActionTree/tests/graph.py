@@ -6,7 +6,7 @@ import collections
 import textwrap
 import unittest
 
-from ActionTree.drawings import make_graph
+from ActionTree.drawings import *
 
 
 MockAction = collections.namedtuple("MockAction", "label, dependencies")
@@ -17,7 +17,7 @@ class GraphTestCase(unittest.TestCase):
         a = MockAction("a", [])
 
         self.assertEqual(
-            make_graph(a).source,
+            DependencyGraph(a).get_graphviz_graph().source,
             textwrap.dedent("""\
                 digraph action {
                 \tnode [shape=box]
@@ -31,7 +31,7 @@ class GraphTestCase(unittest.TestCase):
         a = MockAction("a", [b])
 
         self.assertEqual(
-            make_graph(a).source,
+            DependencyGraph(a).get_graphviz_graph().source,
             textwrap.dedent("""\
                 digraph action {
                 \tnode [shape=box]
@@ -49,7 +49,7 @@ class GraphTestCase(unittest.TestCase):
         d = MockAction("d", [b, c])
 
         self.assertEqual(
-            make_graph(d).source,
+            DependencyGraph(d).get_graphviz_graph().source,
             textwrap.dedent("""\
                 digraph action {
                 \tnode [shape=box]
@@ -69,7 +69,7 @@ class GraphTestCase(unittest.TestCase):
         a = MockAction("spaces and; semi=columns", [])
 
         self.assertEqual(
-            make_graph(a).source,
+            DependencyGraph(a).get_graphviz_graph().source,
             textwrap.dedent("""\
                 digraph action {
                 \tnode [shape=box]

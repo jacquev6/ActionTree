@@ -95,29 +95,22 @@ Say you want to compile two C++ files and link them:
 Drawings
 ========
 
-You can easily draw a graph of your action and its dependencies with :func:`.make_graph`:
+You can easily draw a graph of your action and its dependencies with :class:`.DependencyGraph`:
 
->>> from ActionTree.drawings import make_graph
->>> g = make_graph(concat)
->>> g
-<graphviz.dot.Digraph ...>
->>> g.render(directory="doc/doctest", filename="concat")
-'doc/doctest/concat.png'
+>>> from ActionTree.drawings import DependencyGraph
+>>> g = DependencyGraph(concat)
+>>> g.write_to_png("doc/doctest/concat.png")
 
 .. figure:: doctest/concat.png
     :align: center
 
     ``doc/doctest/concat.png``
 
-You can draw an execution report with :func:`.make_report`:
+You can draw an execution report with :class:`.ExecutionReport`:
 
->>> from ActionTree.drawings import make_report
->>> r = make_report(link)
->>> r
-<matplotlib.figure.Figure ...>
->>> from matplotlib.backends.backend_agg import FigureCanvasAgg
->>> canvas = FigureCanvasAgg(r)
->>> canvas.print_figure("doc/doctest/link_report.png")
+>>> from ActionTree.drawings import ExecutionReport
+>>> report = ExecutionReport(link)
+>>> report.write_to_png("doc/doctest/link_report.png")
 
 .. figure:: doctest/link_report.png
     :align: center
@@ -133,8 +126,7 @@ And if some action fails, you get:
 Traceback (most recent call last):
   ...
 CompoundException: [CalledProcessError()]
->>> canvas = FigureCanvasAgg(make_report(link))
->>> canvas.print_figure("doc/doctest/failed_link_report.png")
+>>> ExecutionReport(link).write_to_png("doc/doctest/failed_link_report.png")
 
 .. figure:: doctest/failed_link_report.png
     :align: center
