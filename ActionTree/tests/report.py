@@ -117,6 +117,14 @@ class ExecutionReportVisualTestCase(unittest.TestCase):
             successful
         )
 
+        # Minute-like exectutions
+        yield self.make_action("a", [], 0, 57, successful)
+        yield self.make_action("a", [], 0, 63, successful)
+
+        # Hour-like exectution
+        yield self.make_action("a", [], 0, 3500, successful)
+        yield self.make_action("a", [], 0, 3700, successful)
+
     def test(self):
         figure = matplotlib.figure.Figure((16, 12))
 
