@@ -64,3 +64,16 @@ class GraphTestCase(unittest.TestCase):
                 }"""
             )
         )
+
+    def test_weird_label(self):
+        a = MockAction("spaces and; semi=columns", [])
+
+        self.assertEqual(
+            make_graph(a).source,
+            textwrap.dedent("""\
+                digraph action {
+                \tnode [shape=box]
+                \t\t0 [label="spaces and; semi=columns"]
+                }"""
+            )
+        )
