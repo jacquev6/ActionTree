@@ -76,11 +76,13 @@ def plot_report(action, ax):
     ordinates = {id(a): len(report.actions) - i for i, a in enumerate(report.actions)}
 
     for a in report.actions:
-        if action.status == Action.Successful:
-            style = "b-"
-        else:
-            style = "r-"
-        ax.plot([a.begin_time, a.end_time], [ordinates[id(a)], ordinates[id(a)]], style, lw=4)
+        if a.status == Action.Successful:
+            color = "green"
+        elif a.status == Action.Failed:
+            color = "red"
+        else:  # Canceled
+            color = "gray"
+        ax.plot([a.begin_time, a.end_time], [ordinates[id(a)], ordinates[id(a)]], color=color, lw=4)
         for d in a.dependencies:
             ax.plot([d.end_time, a.begin_time], [ordinates[id(d)], ordinates[id(a)]], "k:", lw=1)
 

@@ -119,3 +119,17 @@ You can draw an execution report with :func:`.make_report`:
     :align: center
 
     ``doc/doctest/link_report.png``
+
+And if some action fails, you get:
+
+>>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/c.cpp", "-o", "c.o"]))
+>>> link.execute(keep_going=True)
+Traceback (most recent call last):
+  ...
+CompoundException: [CalledProcessError()]
+>>> FigureCanvasAgg(make_report(link)).print_figure("doc/doctest/failed_link_report.png")
+
+.. figure:: doctest/failed_link_report.png
+    :align: center
+
+    ``doc/doctest/failed_link_report.png``
