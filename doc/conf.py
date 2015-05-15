@@ -27,8 +27,8 @@ html_theme_options = {
     "github_repo": project,
     "github_banner": True,
     "travis_button": True,
-    # @todo Use an execution report as logo
 }
+html_logo = "logo.png"
 
 
 # http://sphinx-doc.org/ext/autodoc.html

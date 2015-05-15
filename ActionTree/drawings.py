@@ -33,8 +33,8 @@ intervals = [
 ]
 
 
-FrozenAction = collections.namedtuple(
-    "FrozenAction",
+_FrozenAction = collections.namedtuple(
+    "_FrozenAction",
     "label, dependencies, dependents, begin_time, end_time, status, notes"
 )
 
@@ -44,7 +44,7 @@ def freeze(action, notes_factory, seen=None):
         seen = {}
     if id(action) not in seen:
         dependencies = [freeze(d, notes_factory, seen)[id(d)] for d in action.dependencies]
-        a = FrozenAction(
+        a = _FrozenAction(
             str(action.label),
             dependencies,
             [],
