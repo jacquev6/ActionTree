@@ -189,7 +189,7 @@ class DependencyGraph(object):
         filename, ext = os.path.splitext(filename)
         g = self.get_graphviz_graph()
         g.format = "png"
-        g.render(directory=directory, filename=filename)
+        g.render(directory=directory, filename=filename, cleanup=True)
 
     def get_graphviz_graph(self):
         """
