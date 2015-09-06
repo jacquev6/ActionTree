@@ -30,10 +30,10 @@ Questions? Remarks? Bugs? Want to contribute? `Open an issue <https://github.com
 .. image:: https://img.shields.io/pypi/v/ActionTree.svg
     :target: https://pypi.python.org/pypi/ActionTree
 
-.. image:: https://img.shields.io/pypi/pyversions/ActionTree/badge.svg
+.. image:: https://img.shields.io/pypi/pyversions/ActionTree.svg
     :target: https://pypi.python.org/pypi/ActionTree
 
-.. image:: https://img.shields.io/pypi/status/ActionTree/badge.svg
+.. image:: https://img.shields.io/pypi/status/ActionTree.svg
     :target: https://pypi.python.org/pypi/ActionTree
 
 .. image:: https://img.shields.io/github/issues/jacquev6/ActionTree.svg
