@@ -4,7 +4,6 @@ ActionTree
 
 .. include:: ../README.rst
 
-
 Contents
 ========
 
