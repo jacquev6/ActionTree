@@ -15,7 +15,6 @@ import matplotlib.figure
 
 import ActionTree
 from ActionTree.drawings import *
-from . import TestCaseWithMocks
 
 
 MockAction = collections.namedtuple("MockAction", "label, dependencies, begin_time, end_time, status")
@@ -37,7 +36,7 @@ class UtilitiesTestCase(unittest.TestCase):
         self.assertEqual(nearest(22, [10, 20, 30]), 20)
 
 
-class ExecutionReportTestCase(TestCaseWithMocks):
+class ExecutionReportTestCase(unittest.TestCase):
     def test_simple_attributes(self):
         a = MockAction("a", [], 10.5, 11.5, successful)
         b = MockAction("b", [], 10.7, 11.7, successful)
@@ -118,38 +117,41 @@ class ExecutionReportTestCase(TestCaseWithMocks):
             canceled
         )
         r = ExecutionReport(a)
-        ax = self.mocks.create("ax")
+        ax = unittest.mock.Mock()
 
-        ax.expect.plot([cb, ce], [3, 3], color="red", lw=4)
-        ax.expect.annotate("c", xy=(cb, 3), xytext=(0, 3), textcoords="offset points")
-        ax.expect.plot([bb, be], [2, 2], color="blue", lw=4)
-        ax.expect.annotate("b", xy=(bb, 2), xytext=(0, 3), textcoords="offset points")
-        ax.expect.plot([ab, ae], [1, 1], color="gray", lw=4)
-        ax.expect.annotate("a", xy=(ab, 1), xytext=(0, 3), textcoords="offset points")
-        ax.expect.plot([be, ab], [2, 1], "k:", lw=1)
-        ax.expect.plot([ce, ab], [3, 1], "k:", lw=1)
+        r.plot_on_mpl_axes(ax)
 
-        yaxis = self.mocks.create("yaxis")
-        ax.expect.get_yaxis().andReturn(yaxis.object)
-        yaxis.expect.set_ticklabels([])
-        ax.expect.set_ylim(0.5, 4)
+        call = unittest.mock.call
+        self.assertEqual(
+            ax.mock_calls[:14],
+            [
+                call.plot([dt(1, 250), dt(3, 250)], [3, 3], color="red", lw=4),
+                call.annotate("c", textcoords="offset points", xy=(dt(1, 250), 3), xytext=(0, 3)),
+                call.plot([dt(1, 500), dt(2, 500)], [2, 2], color="blue", lw=4),
+                call.annotate("b", textcoords="offset points", xy=(dt(1, 500), 2), xytext=(0, 3)),
+                call.plot([dt(3, 750), dt(4, 750)], [1, 1], color="gray", lw=4),
+                call.annotate("a", textcoords="offset points", xy=(dt(3, 750), 1), xytext=(0, 3)),
+                call.plot([dt(2, 500), dt(3, 750)], [2, 1], "k:", lw=1),
+                call.plot([dt(3, 250), dt(3, 750)], [3, 1], "k:", lw=1),
+                call.get_yaxis(),
+                call.get_yaxis().set_ticklabels([]),
+                call.set_ylim(0.5, 4),
+                call.set_xlabel("Local time"),
+                call.set_xlim(dt(1), dt(5)),
+                call.xaxis_date(),
+            ]
+        )
+        
+        self.assertEqual(ax.mock_calls[14][0], "xaxis.set_major_formatter")
+        self.assertEqual(ax.mock_calls[15][0], "xaxis.set_major_locator")
 
-        ax.expect.set_xlabel("Local time")
-        ax.expect.set_xlim(dt(1), dt(5))
-        ax.expect.xaxis_date()
-        xaxis = self.mocks.create("xaxis")
-        ax.expect.xaxis.andReturn(xaxis.object)
-        xaxis.expect.set_major_formatter.withArguments(lambda args, kwds: True)
-        ax.expect.xaxis.andReturn(xaxis.object)
-        xaxis.expect.set_major_locator.withArguments(lambda args, kwds: True)
-
-        ax2 = self.mocks.create("ax2")
-        ax.expect.twiny().andReturn(ax2.object)
-        ax2.expect.set_xlabel("Relative time")
-        ax2.expect.set_xlim(dt(1), dt(5))
-        ax2.expect.xaxis.andReturn(xaxis.object)
-        xaxis.expect.set_ticks([dt(1, 250), dt(2, 250), dt(3, 250), dt(4, 250)])
-        ax2.expect.xaxis.andReturn(xaxis.object)
-        xaxis.expect.set_ticklabels([0, 1, 2, 3])
-
-        r.plot_on_mpl_axes(ax.object)
+        self.assertEqual(
+            ax.mock_calls[16:],
+            [
+                call.twiny(),
+                call.twiny().set_xlabel("Relative time"),
+                call.twiny().set_xlim(dt(1), dt(5)),
+                call.twiny().xaxis.set_ticks([dt(1, 250), dt(2, 250), dt(3, 250), dt(4, 250)]),
+                call.twiny().xaxis.set_ticklabels([0, 1, 2, 3]),
+            ]
+        )
