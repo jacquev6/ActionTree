@@ -54,7 +54,7 @@ extensions.append("sphinx.ext.doctest")
 extensions.append("sphinx.ext.intersphinx")
 intersphinx_mapping = {
     "python": ("https://docs.python.org/2/", None),
-    "graphviz": ("http://graphviz.readthedocs.org/en/stable/", None),
+    "graphviz": ("http://graphviz.readthedocs.io/en/stable/", None),
     "matplotlib": ("http://matplotlib.org/", None),
 }
 # intersphinx_cache_limit
