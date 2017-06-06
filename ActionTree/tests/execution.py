@@ -28,7 +28,7 @@ class ExecutionTestCase(unittest.TestCase):
         a.execute()
         self.assertEqual(a.status, Action.Successful)
 
-        aMock.assert_called_with()
+        aMock.assert_called_once_with()
 
         self.assertEqual(self.calls, ["a"])
 
@@ -48,10 +48,10 @@ class ExecutionTestCase(unittest.TestCase):
 
         a.execute()
 
-        aMock.assert_called_with()
-        bMock.assert_called_with()
-        cMock.assert_called_with()
-        dMock.assert_called_with()
+        aMock.assert_called_once_with()
+        bMock.assert_called_once_with()
+        cMock.assert_called_once_with()
+        dMock.assert_called_once_with()
 
         self.assertEqual(self.calls[3:], ["a"])
         self.assertEqual(sorted(self.calls[:3]), ["b", "c", "d"])
@@ -83,12 +83,12 @@ class ExecutionTestCase(unittest.TestCase):
 
         a.execute()
 
-        aMock.assert_called_with()
-        bMock.assert_called_with()
-        cMock.assert_called_with()
-        dMock.assert_called_with()
-        eMock.assert_called_with()
-        fMock.assert_called_with()
+        aMock.assert_called_once_with()
+        bMock.assert_called_once_with()
+        cMock.assert_called_once_with()
+        dMock.assert_called_once_with()
+        eMock.assert_called_once_with()
+        fMock.assert_called_once_with()
 
         self.assertEqual(self.calls, ["f", "e", "d", "c", "b", "a"])
 
