@@ -152,7 +152,7 @@ class Action(object):
                 return
             go_on = self.__prepare_execution(action)
         if go_on:
-            action.__begin_time = Action._time()
+            action.__begin_time = datetime.datetime.now()
             try:
                 action.__execute()
             except Exception as e:
@@ -162,7 +162,7 @@ class Action(object):
                     if not keep_going and action is not self:
                         self.__cancel_action(self)
             finally:
-                action.__end_time = Action._time()
+                action.__end_time = datetime.datetime.now()
             with condition:
                 if action.__status != Action.Failed:
                     action.__status = Action.Successful
@@ -209,7 +209,7 @@ class Action(object):
 
     def __cancel_action(self, action):
         action.__status = Action.Canceled
-        action.__begin_time = Action._time()
+        action.__begin_time = datetime.datetime.now()
         action.__end_time = action.__begin_time
 
     def __is_finished(self):
