@@ -31,7 +31,7 @@ class GraphTestCase(unittest.TestCase):
             textwrap.dedent("""\
                 digraph action {
                 \tnode [shape=box]
-                \t\t0 [label=a]
+                \t0 [label=a]
                 }"""
             )
         )
@@ -45,9 +45,9 @@ class GraphTestCase(unittest.TestCase):
             textwrap.dedent("""\
                 digraph action {
                 \tnode [shape=box]
-                \t\t1 [label=a]
-                \t\t0 [label=b]
-                \t\t\t1 -> 0
+                \t1 [label=a]
+                \t0 [label=b]
+                \t\t1 -> 0
                 }"""
             )
         )
@@ -63,14 +63,14 @@ class GraphTestCase(unittest.TestCase):
             textwrap.dedent("""\
                 digraph action {
                 \tnode [shape=box]
-                \t\t0 [label=a]
-                \t\t1 [label=b]
-                \t\t2 [label=c]
-                \t\t3 [label=d]
-                \t\t\t1 -> 0
-                \t\t\t2 -> 0
-                \t\t\t3 -> 1
-                \t\t\t3 -> 2
+                \t0 [label=a]
+                \t1 [label=b]
+                \t2 [label=c]
+                \t3 [label=d]
+                \t\t1 -> 0
+                \t\t2 -> 0
+                \t\t3 -> 1
+                \t\t3 -> 2
                 }"""
             )
         )
@@ -83,7 +83,7 @@ class GraphTestCase(unittest.TestCase):
             textwrap.dedent("""\
                 digraph action {
                 \tnode [shape=box]
-                \t\t0 [label="spaces and; semi=columns"]
+                \t0 [label="spaces and; semi=columns"]
                 }"""
             )
         )

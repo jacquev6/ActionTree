@@ -47,7 +47,7 @@ extensions.append("sphinx.ext.doctest")
 # doctest_path
 # doctest_global_setup
 # doctest_global_cleanup
-doctest_test_doctest_blocks=True
+# doctest_test_doctest_blocks
 
 
 # http://sphinx-doc.org/latest/ext/intersphinx.html

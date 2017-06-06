@@ -43,7 +43,7 @@ class Action(object):
     Canceled = 2
     "The :attr:`status` after a failed execution where a dependency raised an exception."
     Failed = 3
-    "The :attr:`status` after a failed execution whre this action raised an exception."
+    "The :attr:`status` after a failed execution where this action raised an exception."
     __Executing = 4
 
     @property

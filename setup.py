@@ -32,7 +32,7 @@ setuptools.setup(
         "Topic :: Software Development",
     ],
     install_requires=["graphviz", "matplotlib"],
-    tests_require=["MockMockMock<0.6.0"],
+    tests_require=["MockMockMock==v0.5.2"],
     test_suite="ActionTree.tests",
     use_2to3=True,
     command_options={
