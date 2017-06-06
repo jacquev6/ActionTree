@@ -10,125 +10,160 @@ import unittest
 
 from ActionTree.stock import *
 from ActionTree import CompoundException
-from . import TestCaseWithMocks
 
 
-class CreateDirectoryTestCase(TestCaseWithMocks):
+class PatchingTestCase(unittest.TestCase):
+    def patch(self, *args, **kwds):
+        patcher = unittest.mock.patch(*args, **kwds)
+        patched = patcher.start()
+        self.addCleanup(patcher.stop)
+        return patched
+
+
+class CreateDirectoryTestCase(PatchingTestCase):
     def setUp(self):
-        TestCaseWithMocks.setUp(self)
-        self.makedirs = self.mocks.replace("os.makedirs")
-        self.isdir = self.mocks.replace("os.path.isdir")
+        self.makedirs = self.patch("os.makedirs")
+        self.isdir = self.patch("os.path.isdir")
 
     def test_label(self):
         self.assertEqual(CreateDirectory("xxx").label, "mkdir xxx")
+
+        self.makedirs.assert_not_called()
+        self.isdir.assert_not_called()
 
     def test_success(self):
         self.makedirs.expect("xxx")
 
         CreateDirectory("xxx").execute()
 
+        self.makedirs.assert_called_once_with("xxx")
+        self.isdir.assert_not_called()
+
     def test_directory_exists(self):
-        self.makedirs.expect("xxx").andRaise(OSError(errno.EEXIST, "File exists"))
-        self.isdir.expect("xxx").andReturn(True)
+        self.makedirs.side_effect = OSError(errno.EEXIST, "File exists")
+        self.isdir.return_value = True
 
         CreateDirectory("xxx").execute()
 
+        self.makedirs.assert_called_once_with("xxx")
+        self.isdir.assert_called_once_with("xxx")
+
     def test_file_exists(self):
-        self.makedirs.expect("xxx").andRaise(OSError(errno.EEXIST, "File exists"))
-        self.isdir.expect("xxx").andReturn(False)
+        self.makedirs.side_effect = OSError(errno.EEXIST, "File exists")
+        self.isdir.return_value = False
 
         with self.assertRaises(CompoundException):
             CreateDirectory("xxx").execute()
+
+        self.makedirs.assert_called_once_with("xxx")
+        self.isdir.assert_called_once_with("xxx")
 
     def test_other_failure(self):
-        self.makedirs.expect("xxx").andRaise(OSError(-1, "Foobar"))
+        self.makedirs.side_effect = OSError(-1, "Foobar")
 
         with self.assertRaises(CompoundException):
             CreateDirectory("xxx").execute()
 
+        self.makedirs.assert_called_once_with("xxx")
+        self.isdir.assert_not_called()
 
-class CallSubprocessTestCase(TestCaseWithMocks):
+
+class CallSubprocessTestCase(PatchingTestCase):
     def setUp(self):
-        TestCaseWithMocks.setUp(self)
-        self.check_call = self.mocks.replace("subprocess.check_call")
+        self.check_call = self.patch("subprocess.check_call")
 
     def test_label(self):
         self.assertEqual(CallSubprocess(["xxx", "yyy"]).label, "xxx yyy")
 
+        self.check_call.assert_not_called()
+
     def test_simple_call(self):
-        self.check_call.expect(["xxx"])
         CallSubprocess(["xxx"]).execute()
+
+        self.check_call.assert_called_once_with(["xxx"])
 
     def test_call_with_several_args(self):
         self.check_call.expect(["xxx", "yyy"])
         CallSubprocess(["xxx", "yyy"]).execute()
 
+        self.check_call.assert_called_once_with(["xxx", "yyy"])
+
     def test_call_with_kwds(self):
-        self.check_call.expect(["xxx", "yyy"], foo="bar")
         CallSubprocess(["xxx", "yyy"], foo="bar").execute()
 
+        self.check_call.assert_called_once_with(["xxx", "yyy"], foo="bar")
 
-class DeleteFileTestCase(TestCaseWithMocks):
+
+class DeleteFileTestCase(PatchingTestCase):
     def setUp(self):
-        TestCaseWithMocks.setUp(self)
-        self.unlink = self.mocks.replace("os.unlink")
+        self.unlink = self.patch("os.unlink")
 
     def test_label(self):
         self.assertEqual(DeleteFile("xxx").label, "rm xxx")
 
-    def test_success(self):
-        self.unlink.expect("xxx")
+        self.unlink.assert_not_called()
 
+    def test_success(self):
         DeleteFile("xxx").execute()
+
+        self.unlink.assert_called_once_with("xxx")
 
     def test_file_does_not_exist(self):
-        self.unlink.expect("xxx").andRaise(OSError(errno.ENOENT, "No such file or directory"))
+        self.unlink.side_effect = OSError(errno.ENOENT, "No such file or directory")
 
         DeleteFile("xxx").execute()
 
+        self.unlink.assert_called_once_with("xxx")
+
     def test_other_failure(self):
-        self.unlink.expect("xxx").andRaise(OSError(-1, "Foobar"))
+        self.unlink.side_effect = OSError(-1, "Foobar")
 
         with self.assertRaises(CompoundException):
             DeleteFile("xxx").execute()
 
+        self.unlink.assert_called_once_with("xxx")
 
-class CopyFileTestCase(TestCaseWithMocks):
+
+class CopyFileTestCase(PatchingTestCase):
     def setUp(self):
-        TestCaseWithMocks.setUp(self)
-        self.copy = self.mocks.replace("shutil.copy")
-
-    def test_success(self):
-        self.copy.expect("from", "to")
-
-        CopyFile("from", "to").execute()
-
-    def test_failure(self):
-        self.copy.expect("from", "to").andRaise(OSError(-1, "Foobar"))
-
-        with self.assertRaises(CompoundException):
-            CopyFile("from", "to").execute()
+        self.copy = self.patch("shutil.copy")
 
     def test_label(self):
         self.assertEqual(CopyFile("from", "to").label, "cp from to")
 
-
-class TouchFileTestCase(TestCaseWithMocks):
-    def setUp(self):
-        TestCaseWithMocks.setUp(self)
-        self.open = self.mocks.replace("TouchFile._open")
-        self.file = self.mocks.create("FileLikeObject")
-        self.utime = self.mocks.replace("os.utime")
+        self.copy.assert_not_called()
 
     def test_success(self):
-        self.open.expect("xxx", "ab").andReturn(self.file.object)
-        self.file.expect.close()
-        self.utime.expect("xxx", None)
+        CopyFile("from", "to").execute()
 
-        TouchFile("xxx").execute()
+        self.copy.assert_called_once_with("from", "to")
+
+    def test_failure(self):
+        self.copy.side_effect = OSError(-1, "Foobar")
+
+        with self.assertRaises(CompoundException):
+            CopyFile("from", "to").execute()
+
+        self.copy.assert_called_once_with("from", "to")
+
+
+class TouchFileTestCase(PatchingTestCase):
+    def setUp(self):
+        self.open = self.patch("ActionTree.stock.open", new=unittest.mock.mock_open(), create=True)
+        self.utime = self.patch("os.utime")
 
     def test_label(self):
         self.assertEqual(TouchFile("xxx").label, "touch xxx")
+
+        self.open.assert_not_called()
+        self.utime.assert_not_called()
+
+    def test_success(self):
+        TouchFile("xxx").execute()
+
+        self.open.assert_called_once_with("xxx", "ab")
+        self.open().close.assert_called_once_with()
+        self.utime.assert_called_once_with("xxx", None)
 
 
 class NullActionTestCase(unittest.TestCase):
@@ -136,8 +171,11 @@ class NullActionTestCase(unittest.TestCase):
         NullAction().execute()
 
 
-class SleepTestCase(unittest.TestCase):
+class SleepTestCase(PatchingTestCase):
+    def setUp(self):
+        self.sleep = self.patch("time.sleep")
+
     def test(self):
-        before = datetime.datetime.now()
         Sleep(1).execute()
-        self.assertGreater(datetime.datetime.now() - before, datetime.timedelta(seconds=1))
+
+        self.sleep.assert_called_once_with(1)
