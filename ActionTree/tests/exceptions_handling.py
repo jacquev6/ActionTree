@@ -4,27 +4,30 @@
 
 from __future__ import division, absolute_import, print_function
 
+import unittest
+
 from ActionTree import Action, CompoundException
-from . import TestCaseWithMocks
 
 
-class ExceptionsHandlingTestCase(TestCaseWithMocks):
+class ExceptionsHandlingTestCase(unittest.TestCase):
     def __create_mocked_action(self, name):
-        mock = self.mocks.create(name)
-        action = Action(mock.object, name)
+        mock = unittest.mock.Mock()
+        action = Action(mock, name)
         return action, mock
 
     def test_simple_failure(self):
         a, aMock = self.__create_mocked_action("a")
 
         e = Exception("FooBar")
-        aMock.expect().andRaise(e)
+        aMock.side_effect = e
 
         with self.assertRaises(CompoundException) as catcher:
             a.execute()
 
         self.assertEqual(catcher.exception.exceptions, [e])
         self.assertEqual(a.status, Action.Failed)
+
+        aMock.assert_called_once_with()
 
     def test_exception_in_dependency(self):
         a, aMock = self.__create_mocked_action("a")
@@ -33,13 +36,16 @@ class ExceptionsHandlingTestCase(TestCaseWithMocks):
         a.add_dependency(b)
 
         e = Exception()
-        bMock.expect().andRaise(e)
+        bMock.side_effect = e
 
         with self.assertRaises(CompoundException) as catcher:
             a.execute()
 
         self.assertEqual(len(catcher.exception.exceptions), 1)
         self.assertIs(catcher.exception.exceptions[0], e)
+
+        bMock.assert_called_once_with()
+        aMock.assert_not_called()
 
         self.assertEqual(a.status, Action.Canceled)
         self.assertEqual(b.status, Action.Failed)
@@ -56,10 +62,8 @@ class ExceptionsHandlingTestCase(TestCaseWithMocks):
 
         eb = Exception("eb", 42)
         ec = Exception("ec")
-        with self.mocks.unordered:
-            bMock.expect().andRaise(eb)
-            cMock.expect().andRaise(ec)
-            dMock.expect()
+        bMock.side_effect = eb
+        cMock.side_effect = ec
 
         with self.assertRaises(CompoundException) as catcher:
             a.execute(keep_going=True)
@@ -67,6 +71,11 @@ class ExceptionsHandlingTestCase(TestCaseWithMocks):
         self.assertEqual(len(catcher.exception.exceptions), 2)
         self.assertIn(eb, catcher.exception.exceptions)
         self.assertIn(ec, catcher.exception.exceptions)
+
+        aMock.assert_not_called()
+        bMock.assert_called_once_with()
+        cMock.assert_called_once_with()
+        dMock.assert_called_once_with()
 
         self.assertEqual(a.status, Action.Canceled)
         self.assertEqual(b.status, Action.Failed)
@@ -86,19 +95,18 @@ class ExceptionsHandlingTestCase(TestCaseWithMocks):
         eb = Exception("eb")
         ec = Exception("ec")
         ed = Exception("ed")
-        with self.mocks.unordered:
-            with self.mocks.optional:
-                bMock.expect().andRaise(eb)
-            with self.mocks.optional:
-                cMock.expect().andRaise(ec)
-            with self.mocks.optional:
-                dMock.expect().andRaise(ed)
+        bMock.side_effect = eb
+        cMock.side_effect = ec
+        dMock.side_effect = ed
 
         with self.assertRaises(CompoundException) as catcher:
             a.execute()
 
         self.assertEqual(len(catcher.exception.exceptions), 1)
         self.assertIn(catcher.exception.exceptions[0], [eb, ec, ed])
+
+        aMock.assert_not_called()
+        self.assertEqual(bMock.called + cMock.called + dMock.called, 1)
 
         self.assertEqual(a.status, Action.Canceled)
         self.assertEqual(len([x for x in [b, c, d] if x.status == Action.Canceled]), 2)
@@ -110,10 +118,13 @@ class ExceptionsHandlingTestCase(TestCaseWithMocks):
 
         a.add_dependency(b)
 
-        bMock.expect().andRaise(Exception("eb"))
+        bMock.side_effect = Exception("eb")
 
         with self.assertRaises(CompoundException):
             a.execute()
+
+        aMock.assert_not_called()
+        bMock.assert_called_once_with()
 
         self.assertTrue(hasattr(b, "begin_time"))
         self.assertTrue(hasattr(b, "end_time"))

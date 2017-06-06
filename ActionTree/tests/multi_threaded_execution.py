@@ -6,15 +6,15 @@ from __future__ import division, absolute_import, print_function
 
 import threading
 import time
+import unittest
 
 from ActionTree import Action
-from . import TestCaseWithMocks
 
 
 class ExecuteMock:
-    def __init__(self, mock):
+    def __init__(self, lock, mock):
         self.__mock = mock
-        self.__lock = threading.Lock()
+        self.__lock = lock
 
     def __call__(self):
         with self.__lock:
@@ -24,10 +24,16 @@ class ExecuteMock:
             self.__mock.end()
 
 
-class MultiThreadedExecutionTestCase(TestCaseWithMocks):
+class MultiThreadedExecutionTestCase(unittest.TestCase):
+    def setUp(self):
+        self.calls = []
+        self.lock = threading.Lock()
+
     def __create_mocked_action(self, name):
-        mock = self.mocks.create(name)
-        action = Action(ExecuteMock(mock.object), name)
+        mock = unittest.mock.Mock()
+        mock.begin.side_effect = lambda: self.calls.append("B" + name)
+        mock.end.side_effect = lambda: self.calls.append("E" + name)
+        action = Action(ExecuteMock(self.lock, mock), name)
         return action, mock
 
     def test_many_dependencies(self):
@@ -44,18 +50,20 @@ class MultiThreadedExecutionTestCase(TestCaseWithMocks):
         a.add_dependency(c)
         a.add_dependency(d)
 
-        with self.mocks.unordered:
-            bMock.expect.begin()
-            cMock.expect.begin()
-            dMock.expect.begin()
-        with self.mocks.unordered:
-            bMock.expect.end()
-            cMock.expect.end()
-            dMock.expect.end()
-        aMock.expect.begin()
-        aMock.expect.end()
+        a.execute(jobs=3)
 
-        a.execute(jobs=-1)
+        aMock.begin.assert_called_once_with()
+        aMock.end.assert_called_once_with()
+        bMock.begin.assert_called_once_with()
+        bMock.end.assert_called_once_with()
+        cMock.begin.assert_called_once_with()
+        cMock.end.assert_called_once_with()
+        dMock.begin.assert_called_once_with()
+        dMock.end.assert_called_once_with()
+
+        self.assertEqual(sorted(self.calls[0:3]), ["Bb", "Bc", "Bd"])
+        self.assertEqual(sorted(self.calls[3:6]), ["Eb", "Ec", "Ed"])
+        self.assertEqual(self.calls[6:], ["Ba", "Ea"])
 
     def test_deep_dependencies(self):
         #  a
@@ -82,20 +90,22 @@ class MultiThreadedExecutionTestCase(TestCaseWithMocks):
         d.add_dependency(e)
         e.add_dependency(f)
 
-        fMock.expect.begin()
-        fMock.expect.end()
-        eMock.expect.begin()
-        eMock.expect.end()
-        dMock.expect.begin()
-        dMock.expect.end()
-        cMock.expect.begin()
-        cMock.expect.end()
-        bMock.expect.begin()
-        bMock.expect.end()
-        aMock.expect.begin()
-        aMock.expect.end()
-
         a.execute(jobs=3)
+
+        aMock.begin.assert_called_once_with()
+        aMock.end.assert_called_once_with()
+        bMock.begin.assert_called_once_with()
+        bMock.end.assert_called_once_with()
+        cMock.begin.assert_called_once_with()
+        cMock.end.assert_called_once_with()
+        dMock.begin.assert_called_once_with()
+        dMock.end.assert_called_once_with()
+        eMock.begin.assert_called_once_with()
+        eMock.end.assert_called_once_with()
+        fMock.begin.assert_called_once_with()
+        fMock.end.assert_called_once_with()
+
+        self.assertEqual(self.calls, ["Bf", "Ef", "Be", "Ee", "Bd", "Ed", "Bc", "Ec", "Bb", "Eb", "Ba", "Ea"])
 
     def test_diamond_dependencies(self):
         #     a
@@ -113,18 +123,21 @@ class MultiThreadedExecutionTestCase(TestCaseWithMocks):
         b.add_dependency(d)
         c.add_dependency(d)
 
-        dMock.expect.begin()
-        dMock.expect.end()
-        with self.mocks.unordered:
-            bMock.expect.begin()
-            cMock.expect.begin()
-        with self.mocks.unordered:
-            bMock.expect.end()
-            cMock.expect.end()
-        aMock.expect.begin()
-        aMock.expect.end()
-
         a.execute(jobs=3)
+
+        aMock.begin.assert_called_once_with()
+        aMock.end.assert_called_once_with()
+        bMock.begin.assert_called_once_with()
+        bMock.end.assert_called_once_with()
+        cMock.begin.assert_called_once_with()
+        cMock.end.assert_called_once_with()
+        dMock.begin.assert_called_once_with()
+        dMock.end.assert_called_once_with()
+
+        self.assertEqual(self.calls[0:2], ["Bd", "Ed"])
+        self.assertEqual(sorted(self.calls[2:4]), ["Bb", "Bc"])
+        self.assertEqual(sorted(self.calls[4:6]), ["Eb", "Ec"])
+        self.assertEqual(self.calls[6:], ["Ba", "Ea"])
 
     def test_half_diamond_dependency(self):
         #     a
@@ -140,11 +153,6 @@ class MultiThreadedExecutionTestCase(TestCaseWithMocks):
         a.add_dependency(d)
         b.add_dependency(d)
 
-        dMock.expect.begin()
-        dMock.expect.end()
-        bMock.expect.begin()
-        bMock.expect.end()
-        aMock.expect.begin()
-        aMock.expect.end()
-
         a.execute(jobs=3)
+
+        self.assertEqual(self.calls, ["Bd", "Ed", "Bb", "Eb", "Ba", "Ea"])

@@ -4,27 +4,33 @@
 
 from __future__ import division, absolute_import, print_function
 
+import unittest
 import threading
 import time
 
 from ActionTree import Action
-from . import TestCaseWithMocks
 
 
-class ExecutionTestCase(TestCaseWithMocks):
+class ExecutionTestCase(unittest.TestCase):
+    def setUp(self):
+        self.calls = []
+
     def __create_mocked_action(self, name):
-        mock = self.mocks.create(name)
-        action = Action(mock.object, name)
+        mock = unittest.mock.Mock()
+        mock.side_effect = lambda: self.calls.append(name)
+        action = Action(mock, name)
         return action, mock
 
     def test_simple_execution(self):
         a, aMock = self.__create_mocked_action("a")
 
-        aMock.expect()
-
         self.assertEqual(a.status, Action.Pending)
         a.execute()
         self.assertEqual(a.status, Action.Successful)
+
+        aMock.assert_called_once_with()
+
+        self.assertEqual(self.calls, ["a"])
 
     def test_many_dependencies(self):
         #     a
@@ -40,13 +46,15 @@ class ExecutionTestCase(TestCaseWithMocks):
         a.add_dependency(c)
         a.add_dependency(d)
 
-        with self.mocks.unordered:
-            bMock.expect()
-            cMock.expect()
-            dMock.expect()
-        aMock.expect()
-
         a.execute()
+
+        aMock.assert_called_once_with()
+        bMock.assert_called_once_with()
+        cMock.assert_called_once_with()
+        dMock.assert_called_once_with()
+
+        self.assertEqual(self.calls[3:], ["a"])
+        self.assertEqual(sorted(self.calls[:3]), ["b", "c", "d"])
 
     def test_deep_dependencies(self):
         #  a
@@ -73,14 +81,16 @@ class ExecutionTestCase(TestCaseWithMocks):
         d.add_dependency(e)
         e.add_dependency(f)
 
-        fMock.expect()
-        eMock.expect()
-        dMock.expect()
-        cMock.expect()
-        bMock.expect()
-        aMock.expect()
-
         a.execute()
+
+        aMock.assert_called_once_with()
+        bMock.assert_called_once_with()
+        cMock.assert_called_once_with()
+        dMock.assert_called_once_with()
+        eMock.assert_called_once_with()
+        fMock.assert_called_once_with()
+
+        self.assertEqual(self.calls, ["f", "e", "d", "c", "b", "a"])
 
     def test_diamond_dependencies(self):
         #     a
@@ -98,13 +108,11 @@ class ExecutionTestCase(TestCaseWithMocks):
         b.add_dependency(d)
         c.add_dependency(d)
 
-        dMock.expect()
-        with self.mocks.unordered:
-            bMock.expect()
-            cMock.expect()
-        aMock.expect()
-
         a.execute()
+
+        self.assertEqual(self.calls[0:1], ["d"])
+        self.assertEqual(sorted(self.calls[1:3]), ["b", "c"])
+        self.assertEqual(self.calls[3:], ["a"])
 
     def test_half_diamond_dependency(self):
         #     a
@@ -120,11 +128,9 @@ class ExecutionTestCase(TestCaseWithMocks):
         a.add_dependency(d)
         b.add_dependency(d)
 
-        dMock.expect()
-        bMock.expect()
-        aMock.expect()
-
         a.execute()
+
+        self.assertEqual(self.calls, ["d", "b", "a"])
 
     def test_two_deep_branches(self):
         #     a
@@ -143,17 +149,21 @@ class ExecutionTestCase(TestCaseWithMocks):
         b.add_dependency(d)
         c.add_dependency(e)
 
-        with self.mocks.unordered:
-            dMock.expect()
-            eMock.expect()
-        # In previous implementation in ViDE, deepest leaves were
-        # executed first. It is not mandatory, but it make cleaner
-        # executions, because similar tasks are executed at once.
-        # To restore this behavior if needed, uncomment next line
-        # with self.mocks.unordered:
-        # This would have to be done also in getPreview
-            bMock.expect()
-            cMock.expect()
-        aMock.expect()
-
         a.execute()
+
+        self.assertIn(
+            self.calls,
+            [
+                # Leaves first
+                ["d", "e", "b", "c", "a"],
+                ["e", "d", "b", "c", "a"],
+                ["d", "e", "c", "b", "a"],
+                ["e", "d", "c", "b", "a"],
+                # Full branch first
+                ["d", "b", "e", "c", "a"],
+                ["e", "c", "d", "b", "a"],
+                # Leave, then full branch
+                ["e", "d", "b", "c", "a"],
+                ["d", "e", "c", "b", "a"],
+            ]
+        )
