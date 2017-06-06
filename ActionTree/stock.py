@@ -6,6 +6,8 @@ Stock actions are predefined common tasks (manipulating the filesystem, calling 
 They all specialize :class:`.Action`.
 """
 
+from __future__ import division, absolute_import, print_function
+
 import errno
 import os
 import shutil
