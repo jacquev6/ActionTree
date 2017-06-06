@@ -4,26 +4,34 @@
 
 from __future__ import division, absolute_import, print_function
 
+import unittest
+
 from ActionTree import Action, CompoundException
-from . import TestCaseWithMocks
 
 
-class MultipleExecutionsTestCase(TestCaseWithMocks):
+class MultipleExecutionsTestCase(unittest.TestCase):
+    REPEAT = 5
+
+    def setUp(self):
+        self.calls = []
+
     def __create_mocked_action(self, name):
-        mock = self.mocks.create(name)
-        action = Action(mock.object, name)
+        mock = unittest.mock.Mock()
+        mock.side_effect = lambda: self.calls.append(name)
+        action = Action(mock, name)
         return action, mock
 
     def test_simple_success(self):
-        repeat = 5
         a, aMock = self.__create_mocked_action("a")
 
-        for i in range(repeat):
-            aMock.expect()
-
-        for i in range(repeat):
+        for i in range(self.REPEAT):
             a.execute()
             self.assertEqual(a.status, Action.Successful)
+
+        call = unittest.mock.call
+        self.assertEqual(aMock.mock_calls, [call()] * self.REPEAT)
+
+        self.assertEqual(self.calls, ["a"] * self.REPEAT)
 
     def test_failure_in_middle(self):
         a, aMock = self.__create_mocked_action("a")
@@ -32,14 +40,19 @@ class MultipleExecutionsTestCase(TestCaseWithMocks):
         a.add_dependency(b)
         b.add_dependency(c)
 
-        repeat = 5
-        for i in range(repeat):
-            cMock.expect()
-            bMock.expect().andRaise(Exception())
+        # A lambda that make a side effect then raises an exception
+        bMock.side_effect = lambda: [self.calls.append("b"), 1 / 0]
 
-        for i in range(repeat):
+        for i in range(self.REPEAT):
             with self.assertRaises(CompoundException):
                 a.execute()
             self.assertEqual(a.status, Action.Canceled)
             self.assertEqual(b.status, Action.Failed)
             self.assertEqual(c.status, Action.Successful)
+
+        call = unittest.mock.call
+        self.assertEqual(aMock.mock_calls, [])
+        self.assertEqual(bMock.mock_calls, [call()] * self.REPEAT)
+        self.assertEqual(cMock.mock_calls, [call()] * self.REPEAT)
+
+        self.assertEqual(self.calls, ["c", "b"] * self.REPEAT)
