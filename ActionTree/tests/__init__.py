@@ -11,15 +11,3 @@ try:
 except ImportError:
   import mock
   unittest.mock = mock
-
-import MockMockMock
-
-
-class TestCaseWithMocks(unittest.TestCase):
-    def setUp(self):
-        super(TestCaseWithMocks, self).setUp()
-        self.mocks = MockMockMock.Engine()
-
-    def tearDown(self):
-        self.mocks.tearDown()
-        super(TestCaseWithMocks, self).tearDown()

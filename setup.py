@@ -37,7 +37,7 @@ setuptools.setup(
         "Topic :: Software Development",
     ],
     install_requires=["graphviz", "matplotlib"],
-    tests_require=["MockMockMock==v0.5.2"] + (["mock"] if PY2 else []),
+    tests_require=["mock"] if PY2 else [],
     test_suite="ActionTree.tests",
     use_2to3=True,
     command_options={
