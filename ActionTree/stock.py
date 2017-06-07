@@ -1,6 +1,7 @@
 # coding: utf8
 
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
+
 """
 Stock actions are predefined common tasks (manipulating the filesystem, calling an external program, etc.)
 They all specialize :class:`.Action`.

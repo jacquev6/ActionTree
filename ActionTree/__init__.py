@@ -21,7 +21,7 @@ class Action(object):
 
     See also :class:`.ActionFromCallable` if you just want to create an action from a simple callable.
     """
-    # @todo Add a note about printing anyhting in do_execute
+    # @todo Add a note about printing anything in do_execute
 
     def __init__(self, label):
         """
@@ -66,6 +66,8 @@ class Action(object):
         Order of insertion of dependencies is not important.
 
         :param Action dependency:
+
+        :raises DependencyCycleException: when adding the new dependency would create a cycle.
         """
         if self in dependency.__get_all_dependencies():
             raise DependencyCycleException()
@@ -103,11 +105,11 @@ class Action(object):
         """
         Recursively execute this action's dependencies then this action.
 
-        If dependencies raise exceptions, these exceptions are encapsulated in a :exc:`.CompoundException` and thrown.
-
         :param int jobs: number of actions to execute in parallel
         :param bool keep_going: if True, then execution does not stop on first failure,
             but executes as many dependencies as possible.
+
+        :raises CompoundException: when dependencies raise exceptions.
         """
         if jobs <= 0:
             jobs = multiprocessing.cpu_count() + 1
@@ -244,7 +246,7 @@ class ActionFromCallable(Action):
 
 class CompoundException(Exception):
     """
-    Exception thrown by :meth:`.Action.execute` when a dependency raises an exception.
+    Exception thrown by :meth:`.Action.execute` when a dependencies raise exceptions.
     """
 
     def __init__(self, exceptions):
