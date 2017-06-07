@@ -151,6 +151,12 @@ class ExecutionTestCase(unittest.TestCase):
 
         a.execute()
 
+        aMock.assert_called_once_with()
+        bMock.assert_called_once_with()
+        cMock.assert_called_once_with()
+        dMock.assert_called_once_with()
+        eMock.assert_called_once_with()
+
         self.assertIn(
             self.calls,
             [

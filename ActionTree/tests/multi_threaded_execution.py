@@ -157,6 +157,41 @@ class MultiThreadedExecutionTestCase(unittest.TestCase):
 
         self.assertEqual(self.calls, ["Bd", "Ed", "Bb", "Eb", "Ba", "Ea"])
 
+    def test_two_deep_branches(self):
+        #     a
+        #    / \
+        #   b   c
+        #   |   |
+        #   d   e
+
+        a, aMock = self.__create_mocked_action("a")
+        b, bMock = self.__create_mocked_action("b")
+        c, cMock = self.__create_mocked_action("c")
+        d, dMock = self.__create_mocked_action("d")
+        e, eMock = self.__create_mocked_action("e")
+        a.add_dependency(b)
+        a.add_dependency(c)
+        b.add_dependency(d)
+        c.add_dependency(e)
+
+        a.execute(jobs=3)
+
+        aMock.begin.assert_called_once_with()
+        aMock.end.assert_called_once_with()
+        bMock.begin.assert_called_once_with()
+        bMock.end.assert_called_once_with()
+        cMock.begin.assert_called_once_with()
+        cMock.end.assert_called_once_with()
+        dMock.begin.assert_called_once_with()
+        dMock.end.assert_called_once_with()
+        eMock.begin.assert_called_once_with()
+        eMock.end.assert_called_once_with()
+
+        self.assertEqual(sorted(self.calls[0:2]), ["Bd", "Be"])
+        self.assertEqual(sorted(self.calls[2:6]), ["Bb", "Bc", "Ed", "Ee"])
+        self.assertEqual(sorted(self.calls[6:8]), ["Eb", "Ec"])
+        self.assertEqual(self.calls[8:], ["Ba", "Ea"])
+
     def test_default_jobs_count(self):
         # Default jobs count (when jobs < 0) is at least 2 even on a single core machine
         #     a
