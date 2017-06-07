@@ -9,7 +9,7 @@ import errno
 import unittest
 
 from ActionTree.stock import *
-from ActionTree import CompoundException
+from ActionTree import CompoundException, execute
 
 
 class PatchingTestCase(unittest.TestCase):
@@ -34,7 +34,7 @@ class CreateDirectoryTestCase(PatchingTestCase):
     def test_success(self):
         self.makedirs.expect("xxx")
 
-        CreateDirectory("xxx").execute()
+        execute(CreateDirectory("xxx"))
 
         self.makedirs.assert_called_once_with("xxx")
         self.isdir.assert_not_called()
@@ -43,7 +43,7 @@ class CreateDirectoryTestCase(PatchingTestCase):
         self.makedirs.side_effect = OSError(errno.EEXIST, "File exists")
         self.isdir.return_value = True
 
-        CreateDirectory("xxx").execute()
+        execute(CreateDirectory("xxx"))
 
         self.makedirs.assert_called_once_with("xxx")
         self.isdir.assert_called_once_with("xxx")
@@ -53,7 +53,7 @@ class CreateDirectoryTestCase(PatchingTestCase):
         self.isdir.return_value = False
 
         with self.assertRaises(CompoundException):
-            CreateDirectory("xxx").execute()
+            execute(CreateDirectory("xxx"))
 
         self.makedirs.assert_called_once_with("xxx")
         self.isdir.assert_called_once_with("xxx")
@@ -62,7 +62,7 @@ class CreateDirectoryTestCase(PatchingTestCase):
         self.makedirs.side_effect = OSError(-1, "Foobar")
 
         with self.assertRaises(CompoundException):
-            CreateDirectory("xxx").execute()
+            execute(CreateDirectory("xxx"))
 
         self.makedirs.assert_called_once_with("xxx")
         self.isdir.assert_not_called()
@@ -78,18 +78,18 @@ class CallSubprocessTestCase(PatchingTestCase):
         self.check_call.assert_not_called()
 
     def test_simple_call(self):
-        CallSubprocess(["xxx"]).execute()
+        execute(CallSubprocess(["xxx"]))
 
         self.check_call.assert_called_once_with(["xxx"])
 
     def test_call_with_several_args(self):
         self.check_call.expect(["xxx", "yyy"])
-        CallSubprocess(["xxx", "yyy"]).execute()
+        execute(CallSubprocess(["xxx", "yyy"]))
 
         self.check_call.assert_called_once_with(["xxx", "yyy"])
 
     def test_call_with_kwds(self):
-        CallSubprocess(["xxx", "yyy"], foo="bar").execute()
+        execute(CallSubprocess(["xxx", "yyy"], foo="bar"))
 
         self.check_call.assert_called_once_with(["xxx", "yyy"], foo="bar")
 
@@ -104,14 +104,14 @@ class DeleteFileTestCase(PatchingTestCase):
         self.unlink.assert_not_called()
 
     def test_success(self):
-        DeleteFile("xxx").execute()
+        execute(DeleteFile("xxx"))
 
         self.unlink.assert_called_once_with("xxx")
 
     def test_file_does_not_exist(self):
         self.unlink.side_effect = OSError(errno.ENOENT, "No such file or directory")
 
-        DeleteFile("xxx").execute()
+        execute(DeleteFile("xxx"))
 
         self.unlink.assert_called_once_with("xxx")
 
@@ -119,7 +119,7 @@ class DeleteFileTestCase(PatchingTestCase):
         self.unlink.side_effect = OSError(-1, "Foobar")
 
         with self.assertRaises(CompoundException):
-            DeleteFile("xxx").execute()
+            execute(DeleteFile("xxx"))
 
         self.unlink.assert_called_once_with("xxx")
 
@@ -134,7 +134,7 @@ class CopyFileTestCase(PatchingTestCase):
         self.copy.assert_not_called()
 
     def test_success(self):
-        CopyFile("from", "to").execute()
+        execute(CopyFile("from", "to"))
 
         self.copy.assert_called_once_with("from", "to")
 
@@ -142,7 +142,7 @@ class CopyFileTestCase(PatchingTestCase):
         self.copy.side_effect = OSError(-1, "Foobar")
 
         with self.assertRaises(CompoundException):
-            CopyFile("from", "to").execute()
+            execute(CopyFile("from", "to"))
 
         self.copy.assert_called_once_with("from", "to")
 
@@ -159,7 +159,7 @@ class TouchFileTestCase(PatchingTestCase):
         self.utime.assert_not_called()
 
     def test_success(self):
-        TouchFile("xxx").execute()
+        execute(TouchFile("xxx"))
 
         self.open.assert_called_once_with("xxx", "ab")
         self.open().close.assert_called_once_with()
@@ -168,7 +168,7 @@ class TouchFileTestCase(PatchingTestCase):
 
 class NullActionTestCase(unittest.TestCase):
     def test(self):
-        NullAction().execute()
+        execute(NullAction())
 
 
 class SleepTestCase(PatchingTestCase):
@@ -176,6 +176,6 @@ class SleepTestCase(PatchingTestCase):
         self.sleep = self.patch("time.sleep")
 
     def test(self):
-        Sleep(1).execute()
+        execute(Sleep(1))
 
         self.sleep.assert_called_once_with(1)

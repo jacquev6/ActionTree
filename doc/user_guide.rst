@@ -45,14 +45,16 @@ Create an actions dependency graph:
 
 And execute it:
 
->>> concat.execute()
+>>> execute(concat)
+<ActionTree.ExecutionReport...>
 
 You have no guaranty about the order of execution of the ``CreateFile`` actions,
 but you are sure that they are all finished before the ``ConcatFiles`` action starts.
 
 You can execute them in parallel, keeping the same guaranties:
 
->>> concat.execute(jobs=3)
+>>> execute(concat, jobs=3).is_success
+True
 
 .. testcleanup::
 
@@ -83,7 +85,8 @@ The previous example could be rewriten like:
 >>> concat.add_dependency(ActionFromCallable(lambda: create_file("second"), "create second"))
 >>> concat.add_dependency(ActionFromCallable(lambda: create_file("third"), "create third"))
 
->>> concat.execute()
+>>> execute(concat)
+<ActionTree.ExecutionReport...>
 
 Preview
 =======
@@ -115,7 +118,8 @@ Say you want to compile two C++ files and link them:
 >>> link.add_dependency(
 ...   CallSubprocess(["g++", "-c", "doc/b.cpp", "-o", "b.o"])
 ... )
->>> link.execute(jobs=2)
+>>> execute(link, jobs=2)
+<ActionTree.ExecutionReport...>
 
 .. testcleanup::
 
@@ -137,29 +141,29 @@ You can easily draw a graph of your action and its dependencies with :class:`.De
 
     ``doc/doctest/concat.png``
 
-You can draw an execution report with :class:`.ExecutionReport`:
+.. You can draw an execution report with :class:`.ExecutionReport`:
 
->>> from ActionTree.drawings import ExecutionReport
->>> report = ExecutionReport(link)
->>> report.write_to_png("doc/doctest/link_report.png")
+.. >>> from ActionTree.drawings import ExecutionReport
+.. >>> report = ExecutionReport(link)
+.. >>> report.write_to_png("doc/doctest/link_report.png")
 
-.. figure:: doctest/link_report.png
-    :align: center
+.. .. figure:: doctest/link_report.png
+..     :align: center
 
-    ``doc/doctest/link_report.png``
+..     ``doc/doctest/link_report.png``
 
-And if some action fails, you get:
+.. And if some action fails, you get:
 
->>> link.add_dependency(
-...   CallSubprocess(["g++", "-c", "doc/c.cpp", "-o", "c.o"])
-... )
->>> link.execute(keep_going=True)
-Traceback (most recent call last):
-  ...
-CompoundException: [CalledProcessError()]
->>> ExecutionReport(link).write_to_png("doc/doctest/failed_link_report.png")
+.. >>> link.add_dependency(
+.. ...   CallSubprocess(["g++", "-c", "doc/c.cpp", "-o", "c.o"])
+.. ... )
+.. >>> execute(link, keep_going=True)
+.. Traceback (most recent call last):
+..   ...
+.. CompoundException: [CalledProcessError()]
+.. >>> ExecutionReport(link).write_to_png("doc/doctest/failed_link_report.png")
 
-.. figure:: doctest/failed_link_report.png
-    :align: center
+.. .. figure:: doctest/failed_link_report.png
+..     :align: center
 
-    ``doc/doctest/failed_link_report.png``
+..     ``doc/doctest/failed_link_report.png``

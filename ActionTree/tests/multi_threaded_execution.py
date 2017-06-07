@@ -8,7 +8,7 @@ import threading
 import time
 import unittest
 
-from ActionTree import ActionFromCallable as Action
+from ActionTree import ActionFromCallable as Action, execute
 
 
 class ExecuteMock:
@@ -50,7 +50,7 @@ class MultiThreadedExecutionTestCase(unittest.TestCase):
         a.add_dependency(c)
         a.add_dependency(d)
 
-        a.execute(jobs=3)
+        execute(a, jobs=3)
 
         aMock.begin.assert_called_once_with()
         aMock.end.assert_called_once_with()
@@ -90,7 +90,7 @@ class MultiThreadedExecutionTestCase(unittest.TestCase):
         d.add_dependency(e)
         e.add_dependency(f)
 
-        a.execute(jobs=3)
+        execute(a, jobs=3)
 
         aMock.begin.assert_called_once_with()
         aMock.end.assert_called_once_with()
@@ -123,7 +123,7 @@ class MultiThreadedExecutionTestCase(unittest.TestCase):
         b.add_dependency(d)
         c.add_dependency(d)
 
-        a.execute(jobs=3)
+        execute(a, jobs=3)
 
         aMock.begin.assert_called_once_with()
         aMock.end.assert_called_once_with()
@@ -153,7 +153,7 @@ class MultiThreadedExecutionTestCase(unittest.TestCase):
         a.add_dependency(d)
         b.add_dependency(d)
 
-        a.execute(jobs=3)
+        execute(a, jobs=3)
 
         self.assertEqual(self.calls, ["Bd", "Ed", "Bb", "Eb", "Ba", "Ea"])
 
@@ -174,7 +174,7 @@ class MultiThreadedExecutionTestCase(unittest.TestCase):
         b.add_dependency(d)
         c.add_dependency(e)
 
-        a.execute(jobs=3)
+        execute(a, jobs=3)
 
         aMock.begin.assert_called_once_with()
         aMock.end.assert_called_once_with()
@@ -205,7 +205,7 @@ class MultiThreadedExecutionTestCase(unittest.TestCase):
         a.add_dependency(b)
         a.add_dependency(c)
 
-        a.execute(jobs=-1)
+        execute(a, jobs=-1)
 
         aMock.begin.assert_called_once_with()
         aMock.end.assert_called_once_with()

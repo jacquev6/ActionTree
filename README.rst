@@ -65,4 +65,5 @@ Execute some action:
 >>> link = CallSubprocess(["g++", "-o", "test", "a.o", "b.o"])
 >>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/a.cpp", "-o", "a.o"]))
 >>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/b.cpp", "-o", "b.o"]))
->>> link.execute(jobs=2)
+>>> execute(link, jobs=2).is_success
+True

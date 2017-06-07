@@ -8,7 +8,7 @@ import unittest
 import threading
 import time
 
-from ActionTree import ActionFromCallable as Action
+from ActionTree import ActionFromCallable, ActionFromCallable as Action, execute, ExecutionReporteuh as ExecutionReport
 
 
 class ExecutionTestCase(unittest.TestCase):
@@ -18,15 +18,16 @@ class ExecutionTestCase(unittest.TestCase):
     def __create_mocked_action(self, name):
         mock = unittest.mock.Mock()
         mock.side_effect = lambda: self.calls.append(name)
-        action = Action(mock, name)
+        action = ActionFromCallable(mock, name)
         return action, mock
 
     def test_simple_execution(self):
         a, aMock = self.__create_mocked_action("a")
 
-        self.assertEqual(a.status, Action.Pending)
-        a.execute()
-        self.assertEqual(a.status, Action.Successful)
+        report = execute(a)
+
+        self.assertTrue(report.is_success)
+        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Successful)
 
         aMock.assert_called_once_with()
 
@@ -46,7 +47,7 @@ class ExecutionTestCase(unittest.TestCase):
         a.add_dependency(c)
         a.add_dependency(d)
 
-        a.execute()
+        execute(a)
 
         aMock.assert_called_once_with()
         bMock.assert_called_once_with()
@@ -81,7 +82,7 @@ class ExecutionTestCase(unittest.TestCase):
         d.add_dependency(e)
         e.add_dependency(f)
 
-        a.execute()
+        execute(a)
 
         aMock.assert_called_once_with()
         bMock.assert_called_once_with()
@@ -108,7 +109,7 @@ class ExecutionTestCase(unittest.TestCase):
         b.add_dependency(d)
         c.add_dependency(d)
 
-        a.execute()
+        execute(a)
 
         self.assertEqual(self.calls[0:1], ["d"])
         self.assertEqual(sorted(self.calls[1:3]), ["b", "c"])
@@ -128,7 +129,7 @@ class ExecutionTestCase(unittest.TestCase):
         a.add_dependency(d)
         b.add_dependency(d)
 
-        a.execute()
+        execute(a)
 
         self.assertEqual(self.calls, ["d", "b", "a"])
 
@@ -149,7 +150,7 @@ class ExecutionTestCase(unittest.TestCase):
         b.add_dependency(d)
         c.add_dependency(e)
 
-        a.execute()
+        execute(a)
 
         aMock.assert_called_once_with()
         bMock.assert_called_once_with()

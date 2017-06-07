@@ -6,7 +6,7 @@ from __future__ import division, absolute_import, print_function
 
 import unittest
 
-from ActionTree import ActionFromCallable as Action, CompoundException
+from ActionTree import ActionFromCallable, CompoundException, execute, ExecutionReporteuh as ExecutionReport
 
 
 class MultipleExecutionsTestCase(unittest.TestCase):
@@ -18,15 +18,15 @@ class MultipleExecutionsTestCase(unittest.TestCase):
     def __create_mocked_action(self, name):
         mock = unittest.mock.Mock()
         mock.side_effect = lambda: self.calls.append(name)
-        action = Action(mock, name)
+        action = ActionFromCallable(mock, name)
         return action, mock
 
     def test_simple_success(self):
         a, aMock = self.__create_mocked_action("a")
 
         for i in range(self.REPEAT):
-            a.execute()
-            self.assertEqual(a.status, Action.Successful)
+            report = execute(a)
+            self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Successful)
 
         call = unittest.mock.call
         self.assertEqual(aMock.mock_calls, [call()] * self.REPEAT)
@@ -44,11 +44,12 @@ class MultipleExecutionsTestCase(unittest.TestCase):
         bMock.side_effect = lambda: [self.calls.append("b"), 1 / 0]
 
         for i in range(self.REPEAT):
-            with self.assertRaises(CompoundException):
-                a.execute()
-            self.assertEqual(a.status, Action.Canceled)
-            self.assertEqual(b.status, Action.Failed)
-            self.assertEqual(c.status, Action.Successful)
+            with self.assertRaises(CompoundException) as catcher:
+                execute(a)
+            report = catcher.exception.execution_report
+            self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Canceled)
+            self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.Failed)
+            self.assertEqual(report.get_action_status(c).status, ExecutionReport.ActionStatus.Successful)
 
         call = unittest.mock.call
         self.assertEqual(aMock.mock_calls, [])

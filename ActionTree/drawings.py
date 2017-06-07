@@ -37,7 +37,8 @@ intervals = [
 
 _FrozenAction = collections.namedtuple(
     "_FrozenAction",
-    "label, dependencies, dependents, begin_time, end_time, status, notes"
+    # "label, dependencies, dependents, begin_time, end_time, status, notes"
+    "label, dependencies, dependents, notes"
 )
 
 
@@ -50,9 +51,9 @@ def freeze(action, notes_factory, seen=None):
             str(action.label),
             dependencies,
             [],
-            action.begin_time,
-            action.end_time,
-            action.status,
+            # action.begin_time,
+            # action.end_time,
+            # action.status,
             notes_factory()
         )
         for d in dependencies:
@@ -61,114 +62,118 @@ def freeze(action, notes_factory, seen=None):
     return seen
 
 
-class ExecutionReport(object):
-    """
-    Report about the execution of the action, containing successes and failures as well as timing information.
-    """
+# @todo Restore
 
-    class Annotations(object):
-        def __init__(self):
-            self.dependents = set()
-            self.ordinate = None
+# class ExecutionReport(object):
+#     """
+#     Report about the execution of the action, containing successes and failures as well as timing information.
+#     """
 
-    def __init__(self, action):
-        actions = freeze(action, self.Annotations)
-        self.root_action = actions[id(action)]
-        self.actions = self.__sort_actions(actions.values())
-        self.begin_time = min(a.begin_time for a in self.actions)
-        self.end_time = max(a.end_time for a in self.actions)
-        self.duration = self.end_time - self.begin_time
+#     class Annotations(object):
+#         def __init__(self):
+#             self.dependents = set()
+#             self.ordinate = None
 
-    def __sort_actions(self, actions):
-        for action in actions:
-            action.notes.dependents = set(id(d) for d in action.dependents)
+#     def __init__(self, action):
+#         actions = freeze(action, self.Annotations)
+#         self.root_action = actions[id(action)]
+#         self.actions = self.__sort_actions(actions.values())
+#         self.begin_time = min(a.begin_time for a in self.actions)
+#         self.end_time = max(a.end_time for a in self.actions)
+#         self.duration = self.end_time - self.begin_time
 
-        def compute(action, ordinate):
-            action.notes.ordinate = ordinate
-            for d in sorted(action.dependencies, key=lambda d: d.end_time):
-                if len(d.notes.dependents) == 1:
-                    ordinate = compute(d, ordinate - 1)
-                else:
-                    d.notes.dependents.remove(id(action))
-            return ordinate
-        last_ordinate = compute(self.root_action, len(actions) - 1)
+#     def __sort_actions(self, actions):
+#         for action in actions:
+#             action.notes.dependents = set(id(d) for d in action.dependents)
 
-        assert last_ordinate == 0, last_ordinate
+#         def compute(action, ordinate):
+#             action.notes.ordinate = ordinate
+#             for d in sorted(action.dependencies, key=lambda d: d.end_time):
+#                 if len(d.notes.dependents) == 1:
+#                     ordinate = compute(d, ordinate - 1)
+#                 else:
+#                     d.notes.dependents.remove(id(action))
+#             return ordinate
+#         last_ordinate = compute(self.root_action, len(actions) - 1)
 
-        return sorted(actions, key=lambda a: a.notes.ordinate)
-        # @todo Maybe count intersections and do a local search (two-three steps) to find if we can remove some of them.
+#         assert last_ordinate == 0, last_ordinate
 
-    def write_to_png(self, filename):  # pragma no cover (Untestable? But small.)
-        """
-        Write the report as a PNG image to the specified file.
+#         return sorted(actions, key=lambda a: a.notes.ordinate)
+#         # @todo Maybe count intersections and do a local search (two-three steps) to see if we can remove some of them
 
-        See also :meth:`get_mpl_figure` and :meth:`plot_on_mpl_axes` if you want to draw the report somewhere else.
-        """
-        figure = self.get_mpl_figure()
-        canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
-        canvas.print_figure(filename)
+#     def write_to_png(self, filename):  # pragma no cover (Untestable? But small.)
+#         """
+#         Write the report as a PNG image to the specified file.
 
-    def get_mpl_figure(self):  # pragma no cover (Untestable? But small.)
-        """
-        Return a :class:`matplotlib.figure.Figure` of this report.
+#         See also :meth:`get_mpl_figure` and :meth:`plot_on_mpl_axes` if you want to draw the report somewhere else.
+#         """
+#         figure = self.get_mpl_figure()
+#         canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
+#         canvas.print_figure(filename)
 
-        See also :meth:`plot_on_mpl_axes` if you want to draw the report on your own matplotlib figure.
+#     def get_mpl_figure(self):  # pragma no cover (Untestable? But small.)
+#         """
+#         Return a :class:`matplotlib.figure.Figure` of this report.
 
-        See also :meth:`write_to_png` for the simplest use-case.
-        """
-        fig = mpl.Figure()
-        ax = fig.add_subplot(1, 1, 1)
+#         See also :meth:`plot_on_mpl_axes` if you want to draw the report on your own matplotlib figure.
 
-        self.plot_on_mpl_axes(ax)
+#         See also :meth:`write_to_png` for the simplest use-case.
+#         """
+#         fig = mpl.Figure()
+#         ax = fig.add_subplot(1, 1, 1)
 
-        return fig
+#         self.plot_on_mpl_axes(ax)
 
-    def plot_on_mpl_axes(self, ax):
-        """
-        Plot this report on the provided :class:`matplotlib.axes.Axes`.
+#         return fig
 
-        See also :meth:`write_to_png` and :meth:`get_mpl_figure` for the simpler use-cases.
-        """
-        ordinates = {id(a): len(self.actions) - i for i, a in enumerate(self.actions)}
+#     def plot_on_mpl_axes(self, ax):
+#         """
+#         Plot this report on the provided :class:`matplotlib.axes.Axes`.
 
-        for a in self.actions:
-            if a.status == Action.Successful:
-                color = "blue"
-            elif a.status == Action.Failed:
-                color = "red"
-            else:  # Canceled
-                color = "gray"
-            ax.plot([a.begin_time, a.end_time], [ordinates[id(a)], ordinates[id(a)]], color=color, lw=4)
-            ax.annotate(a.label, xy=(a.begin_time, ordinates[id(a)]), xytext=(0, 3), textcoords="offset points")
-            for d in a.dependencies:
-                ax.plot([d.end_time, a.begin_time], [ordinates[id(d)], ordinates[id(a)]], "k:", lw=1)
+#         See also :meth:`write_to_png` and :meth:`get_mpl_figure` for the simpler use-cases.
+#         """
+#         ordinates = {id(a): len(self.actions) - i for i, a in enumerate(self.actions)}
 
-        ax.get_yaxis().set_ticklabels([])
-        ax.set_ylim(0.5, len(self.actions) + 1)
+#         for a in self.actions:
+#             if a.status == Action.Successful:
+#                 color = "blue"
+#             elif a.status == Action.Failed:
+#                 color = "red"
+#             else:  # Canceled
+#                 color = "gray"
+#             ax.plot([a.begin_time, a.end_time], [ordinates[id(a)], ordinates[id(a)]], color=color, lw=4)
+#             ax.annotate(a.label, xy=(a.begin_time, ordinates[id(a)]), xytext=(0, 3), textcoords="offset points")
+#             for d in a.dependencies:
+#                 ax.plot([d.end_time, a.begin_time], [ordinates[id(d)], ordinates[id(a)]], "k:", lw=1)
 
-        min_time = self.begin_time.replace(microsecond=0)
-        max_time = self.end_time.replace(microsecond=0) + datetime.timedelta(seconds=1)
-        duration = int((max_time - min_time).total_seconds())
+#         ax.get_yaxis().set_ticklabels([])
+#         ax.set_ylim(0.5, len(self.actions) + 1)
 
-        ax.set_xlabel("Local time")
-        ax.set_xlim(min_time, max_time)
-        ax.xaxis_date()
-        ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%H:%M:%S"))
-        ax.xaxis.set_major_locator(matplotlib.dates.AutoDateLocator(maxticks=4, minticks=5))
+#         min_time = self.begin_time.replace(microsecond=0)
+#         max_time = self.end_time.replace(microsecond=0) + datetime.timedelta(seconds=1)
+#         duration = int((max_time - min_time).total_seconds())
 
-        ax2 = ax.twiny()
-        ax2.set_xlabel("Relative time")
-        ax2.set_xlim(min_time, max_time)
-        ticks = range(0, duration, nearest(duration // 5, intervals))
-        ax2.xaxis.set_ticks([self.begin_time + datetime.timedelta(seconds=s) for s in ticks])
-        ax2.xaxis.set_ticklabels(ticks)
+#         ax.set_xlabel("Local time")
+#         ax.set_xlim(min_time, max_time)
+#         ax.xaxis_date()
+#         ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%H:%M:%S"))
+#         ax.xaxis.set_major_locator(matplotlib.dates.AutoDateLocator(maxticks=4, minticks=5))
+
+#         ax2 = ax.twiny()
+#         ax2.set_xlabel("Relative time")
+#         ax2.set_xlim(min_time, max_time)
+#         ticks = range(0, duration, nearest(duration // 5, intervals))
+#         ax2.xaxis.set_ticks([self.begin_time + datetime.timedelta(seconds=s) for s in ticks])
+#         ax2.xaxis.set_ticklabels(ticks)
 
 
 class DependencyGraph(object):
     """
     The dependencies of the action.
     """
-    def _sorted(self, x):  # pragma no cover (Unit tests inject an actual sort
+
+    @staticmethod
+    def _sorted(x):  # pragma no cover (Unit tests inject an actual sort
         # for their stability but actual code doesn't need that)
         return x
 

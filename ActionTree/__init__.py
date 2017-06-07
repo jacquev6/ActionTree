@@ -13,17 +13,92 @@ def execute(action, jobs=1, keep_going=False):
     """
     Recursively execute an action's dependencies then the action.
 
-    :param int jobs: number of actions to execute in parallel
-    :param bool keep_going: if True, then execution does not stop on first failure,
+    :param Action action: the action to execute.
+    :param int jobs: number of actions to execute in parallel. Pass ``None`` to let ActionTree choose.
+    :param bool keep_going: if ``True``, then execution does not stop on first failure,
         but executes as many dependencies as possible.
 
     :raises CompoundException: when dependencies raise exceptions.
+
+    :rtype: ExecutionReporteuh
     """
-    # @todo Return an ExecutionReport
     if jobs <= 0 or jobs is None:
         jobs = multiprocessing.cpu_count() + 1
-    action._reset_before_execution()
-    Executor(jobs, keep_going).execute(action)
+    return Executor(jobs, keep_going).execute(action)
+
+
+# @todo Rename to ExecutionReport when ther is no more collision with drawings.ExecutionReport
+class ExecutionReporteuh(object):
+    """
+    ExecutionReporteuh()
+
+    Execution report, returned by :func:`.execute`.
+    """
+
+    class ActionStatus(object):
+        """
+        ActionStatus()
+
+        Status of a single :class:`.Action`.
+        """
+
+        Successful = "Successful"
+        "The :attr:`status` after a successful execution."
+        Canceled = "Canceled"
+        "The :attr:`status` after a failed execution where a dependency raised an exception."
+        Failed = "Failed"
+        "The :attr:`status` after a failed execution where this action raised an exception."
+
+        def __init__(self, status, begin_time, end_time):
+            self.__status = status
+            self.__begin_time = begin_time
+            self.__end_time = end_time
+
+        @property
+        def status(self):
+            """
+            @todo Document
+            """
+            return self.__status
+
+        @property
+        def begin_time(self):
+            """
+            The local :class:`~datetime.datetime` at the begining of the execution of this action.
+            """
+            return self.__begin_time
+
+        @property
+        def end_time(self):
+            """
+            The local :class:`~datetime.datetime` at the end of the execution of this action.
+            """
+            return self.__end_time
+
+    def __init__(self):
+        self.__is_success = True
+        self.__action_statuses = dict()
+
+    def set_success(self, is_success):
+        self.__is_success = is_success
+
+    @property
+    def is_success(self):
+        """
+        ``True`` if the execution finished without error.
+
+        :rtype: bool
+        """
+        return self.__is_success
+
+    def set_action_status(self, action, status):
+        self.__action_statuses[action] = status
+
+    def get_action_status(self, action):
+        """
+        @todo Document
+        """
+        return self.__action_statuses[action]
 
 
 class Executor(object):
@@ -34,23 +109,28 @@ class Executor(object):
     class Execution:
         # An aggregate for things that cannot be stored in Executor
         # (to allow several parallel calls to Executor.execute)
-        def __init__(self, executor, to_be_submitted):
+        def __init__(self, executor, pending):
             self.executor = executor
-            self.to_be_submitted = to_be_submitted
+            self.pending = set(pending)  # Action
             self.submitted = dict()  # Future -> Action
+            self.succeeded = set()  # Action
+            self.failed = set()  # Action
             self.exceptions = []
+            self.report = ExecutionReporteuh()
 
     def execute(self, action):
         # Threads in pool just call self.__time_execute, which has no side effects.
         # To avoid races, only the thread calling Executor.execute is allowed to modify anything.
 
         with futures.ThreadPoolExecutor(max_workers=self.__jobs) as executor:
-            execution = Executor.Execution(executor, set(action.get_all_dependencies()))
-            while execution.to_be_submitted or execution.submitted:
+            execution = Executor.Execution(executor, action.get_all_dependencies())
+            while execution.pending or execution.submitted:
                 self.__progress(execution)
 
         if execution.exceptions:
-            raise CompoundException(execution.exceptions)
+            raise CompoundException(execution.exceptions, execution.report)
+        else:
+            return execution.report
 
     def __progress(self, execution):
         if self.__keep_going or not execution.exceptions:
@@ -60,13 +140,13 @@ class Executor(object):
         self.__wait(execution)
 
     def __submit(self, execution):
-        for action in set(execution.to_be_submitted):
-            if all(d.status == Action.Successful for d in action.dependencies):
+        for action in set(execution.pending):
+            if all(d in execution.succeeded for d in action.dependencies):
                 execution.submitted[execution.executor.submit(self.__time_execute, action)] = action
-                execution.to_be_submitted.remove(action)
-            elif any(d.status in [Action.Failed, Action.Canceled] for d in action.dependencies):
-                self.__mark_action_canceled(action)
-                execution.to_be_submitted.remove(action)
+                execution.pending.remove(action)
+            elif any(d in execution.failed for d in action.dependencies):
+                self.__mark_action_canceled(execution, action)
+                execution.pending.remove(action)
 
     @staticmethod
     def __time_execute(action):
@@ -82,11 +162,11 @@ class Executor(object):
     def __cancel(self, execution):
         for (f, action) in execution.submitted.items():
             if f.cancel():
-                self.__mark_action_canceled(action)
+                self.__mark_action_canceled(execution, action)
                 del execution.submitted[f]
-        for action in execution.to_be_submitted:
-            self.__mark_action_canceled(action)
-        execution.to_be_submitted.clear()
+        for action in execution.pending:
+            self.__mark_action_canceled(execution, action)
+        execution.pending.clear()
 
     def __wait(self, execution):
         waited = futures.wait(execution.submitted.keys(), return_when=futures.FIRST_COMPLETED)
@@ -95,38 +175,48 @@ class Executor(object):
             del execution.submitted[f]
             (exception, begin_time, end_time) = f.result()
             if exception:
-                self.__mark_action_failed(action, begin_time, end_time)
+                self.__mark_action_failed(execution, action, begin_time, end_time)
                 execution.exceptions.append(exception)
+                execution.report.set_success(False)
             else:
-                self.__mark_action_successful(action, begin_time, end_time)
+                self.__mark_action_successful(execution, action, begin_time, end_time)
 
     @staticmethod
-    def __mark_action_canceled(action):
-        action._Action__status = Action.Canceled
-        action._Action__begin_time = action._Action__end_time = datetime.datetime.now()
+    def __mark_action_canceled(execution, action):
+        execution.failed.add(action)
+        now = datetime.datetime.now()
+        execution.report.set_action_status(
+            action,
+            ExecutionReporteuh.ActionStatus(ExecutionReporteuh.ActionStatus.Canceled, now, now)
+        )
 
     @staticmethod
-    def __mark_action_successful(action, begin_time, end_time):
-        action._Action__status = Action.Successful
-        action._Action__begin_time = begin_time
-        action._Action__end_time = end_time
+    def __mark_action_successful(execution, action, begin_time, end_time):
+        execution.succeeded.add(action)
+        execution.report.set_action_status(
+            action,
+            ExecutionReporteuh.ActionStatus(ExecutionReporteuh.ActionStatus.Successful, begin_time, end_time),
+        )
 
     @staticmethod
-    def __mark_action_failed(action, begin_time, end_time):
-        action._Action__status = Action.Failed
-        action._Action__begin_time = begin_time
-        action._Action__end_time = end_time
+    def __mark_action_failed(execution, action, begin_time, end_time):
+        execution.failed.add(action)
+        execution.report.set_action_status(
+            action,
+            ExecutionReporteuh.ActionStatus(ExecutionReporteuh.ActionStatus.Failed, begin_time, end_time)
+        )
 
 
 class Action(object):
     """
     The main class of ActionTree.
     An action to be started after all its dependencies are finished.
+    Pass it to :func:`.execute`.
 
     This is a base class for your custom actions.
     You must define a ``def do_execute(self):`` method that performs the action.
     Its return value is ignored.
-    If it raises and exception, it is captured and re-raised in a :exc:`CompoundException`
+    If it raises and exception, it is captured and re-raised in a :exc:`CompoundException`.
 
     See also :class:`.ActionFromCallable` if you just want to create an action from a simple callable.
     """
@@ -140,42 +230,6 @@ class Action(object):
         """
         self.__label = label
         self.__dependencies = set()
-        self.__status = Action.Pending
-        self.__begin_time = None
-        self.__end_time = None
-
-    @property
-    def status(self):
-        """
-        The status of the action.
-
-        Possible values: :attr:`Pending`, :attr:`Successful`, :attr:`Failed`, :attr:`Canceled`.
-        """
-        return self.__status
-
-    Pending = 0
-    "The initial :attr:`status`."
-    Successful = 1
-    "The :attr:`status` after a successful execution."
-    Canceled = 2
-    "The :attr:`status` after a failed execution where a dependency raised an exception."
-    Failed = 3
-    "The :attr:`status` after a failed execution where this action raised an exception."
-    __Executing = 4
-
-    @property
-    def begin_time(self):
-        """
-        The local :class:`~datetime.datetime` at the begining of the execution of this action.
-        """
-        return self.__begin_time
-
-    @property
-    def end_time(self):
-        """
-        The local :class:`~datetime.datetime` at the end of the execution of this action.
-        """
-        return self.__end_time
 
     @property
     def label(self):
@@ -228,15 +282,6 @@ class Action(object):
             actions.append(self)
         return actions
 
-    # @todo Remove default arguments
-    def execute(self, jobs=1, keep_going=False):
-        return execute(self, jobs, keep_going)
-
-    def _reset_before_execution(self):
-        self.__status = Action.Pending
-        for dependency in self.__dependencies:
-            dependency._reset_before_execution()
-
 
 class ActionFromCallable(Action):
     """
@@ -245,8 +290,8 @@ class ActionFromCallable(Action):
 
     def __init__(self, do_execute, label):
         """
-        :param label: see :class:`.Action`
-        :param callable do_execute: the function to execute the action
+        :param label: see :class:`.Action`.
+        :param callable do_execute: the function to execute the action.
         """
         super(ActionFromCallable, self).__init__(label)
         self.__do_execute = do_execute
@@ -257,12 +302,13 @@ class ActionFromCallable(Action):
 
 class CompoundException(Exception):
     """
-    Exception thrown by :meth:`.Action.execute` when a dependencies raise exceptions.
+    Exception thrown by :func:`.execute` when a dependencies raise exceptions.
     """
 
-    def __init__(self, exceptions):
+    def __init__(self, exceptions, execution_report):
         super(CompoundException, self).__init__(exceptions)
         self.__exceptions = exceptions
+        self.__execution_report = execution_report
 
     @property
     def exceptions(self):
@@ -270,6 +316,13 @@ class CompoundException(Exception):
         The list of the encapsulated exceptions.
         """
         return self.__exceptions
+
+    @property
+    def execution_report(self):
+        """
+        The :class:`.ExecutionReporteuh` of the failed execution.
+        """
+        return self.__execution_report
 
 
 class DependencyCycleException(Exception):

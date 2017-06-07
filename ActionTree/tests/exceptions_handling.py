@@ -7,13 +7,13 @@ from __future__ import division, absolute_import, print_function
 import time
 import unittest
 
-from ActionTree import ActionFromCallable as Action, CompoundException
+from ActionTree import ActionFromCallable, CompoundException, execute, ExecutionReporteuh as ExecutionReport
 
 
 class ExceptionsHandlingTestCase(unittest.TestCase):
     def __create_mocked_action(self, name):
         mock = unittest.mock.Mock()
-        action = Action(mock, name)
+        action = ActionFromCallable(mock, name)
         return action, mock
 
     def test_simple_failure(self):
@@ -23,13 +23,14 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
         aMock.side_effect = e
 
         with self.assertRaises(CompoundException) as catcher:
-            a.execute()
+            execute(a)
+        report = catcher.exception.execution_report
 
         self.assertEqual(catcher.exception.exceptions, [e])
 
         aMock.assert_called_once_with()
 
-        self.assertEqual(a.status, Action.Failed)
+        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Failed)
 
     def test_exception_in_dependency(self):
         a, aMock = self.__create_mocked_action("a")
@@ -41,7 +42,8 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
         bMock.side_effect = e
 
         with self.assertRaises(CompoundException) as catcher:
-            a.execute()
+            execute(a)
+        report = catcher.exception.execution_report
 
         self.assertEqual(len(catcher.exception.exceptions), 1)
         self.assertIs(catcher.exception.exceptions[0], e)
@@ -49,8 +51,8 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
         bMock.assert_called_once_with()
         aMock.assert_not_called()
 
-        self.assertEqual(a.status, Action.Canceled)
-        self.assertEqual(b.status, Action.Failed)
+        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Canceled)
+        self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.Failed)
 
     def test_exceptions_in_dependencies_with_keep_going(self):
         a, aMock = self.__create_mocked_action("a")
@@ -68,7 +70,8 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
         cMock.side_effect = ec
 
         with self.assertRaises(CompoundException) as catcher:
-            a.execute(keep_going=True)
+            execute(a, keep_going=True)
+        report = catcher.exception.execution_report
 
         self.assertEqual(len(catcher.exception.exceptions), 2)
         self.assertIn(eb, catcher.exception.exceptions)
@@ -79,10 +82,10 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
         cMock.assert_called_once_with()
         dMock.assert_called_once_with()
 
-        self.assertEqual(a.status, Action.Canceled)
-        self.assertEqual(b.status, Action.Failed)
-        self.assertEqual(c.status, Action.Failed)
-        self.assertEqual(d.status, Action.Successful)
+        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Canceled)
+        self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.Failed)
+        self.assertEqual(report.get_action_status(c).status, ExecutionReport.ActionStatus.Failed)
+        self.assertEqual(report.get_action_status(d).status, ExecutionReport.ActionStatus.Successful)
 
     def test_exceptions_in_long_branch_dependencies_with_keep_going(self):
         a, aMock = self.__create_mocked_action("a")
@@ -104,7 +107,8 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
         eMock.side_effect = ex
 
         with self.assertRaises(CompoundException) as catcher:
-            a.execute(keep_going=True)
+            execute(a, keep_going=True)
+        report = catcher.exception.execution_report
 
         self.assertEqual(catcher.exception.exceptions, [ex])
 
@@ -116,13 +120,13 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
         fMock.assert_called_once_with()
         gMock.assert_called_once_with()
 
-        self.assertEqual(a.status, Action.Canceled)
-        self.assertEqual(b.status, Action.Successful)
-        self.assertEqual(c.status, Action.Successful)
-        self.assertEqual(d.status, Action.Canceled)
-        self.assertEqual(e.status, Action.Failed)
-        self.assertEqual(f.status, Action.Successful)
-        self.assertEqual(g.status, Action.Successful)
+        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Canceled)
+        self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.Successful)
+        self.assertEqual(report.get_action_status(c).status, ExecutionReport.ActionStatus.Successful)
+        self.assertEqual(report.get_action_status(d).status, ExecutionReport.ActionStatus.Canceled)
+        self.assertEqual(report.get_action_status(e).status, ExecutionReport.ActionStatus.Failed)
+        self.assertEqual(report.get_action_status(f).status, ExecutionReport.ActionStatus.Successful)
+        self.assertEqual(report.get_action_status(g).status, ExecutionReport.ActionStatus.Successful)
 
     def test_exceptions_in_dependencies_without_keep_going(self):
         a, aMock = self.__create_mocked_action("a")
@@ -143,7 +147,8 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
         dMock.side_effect = side_effect
 
         with self.assertRaises(CompoundException) as catcher:
-            a.execute()
+            execute(a)
+        report = catcher.exception.execution_report
 
         failed = len(catcher.exception.exceptions)
         self.assertIn(failed, [1, 2])
@@ -151,9 +156,15 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
         aMock.assert_not_called()
         self.assertEqual(bMock.called + cMock.called + dMock.called, failed)
 
-        self.assertEqual(a.status, Action.Canceled)
-        self.assertEqual(len([x for x in [b, c, d] if x.status == Action.Canceled]), 3 - failed)
-        self.assertEqual(len([x for x in [b, c, d] if x.status == Action.Failed]), failed)
+        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Canceled)
+        self.assertEqual(
+            len([x for x in [b, c, d] if report.get_action_status(x).status == ExecutionReport.ActionStatus.Canceled]),
+            3 - failed
+        )
+        self.assertEqual(
+            len([x for x in [b, c, d] if report.get_action_status(x).status == ExecutionReport.ActionStatus.Failed]),
+            failed
+        )
 
     def test_exception_in_dependency_populates_begin_end_time_anyway(self):
         a, aMock = self.__create_mocked_action("a")
@@ -163,15 +174,16 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
 
         bMock.side_effect = Exception("eb")
 
-        with self.assertRaises(CompoundException):
-            a.execute()
+        with self.assertRaises(CompoundException) as catcher:
+            execute(a)
+        report = catcher.exception.execution_report
 
         aMock.assert_not_called()
         bMock.assert_called_once_with()
 
-        self.assertEqual(b.status, Action.Failed)
-        self.assertIsNotNone(b.begin_time)
-        self.assertIsNotNone(b.end_time)
-        self.assertEqual(a.status, Action.Canceled)
-        self.assertIsNotNone(a.begin_time)
-        self.assertIsNotNone(a.end_time)
+        self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.Failed)
+        self.assertIsNotNone(report.get_action_status(b).begin_time)
+        self.assertIsNotNone(report.get_action_status(b).end_time)
+        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Canceled)
+        self.assertIsNotNone(report.get_action_status(a).begin_time)
+        self.assertIsNotNone(report.get_action_status(a).end_time)
