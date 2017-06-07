@@ -2,7 +2,8 @@
 
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
-import sys, os
+import os
+import sys
 
 master_doc = "index"
 project = "ActionTree"

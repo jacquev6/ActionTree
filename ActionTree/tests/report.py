@@ -141,7 +141,7 @@ class ExecutionReportTestCase(unittest.TestCase):
                 call.xaxis_date(),
             ]
         )
-        
+
         self.assertEqual(ax.mock_calls[14][0], "xaxis.set_major_formatter")
         self.assertEqual(ax.mock_calls[15][0], "xaxis.set_major_locator")
 

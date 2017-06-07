@@ -7,7 +7,7 @@ from __future__ import division, absolute_import, print_function
 import unittest
 
 try:
-  import unittest.mock
+    import unittest.mock
 except ImportError:
-  import mock
-  unittest.mock = mock
+    import mock
+    unittest.mock = mock

@@ -20,7 +20,8 @@ class Action(object):
     def __init__(self, execute, label):
         """
         :param callable execute: the function to execute the action
-        :param label: whatever you want to attach to the action. Can be retrieved by :attr:`label` and :meth:`get_preview`.
+        :param label: whatever you want to attach to the action.
+            Can be retrieved by :attr:`label` and :meth:`get_preview`.
         """
         self.__execute = execute
         self.__label = label
@@ -101,7 +102,8 @@ class Action(object):
         If dependencies raise exceptions, these exceptions are encapsulated in a :exc:`.CompoundException` and thrown.
 
         :param int jobs: number of actions to execute in parallel
-        :param bool keep_going: if True, then execution does not stop on first failure, but executes as many dependencies as possible.
+        :param bool keep_going: if True, then execution does not stop on first failure,
+            but executes as many dependencies as possible.
         """
         if jobs <= 0:
             jobs = multiprocessing.cpu_count() + 1
@@ -178,9 +180,9 @@ class Action(object):
                 condition.wait()
         return action
 
-    ### Returns None in two cases:
-    ###  - when self is finished or failed
-    ###  - when nothing can be started yet, because dependencies are still being executed
+    # Returns None in two cases:
+    #  - when self is finished or failed
+    #  - when nothing can be started yet, because dependencies are still being executed
     def __get_action_to_execute_now(self):
         if self.__status == Action.__Executing or self.__is_finished():
             return None

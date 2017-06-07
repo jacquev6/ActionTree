@@ -13,6 +13,7 @@ from ActionTree.drawings import *
 
 MockAction = collections.namedtuple("MockAction", "label, dependencies, begin_time, end_time, status")
 
+
 def mock_action(label, dependencies):
     return MockAction(label, dependencies, None, None, None)
 
@@ -30,7 +31,8 @@ class GraphTestCase(unittest.TestCase):
 
         self.assertEqual(
             DependencyGraph(a).get_graphviz_graph().source,
-            textwrap.dedent("""\
+            textwrap.dedent(
+                """\
                 digraph action {
                 \tnode [shape=box]
                 \t0 [label=a]
@@ -44,7 +46,8 @@ class GraphTestCase(unittest.TestCase):
 
         self.assertEqual(
             DependencyGraph(a).get_graphviz_graph().source,
-            textwrap.dedent("""\
+            textwrap.dedent(
+                """\
                 digraph action {
                 \tnode [shape=box]
                 \t1 [label=a]
@@ -62,7 +65,8 @@ class GraphTestCase(unittest.TestCase):
 
         self.assertEqual(
             DependencyGraph(d).get_graphviz_graph().source,
-            textwrap.dedent("""\
+            textwrap.dedent(
+                """\
                 digraph action {
                 \tnode [shape=box]
                 \t0 [label=a]
@@ -82,7 +86,8 @@ class GraphTestCase(unittest.TestCase):
 
         self.assertEqual(
             DependencyGraph(a).get_graphviz_graph().source,
-            textwrap.dedent("""\
+            textwrap.dedent(
+                """\
                 digraph action {
                 \tnode [shape=box]
                 \t0 [label="spaces and; semi=columns"]
