@@ -168,7 +168,7 @@ class DependencyGraph(object):
     """
     The dependencies of the action.
     """
-    _sorted = lambda self, x: x  # sorted only for unit tests stability
+    _sorted = lambda self, x: x  # pragma no cover (Unit tests inject an actual sort for their stability but actual code doesn't need that)
 
     Annotations = collections.namedtuple("Annotations", "node")
 

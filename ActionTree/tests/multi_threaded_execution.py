@@ -156,3 +156,29 @@ class MultiThreadedExecutionTestCase(unittest.TestCase):
         a.execute(jobs=3)
 
         self.assertEqual(self.calls, ["Bd", "Ed", "Bb", "Eb", "Ba", "Ea"])
+
+    def test_default_jobs_count(self):
+        # Default jobs count (when jobs < 0) is at least 2 even on a single core machine
+        #     a
+        #    /|
+        #   / |
+        #  b  c
+
+        a, aMock = self.__create_mocked_action("a")
+        b, bMock = self.__create_mocked_action("b")
+        c, cMock = self.__create_mocked_action("c")
+        a.add_dependency(b)
+        a.add_dependency(c)
+
+        a.execute(jobs=-1)
+
+        aMock.begin.assert_called_once_with()
+        aMock.end.assert_called_once_with()
+        bMock.begin.assert_called_once_with()
+        bMock.end.assert_called_once_with()
+        cMock.begin.assert_called_once_with()
+        cMock.end.assert_called_once_with()
+
+        self.assertEqual(sorted(self.calls[0:2]), ["Bb", "Bc"])
+        self.assertEqual(sorted(self.calls[2:4]), ["Eb", "Ec"])
+        self.assertEqual(self.calls[4:], ["Ba", "Ea"])
