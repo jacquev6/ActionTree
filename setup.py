@@ -10,7 +10,11 @@ import sys
 
 version = "0.6.3"
 
-PY2 = sys.version_info[0] == 2
+def py2_only(*dependencies):
+    if sys.version_info[0] == 2:
+        return list(dependencies)
+    else:
+        return []
 
 setuptools.setup(
     name="ActionTree",
@@ -36,8 +40,8 @@ setuptools.setup(
         "Programming Language :: Python :: 3.6",
         "Topic :: Software Development",
     ],
-    install_requires=["graphviz", "matplotlib"],
-    tests_require=["mock"] if PY2 else [],
+    install_requires=["graphviz", "matplotlib"] + py2_only("futures"),
+    tests_require=py2_only("mock"),
     test_suite="ActionTree.tests",
     use_2to3=True,
     command_options={

@@ -4,9 +4,9 @@
 
 from __future__ import division, absolute_import, print_function
 
-import multiprocessing
-import threading
+import concurrent.futures as futures
 import datetime
+import multiprocessing
 
 
 class Action(object):
@@ -53,6 +53,20 @@ class Action(object):
     Failed = 3
     "The :attr:`status` after a failed execution where this action raised an exception."
     __Executing = 4
+
+    @property
+    def begin_time(self):
+        """
+        The local :class:`~datetime.datetime` at the begining of the execution of this action.
+        """
+        return self.__begin_time
+
+    @property
+    def end_time(self):
+        """
+        The local :class:`~datetime.datetime` at the end of the execution of this action.
+        """
+        return self.__end_time
 
     @property
     def label(self):
@@ -102,6 +116,7 @@ class Action(object):
             actions.append(self)
         return actions
 
+    # @todo Remove default arguments
     def execute(self, jobs=1, keep_going=False):
         """
         Recursively execute this action's dependencies then this action.
@@ -117,115 +132,70 @@ class Action(object):
         self.__reset_before_execution()
         self.__do_execute(jobs, keep_going)
 
-    @property
-    def begin_time(self):
-        """
-        The local :class:`~datetime.datetime` at the begining of the execution of this action.
-        """
-        return self.__begin_time
-
-    @property
-    def end_time(self):
-        """
-        The local :class:`~datetime.datetime` at the end of the execution of this action.
-        """
-        return self.__end_time
-
     def __reset_before_execution(self):
         self.__status = Action.Pending
         for dependency in self.__dependencies:
             dependency.__reset_before_execution()
 
     def __do_execute(self, jobs, keep_going):
-        condition = threading.Condition()
-        exceptions = []
-        threads = []
-        for i in range(jobs):
-            thread = threading.Thread(target=self.__execute_in_one_thread, args=(condition, exceptions, keep_going))
-            thread.start()
-            threads.append(thread)
-        for thread in threads:
-            thread.join()
-        if len(exceptions) > 0:
-            self.__mark_canceled_actions()
-            raise CompoundException(exceptions)
-
-    def __execute_in_one_thread(self, condition, exceptions, keep_going):
-        while not self.__is_finished():
-            self.__execute_one_action(condition, exceptions, keep_going)
-
-    def __execute_one_action(self, condition, exceptions, keep_going):
-        with condition:
-            action = self.__wait_for_action_to_execute_now(condition)
-            if action is None:
-                return
-            go_on = self.__prepare_execution(action)
-        if go_on:
-            action.__begin_time = datetime.datetime.now()
+        def time_execute(action):
+            exception = None
             try:
+                begin_time = datetime.datetime.now()
                 action.do_execute()
             except Exception as e:
-                with condition:
-                    action.__status = Action.Failed
-                    exceptions.append(e)
-                    if not keep_going and action is not self:
-                        self.__cancel_action(self)
-            finally:
-                action.__end_time = datetime.datetime.now()
-            with condition:
-                if action.__status != Action.Failed:
-                    action.__status = Action.Successful
-                condition.notify_all()
+                exception = e
+            end_time = datetime.datetime.now()
+            return (exception, begin_time, end_time)
 
-    def __wait_for_action_to_execute_now(self, condition):
-        action = None
-        while action is None:
-            action = self.__get_action_to_execute_now()
-            if self.__is_finished():
-                return None
-            if action is None:
-                condition.wait()
-        return action
+        def cancel(action):
+            action.__status = Action.Canceled
+            action.__begin_time = action.__end_time = datetime.datetime.now()
 
-    # Returns None in two cases:
-    #  - when self is finished or failed
-    #  - when nothing can be started yet, because dependencies are still being executed
-    def __get_action_to_execute_now(self):
-        if self.__status == Action.__Executing or self.__is_finished():
-            return None
-        for dependency in self.__dependencies:
-            action = dependency.__get_action_to_execute_now()
-            if action is not None:
-                return action
-        if all(dependency.__is_finished() for dependency in self.__dependencies):
-            return self
-        else:
-            return None
+        to_be_submitted = self.__get_all_dependencies()
+        submitted = dict()  # Future -> Action
+        exceptions = []
 
-    def __prepare_execution(self, action):
-        if any(d.__is_failure() for d in action.__dependencies):
-            self.__cancel_action(action)
-            return False
-        else:
-            action.__status = Action.__Executing
-            return True
+        # Threads in pool just call time_execute, which has no side effects.
+        # To avoid races, only the thread calling Action.execute is allowed to modify anything.
+        with futures.ThreadPoolExecutor(max_workers=jobs) as executor:
+            while to_be_submitted or submitted:
+                if keep_going or not exceptions:
+                    return_when = futures.FIRST_COMPLETED
+                    for action in set(to_be_submitted):
+                        if all(d.status == Action.Successful for d in action.__dependencies):
+                            submitted[executor.submit(time_execute, action)] = action
+                            to_be_submitted.remove(action)
+                        elif any(
+                            d.status == Action.Failed or d.status == Action.Canceled for d in action.__dependencies
+                        ):
+                            cancel(action)
+                            to_be_submitted.remove(action)
+                else:
+                    return_when = futures.ALL_COMPLETED
+                    for (f, action) in submitted.items():
+                        if f.cancel():
+                            cancel(action)
+                            del submitted[f]
+                    for action in to_be_submitted:
+                        cancel(action)
+                    to_be_submitted.clear()
 
-    def __mark_canceled_actions(self):
-        for dependency in self.__dependencies:
-            dependency.__mark_canceled_actions()
-        if not self.__is_finished():
-            self.__cancel_action(self)
+                waited = futures.wait(submitted.keys(), return_when=return_when)
+                for f in waited.done:
+                    action = submitted[f]
+                    del submitted[f]
+                    (exception, begin_time, end_time) = f.result()
+                    action.__begin_time = begin_time
+                    action.__end_time = end_time
+                    if exception:
+                        action.__status = Action.Failed
+                        exceptions.append(exception)
+                    else:
+                        action.__status = Action.Successful
 
-    def __cancel_action(self, action):
-        action.__status = Action.Canceled
-        action.__begin_time = datetime.datetime.now()
-        action.__end_time = action.__begin_time
-
-    def __is_finished(self):
-        return self.__status in [Action.Successful, Action.Failed, Action.Canceled]
-
-    def __is_failure(self):
-        return self.__status in [Action.Failed, Action.Canceled]
+        if exceptions:
+            raise CompoundException(exceptions)
 
 
 class ActionFromCallable(Action):
