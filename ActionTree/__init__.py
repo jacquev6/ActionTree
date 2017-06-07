@@ -22,6 +22,7 @@ class Action(object):
     See also :class:`.ActionFromCallable` if you just want to create an action from a simple callable.
     """
     # @todo Add a note about printing anything in do_execute
+    # @todo Add a note saying
 
     def __init__(self, label):
         """
