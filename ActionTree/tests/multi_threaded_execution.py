@@ -8,7 +8,7 @@ import threading
 import time
 import unittest
 
-from ActionTree import Action
+from ActionTree import ActionFromCallable as Action
 
 
 class ExecuteMock:

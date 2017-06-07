@@ -13,17 +13,21 @@ class Action(object):
     """
     The main class of ActionTree.
     An action to be started after all its dependencies are finished.
+
+    This is a base class for your custom actions.
+    You must define a ``def do_execute(self):`` method that performs the action.
+    Its return value is ignored.
+    If it raises and exception, it is captured and re-raised in a :exc:`CompoundException`
+
+    See also :class:`.ActionFromCallable` if you just want to create an action from a simple callable.
     """
+    # @todo Add a note about printing anyhting in do_execute
 
-    _time = datetime.datetime.now  # Allow static dependency injection. But keep it private.
-
-    def __init__(self, execute, label):
+    def __init__(self, label):
         """
-        :param callable execute: the function to execute the action
         :param label: whatever you want to attach to the action.
             Can be retrieved by :attr:`label` and :meth:`get_preview`.
         """
-        self.__execute = execute
         self.__label = label
         self.__dependencies = set()
         self.__status = Action.Pending
@@ -156,7 +160,7 @@ class Action(object):
         if go_on:
             action.__begin_time = datetime.datetime.now()
             try:
-                action.__execute()
+                action.do_execute()
             except Exception as e:
                 with condition:
                     action.__status = Action.Failed
@@ -219,6 +223,23 @@ class Action(object):
 
     def __is_failure(self):
         return self.__status in [Action.Failed, Action.Canceled]
+
+
+class ActionFromCallable(Action):
+    """
+    An :class:`.Action` sub-class for the simple use-case of using a plain callable as an action.
+    """
+
+    def __init__(self, do_execute, label):
+        """
+        :param label: see :class:`.Action`
+        :param callable do_execute: the function to execute the action
+        """
+        super(ActionFromCallable, self).__init__(label)
+        self.__do_execute = do_execute
+
+    def do_execute(self):
+        self.__do_execute()
 
 
 class CompoundException(Exception):

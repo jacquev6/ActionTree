@@ -8,7 +8,7 @@ import unittest
 import threading
 import time
 
-from ActionTree import Action
+from ActionTree import ActionFromCallable as Action
 
 
 class ExecutionTestCase(unittest.TestCase):

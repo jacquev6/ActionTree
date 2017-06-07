@@ -15,7 +15,7 @@ import subprocess
 import time
 from functools import partial
 
-from . import Action
+from . import Action, ActionFromCallable
 
 
 class NullAction(Action):
@@ -24,7 +24,10 @@ class NullAction(Action):
     Useful as a placeholder for several dependencies.
     """
     def __init__(self):
-        Action.__init__(self, lambda: None, None)
+        Action.__init__(self, None)
+
+    def do_execute(self):
+        pass
 
 
 class CallSubprocess(Action):
@@ -34,11 +37,11 @@ class CallSubprocess(Action):
     Arguments are forwarded exactly to :func:`subprocess.check_call`.
     """
     def __init__(self, args, **kwds):
+        Action.__init__(self, " ".join(args))
         self.__args = args
         self.__kwds = kwds
-        Action.__init__(self, self.__call, " ".join(args))
 
-    def __call(self):
+    def do_execute(self):
         subprocess.check_call(self.__args, **self.__kwds)
 
 
@@ -51,10 +54,10 @@ class CreateDirectory(Action):
     :param str name: the directory to create, passed to :func:`os.makedirs`.
     """
     def __init__(self, name):
+        Action.__init__(self, "mkdir {}".format(name))
         self.__name = name
-        Action.__init__(self, self.__create, "mkdir {}".format(name))
 
-    def __create(self):
+    def do_execute(self):
         try:
             os.makedirs(self.__name)
         except OSError as e:
@@ -70,10 +73,10 @@ class DeleteFile(Action):
     :param str name: the name of the file to delete, passed to :func:`os.unlink`.
     """
     def __init__(self, name):
+        Action.__init__(self, "rm {}".format(name))
         self.__name = name
-        Action.__init__(self, self.__delete, "rm {}".format(name))
 
-    def __delete(self):
+    def do_execute(self):
         try:
             os.unlink(self.__name)
         except OSError as e:
@@ -89,11 +92,11 @@ class CopyFile(Action):
     :param str dst: the destination
     """
     def __init__(self, src, dst):
+        Action.__init__(self, "cp {} {}".format(src, dst))
         self.__src = src
         self.__dst = dst
-        Action.__init__(self, self.__copy, "cp {} {}".format(src, dst))
 
-    def __copy(self):
+    def do_execute(self):
         shutil.copy(self.__src, self.__dst)
 
 
@@ -110,10 +113,10 @@ class TouchFile(Action):
     """
 
     def __init__(self, name):
+        Action.__init__(self, "touch {}".format(name))
         self.__name = name
-        Action.__init__(self, self.__touch, "touch {}".format(name))
 
-    def __touch(self):
+    def do_execute(self):
         open(self.__name, "ab").close()  # Create the file if needed
         os.utime(self.__name, None)  # Actually change its time
 
@@ -125,4 +128,8 @@ class Sleep(Action):
     :param float secs: seconds to sleep, passed to :func:`time.sleep`.
     """
     def __init__(self, secs):
-        Action.__init__(self, partial(time.sleep, secs), "sleep {}".format(secs))
+        Action.__init__(self, "sleep {}".format(secs))
+        self.__secs = secs
+
+    def do_execute(self):
+        time.sleep(self.__secs)

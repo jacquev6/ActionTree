@@ -12,8 +12,8 @@ from ActionTree import Action
 class PreviewTestCase(unittest.TestCase):
     def test_dependencies_and_labels_are_not_only_equal_but_same(self):
         bLabel = ("b",)
-        a = Action(None, "a")
-        b = Action(None, bLabel)
+        a = Action("a")
+        b = Action(bLabel)
         a.add_dependency(b)
 
         otherB, = a.dependencies
@@ -21,22 +21,22 @@ class PreviewTestCase(unittest.TestCase):
         self.assertIs(otherB.label, bLabel)
 
     def test_simple_preview(self):
-        a = Action(None, "a")
+        a = Action("a")
         self.assertEqual(a.get_preview(), ["a"])
 
     def test_typed_label(self):
-        a = Action(None, ("a", "curious", "label", 42))
+        a = Action(("a", "curious", "label", 42))
         self.assertEqual(a.get_preview(), [("a", "curious", "label", 42)])
 
     def test_none_label(self):
-        a = Action(None, None)
+        a = Action(None)
         self.assertEqual(a.get_preview(), [])
 
     def test_deep_dependency(self):
-        a = Action(None, "a")
-        b = Action(None, "b")
-        c = Action(None, "c")
-        d = Action(None, "d")
+        a = Action("a")
+        b = Action("b")
+        c = Action("c")
+        d = Action("d")
         a.add_dependency(b)
         b.add_dependency(c)
         c.add_dependency(d)
@@ -44,10 +44,10 @@ class PreviewTestCase(unittest.TestCase):
         self.assertEqual(a.get_preview(), ["d", "c", "b", "a"])
 
     def test_deep_dependency_with_duplicated_label(self):
-        a = Action(None, "label")
-        b = Action(None, "label")
-        c = Action(None, "label")
-        d = Action(None, "label")
+        a = Action("label")
+        b = Action("label")
+        c = Action("label")
+        d = Action("label")
         a.add_dependency(b)
         b.add_dependency(c)
         c.add_dependency(d)
@@ -61,10 +61,10 @@ class PreviewTestCase(unittest.TestCase):
         #    \ /
         #     d
 
-        a = Action(None, "a")
-        b = Action(None, "b")
-        c = Action(None, "c")
-        d = Action(None, "d")
+        a = Action("a")
+        b = Action("b")
+        c = Action("c")
+        d = Action("d")
         a.add_dependency(b)
         a.add_dependency(c)
         b.add_dependency(d)

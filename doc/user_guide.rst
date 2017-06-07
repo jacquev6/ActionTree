@@ -7,40 +7,48 @@ Introduction
 
 In ActionTree, you create the graph of the actions to be executed and then call the ``execute`` method of its root.
 
-For example, let's say you want to generate three files, and then concatenate them to a fourth file.
+For example, let's say you want to generate three files, and then concatenate them into a fourth file.
 
-Let's start by the utility functions, not related to ActionTree:
-
->>> def create_file(name):
-...   with open(name, "w") as f:
-...     f.write("This is {}\\n".format(name))
-
->>> def concat_files(files, name):
-...   with open(name, "w") as output:
-...     for file in files:
-...       with open(file) as input:
-...         output.write(input.read())
-
-
-Then, here is how you use them with ActionTree. Import it:
+First, import ActionTree
 
 >>> from ActionTree import *
 
-Create the graph of actions:
+Then create your specialized action classes:
 
->>> from functools import partial
+>>> class CreateFile(Action):
+...   def __init__(self, name):
+...     super(CreateFile, self).__init__("create {}".format(name))
+...     self.__name = name
+...
+...   def do_execute(self):
+...     with open(self.__name, "w") as f:
+...       f.write("This is {}\\n".format(self.__name))
 
->>> concat = Action(partial(concat_files, ["first", "second", "third"], "fourth"), "concat")
->>> concat.add_dependency(Action(partial(create_file, "first"), "create first"))
->>> concat.add_dependency(Action(partial(create_file, "second"), "create second"))
->>> concat.add_dependency(Action(partial(create_file, "third"), "create third"))
+>>> class ConcatFiles(Action):
+...   def __init__(self, files, name):
+...     super(ConcatFiles, self).__init__("concat")
+...     self.__files = files
+...     self.__name = name
+...
+...   def do_execute(self):
+...     with open(self.__name, "w") as output:
+...       for file in self.__files:
+...         with open(file) as input:
+...           output.write(input.read())
 
-Execute the actions:
+Create an actions dependency graph:
+
+>>> concat = ConcatFiles(["first", "second", "third"], "fourth")
+>>> concat.add_dependency(CreateFile("first"))
+>>> concat.add_dependency(CreateFile("second"))
+>>> concat.add_dependency(CreateFile("third"))
+
+And execute it:
 
 >>> concat.execute()
 
-You have no guaranty about the order of execution of the ``create_file`` actions,
-but you are sure that they are all finished before the ``concat_files`` action starts.
+You have no guaranty about the order of execution of the ``CreateFile`` actions,
+but you are sure that they are all finished before the ``ConcatFiles`` action starts.
 
 You can execute them in parallel, keeping the same guaranties:
 
@@ -54,37 +62,26 @@ You can execute them in parallel, keeping the same guaranties:
     os.unlink("third")
     os.unlink("fourth")
 
-Specialized actions
-===================
+Simple actions from callable
+============================
 
-:class:`.Action` accepts a callable in its constructor to be usable without subclassing,
-but it's also easy to specialize. The previous example could be rewriten like:
+:class:`.ActionFromCallable` accepts a callable in its constructor to be usable without subclassing.
+The previous example could be rewriten like:
 
->>> class CreateFile(Action):
-...   def __init__(self, name):
-...     super(CreateFile, self).__init__(self.__create, "create {}".format(name))
-...     self.__name = name
-...
-...   def __create(self):
-...     with open(self.__name, "w") as f:
-...       f.write("This is {}\\n".format(self.__name))
+>>> def create_file(name):
+...   with open(name, "w") as f:
+...     f.write("This is {}\\n".format(name))
 
->>> class ConcatFiles(Action):
-...   def __init__(self, files, name):
-...     super(ConcatFiles, self).__init__(self.__concat, "concat")
-...     self.__files = files
-...     self.__name = name
-...
-...   def __concat(self):
-...     with open(self.__name, "w") as output:
-...       for file in self.__files:
-...         with open(file) as input:
-...           output.write(input.read())
+>>> def concat_files(files, name):
+...   with open(name, "w") as output:
+...     for file in files:
+...       with open(file) as input:
+...         output.write(input.read())
 
->>> concat = ConcatFiles(["first", "second", "third"], "fourth")
->>> concat.add_dependency(CreateFile("first"))
->>> concat.add_dependency(CreateFile("second"))
->>> concat.add_dependency(CreateFile("third"))
+>>> concat = ActionFromCallable(lambda: concat_files(["first", "second", "third"], "fourth"), "concat")
+>>> concat.add_dependency(ActionFromCallable(lambda: create_file("first"), "create first"))
+>>> concat.add_dependency(ActionFromCallable(lambda: create_file("second"), "create second"))
+>>> concat.add_dependency(ActionFromCallable(lambda: create_file("third"), "create third"))
 
 >>> concat.execute()
 
