@@ -25,9 +25,10 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
             a.execute()
 
         self.assertEqual(catcher.exception.exceptions, [e])
-        self.assertEqual(a.status, Action.Failed)
 
         aMock.assert_called_once_with()
+
+        self.assertEqual(a.status, Action.Failed)
 
     def test_exception_in_dependency(self):
         a, aMock = self.__create_mocked_action("a")
@@ -81,6 +82,46 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
         self.assertEqual(b.status, Action.Failed)
         self.assertEqual(c.status, Action.Failed)
         self.assertEqual(d.status, Action.Successful)
+
+    def test_exceptions_in_long_branch_dependencies_with_keep_going(self):
+        a, aMock = self.__create_mocked_action("a")
+        b, bMock = self.__create_mocked_action("b")
+        c, cMock = self.__create_mocked_action("c")
+        d, dMock = self.__create_mocked_action("d")
+        e, eMock = self.__create_mocked_action("e")
+        f, fMock = self.__create_mocked_action("f")
+        g, gMock = self.__create_mocked_action("g")
+
+        a.add_dependency(b)
+        b.add_dependency(c)
+        a.add_dependency(d)
+        d.add_dependency(e)
+        a.add_dependency(f)
+        f.add_dependency(g)
+
+        ex = Exception()
+        eMock.side_effect = ex
+
+        with self.assertRaises(CompoundException) as catcher:
+            a.execute(keep_going=True)
+
+        self.assertEqual(catcher.exception.exceptions, [ex])
+
+        aMock.assert_not_called()
+        bMock.assert_called_once_with()
+        cMock.assert_called_once_with()
+        dMock.assert_not_called()
+        eMock.assert_called_once_with()
+        fMock.assert_called_once_with()
+        gMock.assert_called_once_with()
+
+        self.assertEqual(a.status, Action.Canceled)
+        self.assertEqual(b.status, Action.Successful)
+        self.assertEqual(c.status, Action.Successful)
+        self.assertEqual(d.status, Action.Canceled)
+        self.assertEqual(e.status, Action.Failed)
+        self.assertEqual(f.status, Action.Successful)
+        self.assertEqual(g.status, Action.Successful)
 
     def test_exceptions_in_dependencies_without_keep_going(self):
         a, aMock = self.__create_mocked_action("a")
