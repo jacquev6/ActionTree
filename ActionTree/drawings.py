@@ -2,18 +2,18 @@
 
 # Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
 
-from __future__ import division, absolute_import, print_function
+# from __future__ import division, absolute_import, print_function
 
-import collections
-import datetime
-import os.path
+# import collections
+# import datetime
+# import os.path
 
-import graphviz
-import matplotlib.backends.backend_agg
-import matplotlib.dates
-import matplotlib.figure as mpl
+# import graphviz
+# import matplotlib.backends.backend_agg
+# import matplotlib.dates
+# import matplotlib.figure as mpl
 
-from . import Action
+# from . import Action
 
 
 def nearest(v, values):
@@ -28,38 +28,38 @@ def nearest(v, values):
         else:
             return values[i]
 
-intervals = [
-    1, 2, 5, 10, 15, 30, 60,
-    2 * 60, 10 * 60, 30 * 60, 3600,
-    2 * 3600, 3 * 3600, 6 * 3600, 12 * 3600, 24 * 3600,
-]
+# intervals = [
+#     1, 2, 5, 10, 15, 30, 60,
+#     2 * 60, 10 * 60, 30 * 60, 3600,
+#     2 * 3600, 3 * 3600, 6 * 3600, 12 * 3600, 24 * 3600,
+# ]
 
 
-_FrozenAction = collections.namedtuple(
-    "_FrozenAction",
-    # "label, dependencies, dependents, begin_time, end_time, status, notes"
-    "label, dependencies, dependents, notes"
-)
+# _FrozenAction = collections.namedtuple(
+#     "_FrozenAction",
+#     # "label, dependencies, dependents, begin_time, end_time, status, notes"
+#     "label, dependencies, dependents, notes"
+# )
 
 
-def freeze(action, notes_factory, seen=None):
-    if seen is None:
-        seen = {}
-    if id(action) not in seen:
-        dependencies = [freeze(d, notes_factory, seen)[id(d)] for d in action.dependencies]
-        a = _FrozenAction(
-            str(action.label),
-            dependencies,
-            [],
-            # action.begin_time,
-            # action.end_time,
-            # action.status,
-            notes_factory()
-        )
-        for d in dependencies:
-            d.dependents.append(a)
-        seen[id(action)] = a
-    return seen
+# def freeze(action, notes_factory, seen=None):
+#     if seen is None:
+#         seen = {}
+#     if id(action) not in seen:
+#         dependencies = [freeze(d, notes_factory, seen)[id(d)] for d in action.dependencies]
+#         a = _FrozenAction(
+#             str(action.label),
+#             dependencies,
+#             [],
+#             # action.begin_time,
+#             # action.end_time,
+#             # action.status,
+#             notes_factory()
+#         )
+#         for d in dependencies:
+#             d.dependents.append(a)
+#         seen[id(action)] = a
+#     return seen
 
 
 # @todo Restore
@@ -165,51 +165,3 @@ def freeze(action, notes_factory, seen=None):
 #         ticks = range(0, duration, nearest(duration // 5, intervals))
 #         ax2.xaxis.set_ticks([self.begin_time + datetime.timedelta(seconds=s) for s in ticks])
 #         ax2.xaxis.set_ticklabels(ticks)
-
-
-class DependencyGraph(object):
-    """
-    The dependencies of the action.
-    """
-
-    @staticmethod
-    def _sorted(x):  # pragma no cover (Unit tests inject an actual sort
-        # for their stability but actual code doesn't need that)
-        return x
-
-    Annotations = collections.namedtuple("Annotations", "node")
-
-    def __init__(self, action):
-        self.__next_node = -1
-        self.__actions = self._sorted(freeze(action, self.__annotate).values())
-
-    def __annotate(self):
-        self.__next_node += 1
-        return self.Annotations(str(self.__next_node))
-
-    def write_to_png(self, filename):  # pragma no cover (Untestable? But small.)
-        """
-        Write the graph as a PNG image to the specified file.
-
-        See also :meth:`get_graphviz_graph` if you want to draw the graph somewhere else.
-        """
-        directory = os.path.dirname(filename)
-        filename = os.path.basename(filename)
-        filename, ext = os.path.splitext(filename)
-        g = self.get_graphviz_graph()
-        g.format = "png"
-        g.render(directory=directory, filename=filename, cleanup=True)
-
-    def get_graphviz_graph(self):
-        """
-        Return a :class:`graphviz.Digraph` of this dependency graph.
-
-        See also :meth:`write_to_png` for the simplest use-case.
-        """
-        g = graphviz.Digraph("action", node_attr={"shape": "box"})
-        for action in self.__actions:
-            g.node(action.notes.node, action.label)
-        for action in self.__actions:
-            for d in action.dependencies:
-                g.edge(action.notes.node, d.notes.node)
-        return g

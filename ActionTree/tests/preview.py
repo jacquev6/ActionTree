@@ -30,7 +30,7 @@ class PreviewTestCase(unittest.TestCase):
 
     def test_none_label(self):
         a = Action(None)
-        self.assertEqual(a.get_preview(), [])
+        self.assertEqual(a.get_preview(), [None])
 
     def test_deep_dependency(self):
         a = Action("a")

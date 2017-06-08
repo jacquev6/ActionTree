@@ -132,7 +132,6 @@ Drawings
 
 You can easily draw a graph of your action and its dependencies with :class:`.DependencyGraph`:
 
->>> from ActionTree.drawings import DependencyGraph
 >>> g = DependencyGraph(concat)
 >>> g.write_to_png("doc/doctest/concat.png")
 
@@ -143,7 +142,6 @@ You can easily draw a graph of your action and its dependencies with :class:`.De
 
 .. You can draw an execution report with :class:`.ExecutionReport`:
 
-.. >>> from ActionTree.drawings import ExecutionReport
 .. >>> report = ExecutionReport(link)
 .. >>> report.write_to_png("doc/doctest/link_report.png")
 

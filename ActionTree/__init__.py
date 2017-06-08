@@ -7,6 +7,9 @@ from __future__ import division, absolute_import, print_function
 import concurrent.futures as futures
 import datetime
 import multiprocessing
+import os.path
+
+import graphviz
 
 
 def execute(action, jobs=1, keep_going=False):
@@ -324,14 +327,14 @@ class Action(object):
         """
         Return the labels of this action and its dependencies, in an order that could be the execution order.
         """
-        return [action.__label for action in self.__get_possible_execution_order() if action.__label is not None]
+        return [action.__label for action in self.get_possible_execution_order()]
 
-    def __get_possible_execution_order(self, seen_actions=set()):
+    def get_possible_execution_order(self, seen_actions=set()):
         actions = []
         if self not in seen_actions:
             seen_actions.add(self)
             for dependency in self.__dependencies:
-                actions += dependency.__get_possible_execution_order(seen_actions)
+                actions += dependency.get_possible_execution_order(seen_actions)
             actions.append(self)
         return actions
 
@@ -385,3 +388,41 @@ class DependencyCycleException(Exception):
 
     def __init__(self):
         super(DependencyCycleException, self).__init__("Dependency cycle")
+
+
+class DependencyGraph(object):
+    """
+    The dependencies of the action.
+    """
+
+    def __init__(self, action):
+        self.__graphviz_graph = graphviz.Digraph("action", node_attr={"shape": "box"})
+        nodes = {}
+        for (i, action) in enumerate(action.get_possible_execution_order()):
+            node = str(i)
+            nodes[action] = node
+            self.__graphviz_graph.node(node, str(action.label))
+            for dependency in action.dependencies:
+                assert dependency in nodes  # Because we are iterating a possible execution order
+                self.__graphviz_graph.edge(node, nodes[dependency])
+
+    def write_to_png(self, filename):  # pragma no cover (Untestable? But small.)
+        """
+        Write the graph as a PNG image to the specified file.
+
+        See also :meth:`get_graphviz_graph` if you want to draw the graph somewhere else.
+        """
+        directory = os.path.dirname(filename)
+        filename = os.path.basename(filename)
+        filename, ext = os.path.splitext(filename)
+        g = self.get_graphviz_graph()
+        g.format = "png"
+        g.render(directory=directory, filename=filename, cleanup=True)
+
+    def get_graphviz_graph(self):
+        """
+        Return a :class:`graphviz.Digraph` of this dependency graph.
+
+        See also :meth:`write_to_png` for the simplest use-case.
+        """
+        return self.__graphviz_graph.copy()

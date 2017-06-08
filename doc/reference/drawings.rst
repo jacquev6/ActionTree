@@ -1,5 +1,0 @@
-========
-Drawings
-========
-
-.. automodule:: ActionTree.drawings

@@ -4,30 +4,22 @@
 
 from __future__ import division, absolute_import, print_function
 
-import collections
 import textwrap
 import unittest
 
-from ActionTree.drawings import *
-
-
-MockAction = collections.namedtuple("MockAction", "label, dependencies, begin_time, end_time, status")
-
-
-def mock_action(label, dependencies):
-    return MockAction(label, dependencies, None, None, None)
+from ActionTree import *
 
 
 class GraphTestCase(unittest.TestCase):
-    def setUp(self):
-        self.previous_sorted = DependencyGraph._sorted
-        DependencyGraph._sorted = sorted
-
-    def tearDown(self):
-        DependencyGraph._sorted = self.previous_sorted
+    def test_internal_graph_not_returned(self):
+        g = DependencyGraph(ActionFromCallable(None, "a"))
+        g1 = g.get_graphviz_graph()
+        self.assertEqual(g1.format, "pdf")
+        g1.format = "png"
+        self.assertEqual(g.get_graphviz_graph().format, "pdf")
 
     def test_single_action(self):
-        a = mock_action("a", [])
+        a = ActionFromCallable(None, "a")
 
         self.assertEqual(
             DependencyGraph(a).get_graphviz_graph().source,
@@ -41,8 +33,9 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def test_dependency(self):
-        b = mock_action("b", [])
-        a = mock_action("a", [b])
+        b = ActionFromCallable(None, "b")
+        a = ActionFromCallable(None, "a")
+        a.add_dependency(b)
 
         self.assertEqual(
             DependencyGraph(a).get_graphviz_graph().source,
@@ -50,39 +43,74 @@ class GraphTestCase(unittest.TestCase):
                 """\
                 digraph action {
                 \tnode [shape=box]
-                \t1 [label=a]
                 \t0 [label=b]
+                \t1 [label=a]
                 \t\t1 -> 0
                 }"""
             )
         )
 
     def test_diamond(self):
-        a = mock_action("a", [])
-        b = mock_action("b", [a])
-        c = mock_action("c", [a])
-        d = mock_action("d", [b, c])
+        for i in range(1000):
+            a = ActionFromCallable(None, "a")
+            b = ActionFromCallable(None, "b")
+            b.add_dependency(a)
+            c = ActionFromCallable(None, "c")
+            c.add_dependency(a)
+            d = ActionFromCallable(None, "d")
+            d.add_dependency(c)
+            d.add_dependency(b)
+
+            self.assertIn(
+                DependencyGraph(d).get_graphviz_graph().source,
+                [
+                    textwrap.dedent(
+                        """\
+                        digraph action {
+                        \tnode [shape=box]
+                        \t0 [label=a]
+                        \t1 [label=b]
+                        \t\t1 -> 0
+                        \t2 [label=c]
+                        \t\t2 -> 0
+                        \t3 [label=d]
+                        \t\t3 -> 1
+                        \t\t3 -> 2
+                        }"""
+                    ),
+                    textwrap.dedent(
+                        """\
+                        digraph action {
+                        \tnode [shape=box]
+                        \t0 [label=a]
+                        \t1 [label=c]
+                        \t\t1 -> 0
+                        \t2 [label=b]
+                        \t\t2 -> 0
+                        \t3 [label=d]
+                        \t\t3 -> 1
+                        \t\t3 -> 2
+                        }"""
+                    ),
+                ]
+            )
+
+    def test_typed_label(self):
+        a = ActionFromCallable(None, ("a", "curious", "label", 42))
 
         self.assertEqual(
-            DependencyGraph(d).get_graphviz_graph().source,
+            DependencyGraph(a).get_graphviz_graph().source,
             textwrap.dedent(
                 """\
                 digraph action {
                 \tnode [shape=box]
-                \t0 [label=a]
-                \t1 [label=b]
-                \t2 [label=c]
-                \t3 [label=d]
-                \t\t1 -> 0
-                \t\t2 -> 0
-                \t\t3 -> 1
-                \t\t3 -> 2
+                \t0 [label="('a', 'curious', 'label', 42)"]
                 }"""
             )
         )
 
-    def test_weird_label(self):
-        a = mock_action("spaces and; semi=columns", [])
+    def test_weird_string_label(self):
+        a = ActionFromCallable(None, "spaces and; semi=columns")
 
         self.assertEqual(
             DependencyGraph(a).get_graphviz_graph().source,
@@ -91,6 +119,38 @@ class GraphTestCase(unittest.TestCase):
                 digraph action {
                 \tnode [shape=box]
                 \t0 [label="spaces and; semi=columns"]
+                }"""
+            )
+        )
+
+    def test_None_label(self):
+        a = ActionFromCallable(None, None)
+
+        self.assertEqual(
+            DependencyGraph(a).get_graphviz_graph().source,
+            textwrap.dedent(
+                """\
+                digraph action {
+                \tnode [shape=box]
+                \t0 [label=None]
+                }"""
+            )
+        )
+
+    def test_None_label_twice(self):
+        a = ActionFromCallable(None, None)
+        b = ActionFromCallable(None, None)
+        a.add_dependency(b)
+
+        self.assertEqual(
+            DependencyGraph(a).get_graphviz_graph().source,
+            textwrap.dedent(
+                """\
+                digraph action {
+                \tnode [shape=box]
+                \t0 [label=None]
+                \t1 [label=None]
+                \t\t1 -> 0
                 }"""
             )
         )

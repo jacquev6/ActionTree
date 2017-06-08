@@ -7,10 +7,7 @@ Core
 
 .. automodule:: ActionTree
 
-Additions
-=========
+Stock actions
+=============
 
-.. toctree::
-
-    reference/stock
-    reference/drawings
+.. automodule:: ActionTree.stock
