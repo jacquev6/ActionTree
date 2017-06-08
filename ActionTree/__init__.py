@@ -195,14 +195,21 @@ class Executor(object):
         self.__wait(execution)
 
     def __submit_or_cancel(self, execution, now):
-        for action in set(execution.pending):
-            if all(d in execution.succeeded for d in action.dependencies):
-                execution.submitted[execution.executor.submit(self.__time_execute, action)] = action
-                execution.submitted_at[action] = now
-                execution.pending.remove(action)
-            elif any(d in execution.failed for d in action.dependencies):
-                self.__mark_action_canceled(execution, action, now)
-                execution.pending.remove(action)
+        go_on = True
+        while go_on:
+            go_on = False
+            for action in set(execution.pending):
+                done = execution.succeeded | execution.failed
+                if all(d in done for d in action.dependencies):
+                    if any(d in execution.failed for d in action.dependencies):
+                        self.__mark_action_canceled(execution, action, now)
+                        execution.pending.remove(action)
+                        go_on = True
+                    else:
+                        execution.submitted[execution.executor.submit(self.__time_execute, action)] = action
+                        execution.submitted_at[action] = now
+                        execution.pending.remove(action)
+                        go_on = True
 
     @staticmethod
     def __time_execute(action):
@@ -440,7 +447,7 @@ class DependencyGraph(object):
         return self.__graphviz_graph.copy()
 
 
-class GanttChart(object):
+class GanttChart(object):  # pragma no cover (Too difficult to unit test)
     """
     @todo Document
     """
@@ -475,6 +482,7 @@ class GanttChart(object):
             ax.plot([self.__ready_time, self.__start_time], [ordinate, ordinate], color="blue", lw=1)
             # @todo Use an other end-style to avoid pixels before/after min/max_time
             ax.plot([self.__start_time, self.__success_time], [ordinate, ordinate], color="blue", lw=4)
+            # @todo Make sure the text is not outside the plot on the right
             ax.annotate(self.__label, xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points")
             for d in self.__dependencies:
                 ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
@@ -537,7 +545,7 @@ class GanttChart(object):
         elif status.status == ExecutionReport.ActionStatus.Canceled:
             return cls.CanceledAction(action, status)
 
-    def write_to_png(self, filename):  # pragma no cover (Untestable? But small.)
+    def write_to_png(self, filename):
         """
         Write the Gantt chart as a PNG image to the specified file.
 
@@ -547,7 +555,7 @@ class GanttChart(object):
         canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
         canvas.print_figure(filename)
 
-    def get_mpl_figure(self):  # pragma no cover (Untestable? But small.)
+    def get_mpl_figure(self):
         """
         Return a :class:`matplotlib.figure.Figure` of this Gantt chart.
 

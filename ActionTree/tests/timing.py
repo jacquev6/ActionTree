@@ -13,6 +13,9 @@ class Counter:
     def __init__(self):
         self.__value = 0
 
+    def reset(self):
+        self.__value = 0
+
     def __call__(self):
         self.__value += 1
         return self.__value
@@ -76,3 +79,29 @@ class TimingTestCase(unittest.TestCase):
         self.assertIsNone(report.get_action_status(a).start_time)
         self.assertIsNone(report.get_action_status(a).success_time)
         self.assertIsNone(report.get_action_status(a).failure_time)
+
+    def test_cancelation_with_keep_going(self):
+        for i in range(10):
+            self.datetime.now.side_effect.reset()
+
+            a0, a0Mock = self.__create_mocked_action("a0")
+            a, aMock = self.__create_mocked_action("a")
+            a0.add_dependency(a)
+            b, bMock = self.__create_mocked_action("b")
+            bMock.side_effect = Exception()
+            a.add_dependency(b)
+            DEPS = 10
+            deps = []
+            for i in range(DEPS):
+                c, cMock = self.__create_mocked_action("c")
+                a.add_dependency(c)
+                deps.append(c)
+
+            with self.assertRaises(CompoundException) as catcher:
+                execute(a0, keep_going=True)
+            report = catcher.exception.execution_report
+
+            # a is not cancelled before all its dependencies are done
+            self.assertGreater(report.get_action_status(a).cancel_time, 3 + 2 * DEPS)
+            # a0 is cancelled at the same time as a
+            self.assertEqual(report.get_action_status(a0).cancel_time, report.get_action_status(a).cancel_time)
