@@ -8,7 +8,9 @@ from __future__ import division, absolute_import, print_function
 import setuptools
 import sys
 
-version = "0.6.3"
+
+version = "0.7.0"
+
 
 def py2_only(*dependencies):
     if sys.version_info[0] == 2:
