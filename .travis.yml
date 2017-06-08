@@ -3,18 +3,17 @@ python:
 - "2.7"
 - "3.5"
 - "3.6"
-- "3.7-dev"
 sudo: false
 addons:
   apt:
     packages:
     - graphviz
 install:
-- pip install sphinx coveralls
-- pip install graphviz matplotlib
+- pip install --upgrade sphinx coveralls
+- pip install --upgrade graphviz matplotlib
 - if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ];
   then
-    pip install futures mock;
+    pip install --upgrade futures mock;
   fi
 script:
 - coverage run "--include=ActionTree/*" setup.py test
