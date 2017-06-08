@@ -187,21 +187,21 @@ class Executor(object):
             return execution.report
 
     def __progress(self, execution):
+        now = datetime.datetime.now()
         if self.__keep_going or not execution.exceptions:
-            self.__submit(execution)
+            self.__submit_or_cancel(execution, now)
         else:
-            self.__cancel(execution)
+            self.__cancel(execution, now)
         self.__wait(execution)
 
-    def __submit(self, execution):
-        now = datetime.datetime.now()
+    def __submit_or_cancel(self, execution, now):
         for action in set(execution.pending):
             if all(d in execution.succeeded for d in action.dependencies):
                 execution.submitted[execution.executor.submit(self.__time_execute, action)] = action
                 execution.submitted_at[action] = now
                 execution.pending.remove(action)
             elif any(d in execution.failed for d in action.dependencies):
-                self.__mark_action_canceled(execution, action)
+                self.__mark_action_canceled(execution, action, now)
                 execution.pending.remove(action)
 
     @staticmethod
@@ -215,13 +215,13 @@ class Executor(object):
         end_time = datetime.datetime.now()
         return (exception, begin_time, end_time)
 
-    def __cancel(self, execution):
+    def __cancel(self, execution, now):
         for (f, action) in execution.submitted.items():
             if f.cancel():
-                self.__mark_action_canceled(execution, action)
+                self.__mark_action_canceled(execution, action, now)
                 del execution.submitted[f]
         for action in execution.pending:
-            self.__mark_action_canceled(execution, action)
+            self.__mark_action_canceled(execution, action, now)
         execution.pending.clear()
 
     def __wait(self, execution):
@@ -238,13 +238,13 @@ class Executor(object):
                 self.__mark_action_successful(execution, action, begin_time, end_time)
 
     @staticmethod
-    def __mark_action_canceled(execution, action):
+    def __mark_action_canceled(execution, action, cancel_time):
         execution.failed.add(action)
         execution.report.set_action_status(
             action,
             ExecutionReport.ActionStatus(
                 ready_time=execution.submitted_at.get(action),
-                cancel_time=datetime.datetime.now(),
+                cancel_time=cancel_time,
             )
         )
 
