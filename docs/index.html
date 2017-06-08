@@ -1,0 +1,195 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ActionTree &#8212; ActionTree 0.7.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="User guide" href="user_guide.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="actiontree">
+<h1>ActionTree<a class="headerlink" href="#actiontree" title="Permalink to this headline">¶</a></h1>
+<p>ActionTree is a Python (2.7 and 3.5+) library to execute (long) actions in parallel, respecting dependencies between those actions.
+You create the graph of the actions to be executed and then call the <code class="docutils literal"><span class="pre">execute</span></code> function on its root,
+specifying how many actions must be run in parallel and if errors should stop the execution.</p>
+<p>It’s licensed under the <a class="reference external" href="http://choosealicense.com/licenses/mit/">MIT license</a>.
+It’s available on the <a class="reference external" href="http://pypi.python.org/pypi/ActionTree">Python package index</a>,
+its <a class="reference external" href="http://pythonhosted.org/ActionTree">documentation is hosted by Python</a>
+and its source code is on <a class="reference external" href="https://github.com/jacquev6/ActionTree">GitHub</a>.</p>
+<p>Questions? Remarks? Bugs? Want to contribute? <a class="reference external" href="https://github.com/jacquev6/ActionTree/issues">Open an issue</a>!</p>
+<a class="reference external image-reference" href="https://travis-ci.org/jacquev6/ActionTree"><img alt="https://img.shields.io/travis/jacquev6/ActionTree/master.svg" src="https://img.shields.io/travis/jacquev6/ActionTree/master.svg" /></a>
+<a class="reference external image-reference" href="https://coveralls.io/r/jacquev6/ActionTree"><img alt="https://img.shields.io/coveralls/jacquev6/ActionTree/master.svg" src="https://img.shields.io/coveralls/jacquev6/ActionTree/master.svg" /></a>
+<a class="reference external image-reference" href="https://codeclimate.com/github/jacquev6/ActionTree"><img alt="https://img.shields.io/codeclimate/github/jacquev6/ActionTree.svg" src="https://img.shields.io/codeclimate/github/jacquev6/ActionTree.svg" /></a>
+<a class="reference external image-reference" href="https://scrutinizer-ci.com/g/jacquev6/ActionTree"><img alt="https://img.shields.io/scrutinizer/g/jacquev6/ActionTree.svg" src="https://img.shields.io/scrutinizer/g/jacquev6/ActionTree.svg" /></a>
+<a class="reference external image-reference" href="https://pypi.python.org/pypi/ActionTree"><img alt="https://img.shields.io/pypi/dm/ActionTree.svg" src="https://img.shields.io/pypi/dm/ActionTree.svg" /></a>
+<a class="reference external image-reference" href="https://pypi.python.org/pypi/ActionTree"><img alt="https://img.shields.io/pypi/l/ActionTree.svg" src="https://img.shields.io/pypi/l/ActionTree.svg" /></a>
+<a class="reference external image-reference" href="https://pypi.python.org/pypi/ActionTree"><img alt="https://img.shields.io/pypi/v/ActionTree.svg" src="https://img.shields.io/pypi/v/ActionTree.svg" /></a>
+<a class="reference external image-reference" href="https://pypi.python.org/pypi/ActionTree"><img alt="https://img.shields.io/pypi/pyversions/ActionTree.svg" src="https://img.shields.io/pypi/pyversions/ActionTree.svg" /></a>
+<a class="reference external image-reference" href="https://pypi.python.org/pypi/ActionTree"><img alt="https://img.shields.io/pypi/status/ActionTree.svg" src="https://img.shields.io/pypi/status/ActionTree.svg" /></a>
+<a class="reference external image-reference" href="https://github.com/jacquev6/ActionTree/issues"><img alt="https://img.shields.io/github/issues/jacquev6/ActionTree.svg" src="https://img.shields.io/github/issues/jacquev6/ActionTree.svg" /></a>
+<a class="reference external image-reference" href="https://github.com/jacquev6/ActionTree/network"><img alt="https://img.shields.io/github/forks/jacquev6/ActionTree.svg" src="https://img.shields.io/github/forks/jacquev6/ActionTree.svg" /></a>
+<a class="reference external image-reference" href="https://github.com/jacquev6/ActionTree/stargazers"><img alt="https://img.shields.io/github/stars/jacquev6/ActionTree.svg" src="https://img.shields.io/github/stars/jacquev6/ActionTree.svg" /></a>
+<div class="section" id="quick-start">
+<h2>Quick start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
+<p>Install from PyPI:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ pip install ActionTree
+</pre></div>
+</div>
+<p>Import:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="k">import</span> <span class="n">execute</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree.stock</span> <span class="k">import</span> <span class="n">CallSubprocess</span>
+</pre></div>
+</div>
+<p>Execute some action:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">link</span> <span class="o">=</span> <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="s2">&quot;a.o&quot;</span><span class="p">,</span> <span class="s2">&quot;b.o&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">link</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;doc/a.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;a.o&quot;</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">link</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;doc/b.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;b.o&quot;</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">execute</span><span class="p">(</span><span class="n">link</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">is_success</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">User guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#simple-actions-from-callable">Simple actions from callable</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#preview">Preview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#stock-actions">Stock actions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide.html#drawings">Drawings</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#module-ActionTree">Core</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference.html#module-ActionTree.stock">Stock actions</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="#">ActionTree</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jacquev6&repo=ActionTree&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jacquev6/ActionTree">
+    <img
+        alt="https://secure.travis-ci.org/jacquev6/ActionTree.svg?branch=master"
+        src="https://secure.travis-ci.org/jacquev6/ActionTree.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2013-2015 <a href="http://vincent-jacques.net/contact">Vincent Jacques</a>.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jacquev6/ActionTree" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
