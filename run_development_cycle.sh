@@ -23,6 +23,7 @@ pep8 --max-line-length=120 ActionTree setup.py doc
 python setup.py build_sphinx
 rm -rf docs
 cp -r build/sphinx/html docs
+touch docs/.nojekyll
 echo
 echo "See documentation in $(pwd)/docs/index.html"
 echo
