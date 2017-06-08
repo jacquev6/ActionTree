@@ -133,12 +133,12 @@ Drawings
 You can easily draw a graph of your action and its dependencies with :class:`.DependencyGraph`:
 
 >>> g = DependencyGraph(concat)
->>> g.write_to_png("doc/doctest/concat.png")
+>>> g.write_to_png("doc/doctest/concat_dependency_graph.png")
 
-.. figure:: doctest/concat.png
+.. figure:: doctest/concat_dependency_graph.png
     :align: center
 
-    ``doc/doctest/concat.png``
+    ``doc/doctest/concat_dependency_graph.png``
 
 .. You can draw an execution report with :class:`.ExecutionReport`:
 

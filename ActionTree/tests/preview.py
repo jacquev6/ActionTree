@@ -24,6 +24,12 @@ class PreviewTestCase(unittest.TestCase):
         a = Action("a")
         self.assertEqual(a.get_preview(), ["a"])
 
+    def test_preview_twice(self):
+        # There was a bug where a second call to get_possible_execution_order would return [] :-/
+        a = Action("a")
+        self.assertEqual(a.get_preview(), ["a"])
+        self.assertEqual(a.get_preview(), ["a"])
+
     def test_typed_label(self):
         a = Action(("a", "curious", "label", 42))
         self.assertEqual(a.get_preview(), [("a", "curious", "label", 42)])

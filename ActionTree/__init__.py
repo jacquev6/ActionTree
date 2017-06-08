@@ -329,7 +329,9 @@ class Action(object):
         """
         return [action.__label for action in self.get_possible_execution_order()]
 
-    def get_possible_execution_order(self, seen_actions=set()):
+    def get_possible_execution_order(self, seen_actions=None):
+        if seen_actions is None:
+            seen_actions = set()
         actions = []
         if self not in seen_actions:
             seen_actions.add(self)
