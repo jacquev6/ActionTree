@@ -452,6 +452,7 @@ class GanttChart(object):
             for (action, status) in report.get_actions_and_statuses()
         }
 
+    # @todo Factorize Actions
     class SuccessfulAction(object):
         def __init__(self, action, status):
             self.__label = str(action.label)
@@ -472,6 +473,7 @@ class GanttChart(object):
         def draw(self, ax, ordinates, actions):
             ordinate = ordinates[self.__id]
             ax.plot([self.__ready_time, self.__start_time], [ordinate, ordinate], color="blue", lw=1)
+            # @todo Use an other end-style to avoid pixels before/after min/max_time
             ax.plot([self.__start_time, self.__success_time], [ordinate, ordinate], color="blue", lw=4)
             ax.annotate(self.__label, xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points")
             for d in self.__dependencies:
