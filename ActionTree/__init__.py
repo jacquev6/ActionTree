@@ -532,7 +532,12 @@ class GanttChart(object):  # pragma no cover (Too difficult to unit test)
             ordinate = ordinates[self.__id]
             if self.__ready_time:
                 ax.plot([self.__ready_time, self.__cancel_time], [ordinate, ordinate], color="grey", lw=1)
-            ax.annotate("(Canceled) {}".format(self.__label), xy=(self.__cancel_time, ordinate), xytext=(0, 3), textcoords="offset points")
+            ax.annotate(
+                "(Canceled) {}".format(self.__label),
+                xy=(self.__cancel_time, ordinate),
+                xytext=(0, 3),
+                textcoords="offset points"
+            )
             for d in self.__dependencies:
                 ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
 
@@ -604,7 +609,10 @@ class GanttChart(object):  # pragma no cover (Too difficult to unit test)
         ax.set_ylim(0.5, len(self.__actions) + 1)
 
         min_time = min(a.min_time for a in self.__actions.itervalues()).replace(microsecond=0)
-        max_time = max(a.max_time for a in self.__actions.itervalues()).replace(microsecond=0) + datetime.timedelta(seconds=1)
+        max_time = (
+            max(a.max_time for a in self.__actions.itervalues()).replace(microsecond=0) +
+            datetime.timedelta(seconds=1)
+        )
         duration = int((max_time - min_time).total_seconds())
 
         ax.set_xlabel("Local time")
