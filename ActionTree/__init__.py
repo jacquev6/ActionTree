@@ -49,10 +49,30 @@ class ExecutionReporteuh(object):
         Failed = "Failed"
         "The :attr:`status` after a failed execution where this action raised an exception."
 
-        def __init__(self, status, begin_time, end_time):
-            self.__status = status
-            self.__begin_time = begin_time
-            self.__end_time = end_time
+        def __init__(self, ready_time=None, start_time=None, cancel_time=None, failure_time=None, success_time=None):
+            ready = bool(ready_time)
+            start = bool(start_time)
+            cancel = bool(cancel_time)
+            failure = bool(failure_time)
+            success = bool(success_time)
+            if ready:
+                if start:
+                    assert not cancel
+                    assert (failure or success)
+                    self.__status = self.Successful if success else self.Failed
+                else:
+                    assert cancel
+                    assert not (failure or success)
+                    self.__status = self.Canceled
+            else:
+                assert cancel
+                assert not (start or failure or success)
+                self.__status = self.Canceled
+            self.__ready_time = ready_time
+            self.__cancel_time = cancel_time
+            self.__start_time = start_time
+            self.__success_time = success_time
+            self.__failure_time = failure_time
 
         @property
         def status(self):
@@ -62,18 +82,39 @@ class ExecutionReporteuh(object):
             return self.__status
 
         @property
-        def begin_time(self):
+        def ready_time(self):
+            """
+            The local :class:`~datetime.datetime` when this action was ready to execute.
+            """
+            return self.__ready_time
+
+        @property
+        def start_time(self):
             """
             The local :class:`~datetime.datetime` at the begining of the execution of this action.
             """
-            return self.__begin_time
+            return self.__start_time
 
         @property
-        def end_time(self):
+        def success_time(self):
             """
-            The local :class:`~datetime.datetime` at the end of the execution of this action.
+            The local :class:`~datetime.datetime` at the successful end of the execution of this action.
             """
-            return self.__end_time
+            return self.__success_time
+
+        @property
+        def failure_time(self):
+            """
+            The local :class:`~datetime.datetime` at the successful end of the execution of this action.
+            """
+            return self.__failure_time
+
+        @property
+        def cancel_time(self):
+            """
+            The local :class:`~datetime.datetime` when this action was canceled.
+            """
+            return self.__cancel_time
 
     def __init__(self):
         self.__is_success = True
@@ -113,6 +154,7 @@ class Executor(object):
             self.executor = executor
             self.pending = set(pending)  # Action
             self.submitted = dict()  # Future -> Action
+            self.submitted_at = dict()  # Action -> datetime.datetime
             self.succeeded = set()  # Action
             self.failed = set()  # Action
             self.exceptions = []
@@ -140,9 +182,11 @@ class Executor(object):
         self.__wait(execution)
 
     def __submit(self, execution):
+        now = datetime.datetime.now()
         for action in set(execution.pending):
             if all(d in execution.succeeded for d in action.dependencies):
                 execution.submitted[execution.executor.submit(self.__time_execute, action)] = action
+                execution.submitted_at[action] = now
                 execution.pending.remove(action)
             elif any(d in execution.failed for d in action.dependencies):
                 self.__mark_action_canceled(execution, action)
@@ -184,26 +228,36 @@ class Executor(object):
     @staticmethod
     def __mark_action_canceled(execution, action):
         execution.failed.add(action)
-        now = datetime.datetime.now()
         execution.report.set_action_status(
             action,
-            ExecutionReporteuh.ActionStatus(ExecutionReporteuh.ActionStatus.Canceled, now, now)
+            ExecutionReporteuh.ActionStatus(
+                ready_time=execution.submitted_at.get(action),
+                cancel_time=datetime.datetime.now(),
+            )
         )
 
     @staticmethod
-    def __mark_action_successful(execution, action, begin_time, end_time):
+    def __mark_action_successful(execution, action, start_time, success_time):
         execution.succeeded.add(action)
         execution.report.set_action_status(
             action,
-            ExecutionReporteuh.ActionStatus(ExecutionReporteuh.ActionStatus.Successful, begin_time, end_time),
+            ExecutionReporteuh.ActionStatus(
+                ready_time=execution.submitted_at[action],
+                start_time=start_time,
+                success_time=success_time,
+            ),
         )
 
     @staticmethod
-    def __mark_action_failed(execution, action, begin_time, end_time):
+    def __mark_action_failed(execution, action, start_time, failure_time):
         execution.failed.add(action)
         execution.report.set_action_status(
             action,
-            ExecutionReporteuh.ActionStatus(ExecutionReporteuh.ActionStatus.Failed, begin_time, end_time)
+            ExecutionReporteuh.ActionStatus(
+                ready_time=execution.submitted_at[action],
+                start_time=start_time,
+                failure_time=failure_time,
+            )
         )
 
 

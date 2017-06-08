@@ -165,25 +165,3 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
             len([x for x in [b, c, d] if report.get_action_status(x).status == ExecutionReport.ActionStatus.Failed]),
             failed
         )
-
-    def test_exception_in_dependency_populates_begin_end_time_anyway(self):
-        a, aMock = self.__create_mocked_action("a")
-        b, bMock = self.__create_mocked_action("b")
-
-        a.add_dependency(b)
-
-        bMock.side_effect = Exception("eb")
-
-        with self.assertRaises(CompoundException) as catcher:
-            execute(a)
-        report = catcher.exception.execution_report
-
-        aMock.assert_not_called()
-        bMock.assert_called_once_with()
-
-        self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.Failed)
-        self.assertIsNotNone(report.get_action_status(b).begin_time)
-        self.assertIsNotNone(report.get_action_status(b).end_time)
-        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Canceled)
-        self.assertIsNotNone(report.get_action_status(a).begin_time)
-        self.assertIsNotNone(report.get_action_status(a).end_time)
