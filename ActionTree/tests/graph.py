@@ -50,6 +50,22 @@ class GraphTestCase(unittest.TestCase):
             )
         )
 
+    def test_add_dependency_after_constructing_graph(self):
+        a = ActionFromCallable(None, "a")
+        g = DependencyGraph(a)
+        a.add_dependency(ActionFromCallable(None, "b"))
+
+        self.assertEqual(
+            g.get_graphviz_graph().source,
+            textwrap.dedent(
+                """\
+                digraph action {
+                \tnode [shape=box]
+                \t0 [label=a]
+                }"""
+            )
+        )
+
     def test_diamond(self):
         for i in range(1000):
             a = ActionFromCallable(None, "a")
