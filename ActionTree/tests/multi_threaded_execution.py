@@ -8,7 +8,7 @@ import threading
 import time
 import unittest
 
-from ActionTree import ActionFromCallable as Action, execute
+from ActionTree import *
 
 
 class ExecuteMock:
@@ -33,7 +33,7 @@ class MultiThreadedExecutionTestCase(unittest.TestCase):
         mock = unittest.mock.Mock()
         mock.begin.side_effect = lambda: self.calls.append("B" + name)
         mock.end.side_effect = lambda: self.calls.append("E" + name)
-        action = Action(ExecuteMock(self.lock, mock), name)
+        action = ActionFromCallable(ExecuteMock(self.lock, mock), name)
         return action, mock
 
     def test_many_dependencies(self):

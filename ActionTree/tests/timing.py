@@ -6,7 +6,7 @@ from __future__ import division, absolute_import, print_function
 
 import unittest
 
-from ActionTree import ActionFromCallable, CompoundException, execute
+from ActionTree import *
 
 
 class Counter:

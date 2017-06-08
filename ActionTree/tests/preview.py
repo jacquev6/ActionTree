@@ -6,7 +6,7 @@ from __future__ import division, absolute_import, print_function
 
 import unittest
 
-from ActionTree import Action
+from ActionTree import *
 
 
 class PreviewTestCase(unittest.TestCase):

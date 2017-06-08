@@ -7,7 +7,7 @@ from __future__ import division, absolute_import, print_function
 import time
 import unittest
 
-from ActionTree import ActionFromCallable, CompoundException, execute, ExecutionReporteuh as ExecutionReport
+from ActionTree import *
 
 
 class ExceptionsHandlingTestCase(unittest.TestCase):

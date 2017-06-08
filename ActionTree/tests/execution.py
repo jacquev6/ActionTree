@@ -5,10 +5,8 @@
 from __future__ import division, absolute_import, print_function
 
 import unittest
-import threading
-import time
 
-from ActionTree import ActionFromCallable, ActionFromCallable as Action, execute, ExecutionReporteuh as ExecutionReport
+from ActionTree import *
 
 
 class ExecutionTestCase(unittest.TestCase):

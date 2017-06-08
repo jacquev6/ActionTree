@@ -4,12 +4,11 @@
 
 from __future__ import division, absolute_import, print_function
 
-import datetime
 import errno
 import unittest
 
 from ActionTree.stock import *
-from ActionTree import CompoundException, execute
+from ActionTree import *
 
 
 class PatchingTestCase(unittest.TestCase):

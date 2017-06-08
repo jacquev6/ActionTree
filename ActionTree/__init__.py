@@ -20,17 +20,16 @@ def execute(action, jobs=1, keep_going=False):
 
     :raises CompoundException: when dependencies raise exceptions.
 
-    :rtype: ExecutionReporteuh
+    :rtype: ExecutionReport
     """
     if jobs <= 0 or jobs is None:
         jobs = multiprocessing.cpu_count() + 1
     return Executor(jobs, keep_going).execute(action)
 
 
-# @todo Rename to ExecutionReport when ther is no more collision with drawings.ExecutionReport
-class ExecutionReporteuh(object):
+class ExecutionReport(object):
     """
-    ExecutionReporteuh()
+    ExecutionReport()
 
     Execution report, returned by :func:`.execute`.
     """
@@ -158,7 +157,7 @@ class Executor(object):
             self.succeeded = set()  # Action
             self.failed = set()  # Action
             self.exceptions = []
-            self.report = ExecutionReporteuh()
+            self.report = ExecutionReport()
 
     def execute(self, action):
         # Threads in pool just call self.__time_execute, which has no side effects.
@@ -230,7 +229,7 @@ class Executor(object):
         execution.failed.add(action)
         execution.report.set_action_status(
             action,
-            ExecutionReporteuh.ActionStatus(
+            ExecutionReport.ActionStatus(
                 ready_time=execution.submitted_at.get(action),
                 cancel_time=datetime.datetime.now(),
             )
@@ -241,7 +240,7 @@ class Executor(object):
         execution.succeeded.add(action)
         execution.report.set_action_status(
             action,
-            ExecutionReporteuh.ActionStatus(
+            ExecutionReport.ActionStatus(
                 ready_time=execution.submitted_at[action],
                 start_time=start_time,
                 success_time=success_time,
@@ -253,7 +252,7 @@ class Executor(object):
         execution.failed.add(action)
         execution.report.set_action_status(
             action,
-            ExecutionReporteuh.ActionStatus(
+            ExecutionReport.ActionStatus(
                 ready_time=execution.submitted_at[action],
                 start_time=start_time,
                 failure_time=failure_time,
@@ -374,7 +373,7 @@ class CompoundException(Exception):
     @property
     def execution_report(self):
         """
-        The :class:`.ExecutionReporteuh` of the failed execution.
+        The :class:`.ExecutionReport` of the failed execution.
         """
         return self.__execution_report
 
