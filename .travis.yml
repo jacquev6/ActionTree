@@ -9,6 +9,7 @@ addons:
     packages:
     - graphviz
 install:
+- pip install --upgrade pip setuptools
 - pip install --upgrade sphinx coveralls
 - pip install --upgrade graphviz matplotlib
 - if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ];
@@ -24,11 +25,22 @@ script:
 after_success:
 - coveralls
 deploy:
-  provider: pypi
+- provider: pypi
   user: jacquev6
   password:
     secure: d3UoCrv3O53EeMhnhcfplSzc6R3aQqWES7d6gMwfeHlVib+k0GWKCMJqwKhrgMiqWxzW/DhK2t0fckwHgId2Fr6NyUZnIIto8X2wbQtbIIxV033y1DsVJgmEi2UjyJ5E7uI8+cnFLa8p7YgPXNt0cKajxHXSfBJY492nlQL1YRc=
+  skip_upload_docs: true
   on:
     tags: true
+    repo: jacquev6/ActionTree
+    python: 2.7
+- provider: pypi
+  server: https://testpypi.python.org/pypi
+  user: jacquev6
+  password:
+    secure: d3UoCrv3O53EeMhnhcfplSzc6R3aQqWES7d6gMwfeHlVib+k0GWKCMJqwKhrgMiqWxzW/DhK2t0fckwHgId2Fr6NyUZnIIto8X2wbQtbIIxV033y1DsVJgmEi2UjyJ5E7uI8+cnFLa8p7YgPXNt0cKajxHXSfBJY492nlQL1YRc=
+  skip_upload_docs: true
+  on:
+    tags: false
     repo: jacquev6/ActionTree
     python: 2.7
