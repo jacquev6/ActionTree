@@ -11,7 +11,7 @@ For example, let's say you want to generate three files, and then concatenate th
 
 First, import ActionTree
 
->>> from ActionTree import *
+>>> from ActionTree import Action, ActionFromCallable, execute, DependencyGraph
 
 Then create your specialized action classes:
 

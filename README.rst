@@ -57,8 +57,8 @@ Install from PyPI::
 
 Import:
 
->>> from ActionTree import *
->>> from ActionTree.stock import *
+>>> from ActionTree import execute
+>>> from ActionTree.stock import CallSubprocess
 
 Execute some action:
 
