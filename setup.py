@@ -18,13 +18,14 @@ def py2_only(*dependencies):
     else:
         return []
 
+
 setuptools.setup(
     name="ActionTree",
     version=version,
     description="Executes (long) actions in parallel, respecting dependencies between those actions",
     author="Vincent Jacques",
     author_email="vincent@vincent-jacques.net",
-    url="http://pythonhosted.org/ActionTree/",
+    url="http://jacquev6.github.io/ActionTree/",
     packages=setuptools.find_packages(),
     license="MIT",
     classifiers=[
