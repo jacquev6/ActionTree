@@ -4,50 +4,57 @@
 
 from __future__ import division, absolute_import, print_function
 
-# import collections
 # import datetime
 # import functools
-# import math
 import unittest
 
-# import matplotlib.backends.backend_agg
-# import matplotlib.figure
-
-# import ActionTree
-from ActionTree.drawings import *
-
-
-# MockAction = collections.namedtuple("MockAction", "label, dependencies, begin_time, end_time, status")
-
-# successful = ActionTree.Action.Successful
-# failed = ActionTree.Action.Failed
-# canceled = ActionTree.Action.Canceled
+from ActionTree import *
 
 
 class UtilitiesTestCase(unittest.TestCase):
     def test_nearest_before_first(self):
-        self.assertEqual(nearest(2, [10, 20, 30]), 10)
+        self.assertEqual(GanttChart._GanttChart__nearest(2, [10, 20, 30]), 10)
 
     def test_nearest_after_last(self):
-        self.assertEqual(nearest(35, [10, 20, 30]), 30)
+        self.assertEqual(GanttChart._GanttChart__nearest(35, [10, 20, 30]), 30)
 
     def test_nearest_in_the_middle(self):
-        self.assertEqual(nearest(18, [10, 20, 30]), 20)
-        self.assertEqual(nearest(22, [10, 20, 30]), 20)
+        self.assertEqual(GanttChart._GanttChart__nearest(18, [10, 20, 30]), 20)
+        self.assertEqual(GanttChart._GanttChart__nearest(22, [10, 20, 30]), 20)
 
 
-# class ExecutionReportTestCase(unittest.TestCase):
-#     def test_simple_attributes(self):
-#         a = MockAction("a", [], 10.5, 11.5, successful)
-#         b = MockAction("b", [], 10.7, 11.7, successful)
-#         c = MockAction("c", [a, b], 11.8, 13.7, successful)
+class Counter:
+    def __init__(self):
+        self.__value = datetime.datetime(2017, 6, 8, 13, 47, 12)
 
-#         r = ExecutionReport(c)
-#         self.assertEqual(r.root_action.label, "c")
-#         self.assertEqual(len(r.actions), 3)
-#         self.assertEqual(r.begin_time, 10.5)
-#         self.assertEqual(r.end_time, 13.7)
-#         self.assertAlmostEqual(r.duration, 3.2)
+    def __call__(self):
+        self.__value += datetime.timedelta(seconds=2)
+        return self.__value
+
+
+class GanttChartTestCase(unittest.TestCase):
+    def __create_mocked_action(self, name):
+        mock = unittest.mock.Mock()
+        action = ActionFromCallable(mock, name)
+        return action, mock
+
+    def setUp(self):
+        patcher = unittest.mock.patch("datetime.datetime")
+        self.datetime = patcher.start()
+        self.datetime.now.side_effect = Counter()
+        self.addCleanup(patcher.stop)
+
+    def test_simple_attributes(self):
+        a, aMock = self.__create_mocked_action("a")
+        b, bMock = self.__create_mocked_action("b")
+        c, cMock = self.__create_mocked_action("c")
+        c.add_dependency(a)
+        c.add_dependency(b)
+
+        chart = GanttChart(execute(c, jobs=2))
+        ax = unittest.mock.Mock()
+        chart.plot_on_mpl_axes(ax)
+        # @todo Assert something about calls to ax
 
 #     def test_ordinates_of_tree_dependencies(self):
 #         a = MockAction(

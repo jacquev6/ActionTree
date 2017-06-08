@@ -11,7 +11,7 @@ For example, let's say you want to generate three files, and then concatenate th
 
 First, import ActionTree
 
->>> from ActionTree import Action, ActionFromCallable, execute, DependencyGraph
+>>> from ActionTree import Action, ActionFromCallable, execute, DependencyGraph, GanttChart, CompoundException
 
 Then create your specialized action classes:
 
@@ -118,8 +118,7 @@ Say you want to compile two C++ files and link them:
 >>> link.add_dependency(
 ...   CallSubprocess(["g++", "-c", "doc/b.cpp", "-o", "b.o"])
 ... )
->>> execute(link, jobs=2)
-<ActionTree.ExecutionReport...>
+>>> link_report = execute(link)
 
 .. testcleanup::
 
@@ -130,7 +129,7 @@ Say you want to compile two C++ files and link them:
 Drawings
 ========
 
-You can easily draw a graph of your action and its dependencies with :class:`.DependencyGraph`:
+You can draw a dependency graph with :class:`.DependencyGraph`:
 
 >>> g = DependencyGraph(concat)
 >>> g.write_to_png("doc/doctest/concat_dependency_graph.png")
@@ -140,28 +139,28 @@ You can easily draw a graph of your action and its dependencies with :class:`.De
 
     ``doc/doctest/concat_dependency_graph.png``
 
-.. You can draw an execution report with :class:`.ExecutionReport`:
+You can draw a Gantt chart of the execution with :class:`.GanttChart`:
 
-.. >>> report = ExecutionReport(link)
-.. >>> report.write_to_png("doc/doctest/link_report.png")
+>>> chart = GanttChart(link_report)
+>>> chart.write_to_png("doc/doctest/link_gantt_chart.png")
 
-.. .. figure:: doctest/link_report.png
-..     :align: center
+.. figure:: doctest/link_gantt_chart.png
+    :align: center
 
-..     ``doc/doctest/link_report.png``
+    ``doc/doctest/link_gantt_chart.png``
 
-.. And if some action fails, you get:
+And if some action fails, you get:
 
-.. >>> link.add_dependency(
-.. ...   CallSubprocess(["g++", "-c", "doc/c.cpp", "-o", "c.o"])
-.. ... )
-.. >>> execute(link, keep_going=True)
-.. Traceback (most recent call last):
-..   ...
-.. CompoundException: [CalledProcessError()]
-.. >>> ExecutionReport(link).write_to_png("doc/doctest/failed_link_report.png")
+>>> link.add_dependency(
+...   CallSubprocess(["g++", "-c", "doc/c.cpp", "-o", "c.o"])
+... )
+>>> try:
+...   execute(link, keep_going=True)
+... except CompoundException as e:
+...   chart = GanttChart(e.execution_report)
+...   chart.write_to_png("doc/doctest/failed_link_gantt_chart.png")
 
-.. .. figure:: doctest/failed_link_report.png
-..     :align: center
+.. figure:: doctest/failed_link_gantt_chart.png
+    :align: center
 
-..     ``doc/doctest/failed_link_report.png``
+    ``doc/doctest/failed_link_gantt_chart.png``

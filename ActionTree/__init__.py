@@ -10,6 +10,10 @@ import multiprocessing
 import os.path
 
 import graphviz
+import matplotlib
+import matplotlib.dates
+import matplotlib.figure
+import matplotlib.backends.backend_agg
 
 
 def execute(action, jobs=1, keep_going=False):
@@ -142,6 +146,12 @@ class ExecutionReport(object):
         @todo Document
         """
         return self.__action_statuses[action]
+
+    def get_actions_and_statuses(self):
+        """
+        @todo Document
+        """
+        return self.__action_statuses.items()
 
 
 class Executor(object):
@@ -394,7 +404,7 @@ class DependencyCycleException(Exception):
 
 class DependencyGraph(object):
     """
-    The dependencies of the action.
+    @todo Document
     """
 
     def __init__(self, action):
@@ -428,3 +438,174 @@ class DependencyGraph(object):
         See also :meth:`write_to_png` for the simplest use-case.
         """
         return self.__graphviz_graph.copy()
+
+
+class GanttChart(object):
+    """
+    @todo Document
+    """
+
+    def __init__(self, report):
+        # @todo Sort actions somehow to improve readability (top-left to bottom-right)
+        self.__actions = {
+            id(action): self.__make_action(action, status)
+            for (action, status) in report.get_actions_and_statuses()
+        }
+
+    class SuccessfulAction(object):
+        def __init__(self, action, status):
+            self.__label = str(action.label)
+            self.__id = id(action)
+            self.__dependencies = set(id(d) for d in action.dependencies)
+            self.__ready_time = status.ready_time
+            self.__start_time = status.start_time
+            self.__success_time = status.success_time
+
+        @property
+        def min_time(self):
+            return self.__ready_time
+
+        @property
+        def max_time(self):
+            return self.__success_time
+
+        def draw(self, ax, ordinates, actions):
+            ordinate = ordinates[self.__id]
+            ax.plot([self.__ready_time, self.__start_time], [ordinate, ordinate], color="blue", lw=1)
+            ax.plot([self.__start_time, self.__success_time], [ordinate, ordinate], color="blue", lw=4)
+            ax.annotate(self.__label, xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points")
+            for d in self.__dependencies:
+                ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
+
+    class FailedAction(object):
+        def __init__(self, action, status):
+            self.__label = str(action.label)
+            self.__id = id(action)
+            self.__dependencies = set(id(d) for d in action.dependencies)
+            self.__ready_time = status.ready_time
+            self.__start_time = status.start_time
+            self.__failure_time = status.failure_time
+
+        @property
+        def min_time(self):
+            return self.__ready_time
+
+        @property
+        def max_time(self):
+            return self.__failure_time
+
+        def draw(self, ax, ordinates, actions):
+            ordinate = ordinates[self.__id]
+            ax.plot([self.__ready_time, self.__start_time], [ordinate, ordinate], color="red", lw=1)
+            ax.plot([self.__start_time, self.__failure_time], [ordinate, ordinate], color="red", lw=4)
+            ax.annotate(self.__label, xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points")
+            for d in self.__dependencies:
+                ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
+
+    class CanceledAction(object):
+        def __init__(self, action, status):
+            self.__label = str(action.label)
+            self.__id = id(action)
+            self.__dependencies = set(id(d) for d in action.dependencies)
+            self.__ready_time = status.ready_time
+            self.__cancel_time = status.cancel_time
+
+        @property
+        def min_time(self):
+            return self.__cancel_time if self.__ready_time is None else self.__ready_time
+
+        @property
+        def max_time(self):
+            return self.__cancel_time
+
+        def draw(self, ax, ordinates, actions):
+            ordinate = ordinates[self.__id]
+            if self.__ready_time:
+                ax.plot([self.__ready_time, self.__cancel_time], [ordinate, ordinate], color="grey", lw=1)
+            ax.annotate("(Canceled) {}".format(self.__label), xy=(self.__cancel_time, ordinate), xytext=(0, 3), textcoords="offset points")
+            for d in self.__dependencies:
+                ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
+
+    @classmethod
+    def __make_action(cls, action, status):
+        if status.status == ExecutionReport.ActionStatus.Successful:
+            return cls.SuccessfulAction(action, status)
+        elif status.status == ExecutionReport.ActionStatus.Failed:
+            return cls.FailedAction(action, status)
+        elif status.status == ExecutionReport.ActionStatus.Canceled:
+            return cls.CanceledAction(action, status)
+
+    def write_to_png(self, filename):  # pragma no cover (Untestable? But small.)
+        """
+        Write the Gantt chart as a PNG image to the specified file.
+
+        See also :meth:`get_mpl_figure` and :meth:`plot_on_mpl_axes` if you want to draw the report somewhere else.
+        """
+        figure = self.get_mpl_figure()
+        canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
+        canvas.print_figure(filename)
+
+    def get_mpl_figure(self):  # pragma no cover (Untestable? But small.)
+        """
+        Return a :class:`matplotlib.figure.Figure` of this Gantt chart.
+
+        See also :meth:`plot_on_mpl_axes` if you want to draw the Gantt chart on your own matplotlib figure.
+
+        See also :meth:`write_to_png` for the simplest use-case.
+        """
+        fig = matplotlib.figure.Figure()
+        ax = fig.add_subplot(1, 1, 1)
+
+        self.plot_on_mpl_axes(ax)
+
+        return fig
+
+    @staticmethod
+    def __nearest(v, values):
+        for i, value in enumerate(values):
+            if v < value:
+                break
+        if i == 0:
+            return values[0]
+        else:
+            if v - values[i - 1] <= values[i] - v:
+                return values[i - 1]
+            else:
+                return values[i]
+
+    __intervals = [
+        1, 2, 5, 10, 15, 30, 60,
+        2 * 60, 10 * 60, 30 * 60, 3600,
+        2 * 3600, 3 * 3600, 6 * 3600, 12 * 3600, 24 * 3600,
+    ]
+
+    def plot_on_mpl_axes(self, ax):
+        """
+        Plot this Gantt chart on the provided :class:`matplotlib.axes.Axes`.
+
+        See also :meth:`write_to_png` and :meth:`get_mpl_figure` for the simpler use-cases.
+        """
+        ordinates = {ident: len(self.__actions) - i for (i, ident) in enumerate(self.__actions.iterkeys())}
+
+        for action in self.__actions.itervalues():
+            action.draw(ax, ordinates, self.__actions)
+
+        ax.get_yaxis().set_ticklabels([])
+        ax.set_ylim(0.5, len(self.__actions) + 1)
+
+        min_time = min(a.min_time for a in self.__actions.itervalues()).replace(microsecond=0)
+        max_time = max(a.max_time for a in self.__actions.itervalues()).replace(microsecond=0) + datetime.timedelta(seconds=1)
+        duration = int((max_time - min_time).total_seconds())
+
+        ax.set_xlabel("Local time")
+        ax.set_xlim(min_time, max_time)
+        ax.xaxis_date()
+        ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%H:%M:%S"))
+        ax.xaxis.set_major_locator(matplotlib.dates.AutoDateLocator(maxticks=4, minticks=5))
+
+        ax2 = ax.twiny()
+        ax2.set_xlabel("Relative time")
+        ax2.set_xlim(min_time, max_time)
+        ticks = range(0, duration, self.__nearest(duration // 5, self.__intervals))
+        ax2.xaxis.set_ticks([min_time + datetime.timedelta(seconds=s) for s in ticks])
+        ax2.xaxis.set_ticklabels(ticks)
