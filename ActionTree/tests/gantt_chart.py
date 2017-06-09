@@ -4,11 +4,10 @@
 
 from __future__ import division, absolute_import, print_function
 
-# import datetime
-# import functools
 import unittest
 
 from ActionTree import *
+from . import *
 
 
 class UtilitiesTestCase(unittest.TestCase):
@@ -23,32 +22,11 @@ class UtilitiesTestCase(unittest.TestCase):
         self.assertEqual(GanttChart._GanttChart__nearest(22, [10, 20, 30]), 20)
 
 
-class Counter:
-    def __init__(self):
-        self.__value = datetime.datetime(2017, 6, 8, 13, 47, 12)
-
-    def __call__(self):
-        self.__value += datetime.timedelta(seconds=2)
-        return self.__value
-
-
-class GanttChartTestCase(unittest.TestCase):
-    def __create_mocked_action(self, name):
-        mock = unittest.mock.Mock()
-        action = ActionFromCallable(mock, name)
-        return action, mock
-
-    def setUp(self):
-        counter = Counter()
-        patcher = unittest.mock.patch("datetime.datetime")
-        self.datetime = patcher.start()
-        self.datetime.now.side_effect = counter
-        self.addCleanup(patcher.stop)
-
+class GanttChartTestCase(ActionTreeTestCase):
     def test(self):
-        a, aMock = self.__create_mocked_action("a")
-        b, bMock = self.__create_mocked_action("b")
-        c, cMock = self.__create_mocked_action("c")
+        a = self._action("a")
+        b = self._action("b")
+        c = self._action("c")
         c.add_dependency(a)
         c.add_dependency(b)
 

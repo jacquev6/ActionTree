@@ -14,9 +14,9 @@ import os
 import shutil
 import subprocess
 import time
-from functools import partial
 
-from . import Action, ActionFromCallable
+
+from . import Action
 
 
 class NullAction(Action):
@@ -31,11 +31,17 @@ class NullAction(Action):
         pass
 
 
+class CalledProcessError(Exception):
+    pass
+
+
 class CallSubprocess(Action):
     """
     A stock action that calls a subprocess.
 
     Arguments are forwarded exactly to :func:`subprocess.check_call`.
+
+    @todo Document behavior in case of CalledProcessError and its rationale
     """
     def __init__(self, args, **kwds):
         Action.__init__(self, " ".join(args))
@@ -43,7 +49,12 @@ class CallSubprocess(Action):
         self.__kwds = kwds
 
     def do_execute(self):
-        subprocess.check_call(self.__args, **self.__kwds)
+        # subprocess.CalledProcessError can't be pickled in Python2
+        # See http://bugs.python.org/issue1692335
+        try:
+            subprocess.check_call(self.__args, **self.__kwds)
+        except subprocess.CalledProcessError as e:
+            raise CalledProcessError(e.returncode, e.cmd, e.output)
 
 
 class CreateDirectory(Action):

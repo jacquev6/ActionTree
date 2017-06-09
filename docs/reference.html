@@ -187,7 +187,6 @@ Pass it to <a class="reference internal" href="#ActionTree.execute" title="Actio
 You must define a <code class="docutils literal"><span class="pre">def</span> <span class="pre">do_execute(self):</span></code> method that performs the action.
 Its return value is ignored.
 If it raises and exception, it is captured and re-raised in a <a class="reference internal" href="#ActionTree.CompoundException" title="ActionTree.CompoundException"><code class="xref py py-exc docutils literal"><span class="pre">CompoundException</span></code></a>.</p>
-<p>See also <a class="reference internal" href="#ActionTree.ActionFromCallable" title="ActionTree.ActionFromCallable"><code class="xref py py-class docutils literal"><span class="pre">ActionFromCallable</span></code></a> if you just want to create an action from a simple callable.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -238,24 +237,6 @@ Order of insertion of dependencies is not important.</p>
 <dd><p>Return the labels of this action and its dependencies, in an order that could be the execution order.</p>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="class">
-<dt id="ActionTree.ActionFromCallable">
-<em class="property">class </em><code class="descclassname">ActionTree.</code><code class="descname">ActionFromCallable</code><span class="sig-paren">(</span><em>do_execute</em>, <em>label</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.ActionFromCallable" title="Permalink to this definition">¶</a></dt>
-<dd><p>An <a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><code class="xref py py-class docutils literal"><span class="pre">Action</span></code></a> sub-class for the simple use-case of using a plain callable as an action.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>label</strong> – see <a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><code class="xref py py-class docutils literal"><span class="pre">Action</span></code></a>.</li>
-<li><strong>do_execute</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#callable" title="(in Python v2.7)"><em>callable</em></a>) – the function to execute the action.</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 <dl class="exception">
@@ -347,6 +328,7 @@ Useful as a placeholder for several dependencies.</p>
 <em class="property">class </em><code class="descclassname">ActionTree.stock.</code><code class="descname">CallSubprocess</code><span class="sig-paren">(</span><em>args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.CallSubprocess" title="Permalink to this definition">¶</a></dt>
 <dd><p>A stock action that calls a subprocess.</p>
 <p>Arguments are forwarded exactly to <a class="reference external" href="https://docs.python.org/2/library/subprocess.html#subprocess.check_call" title="(in Python v2.7)"><code class="xref py py-func docutils literal"><span class="pre">subprocess.check_call()</span></code></a>.</p>
+<p>&#64;todo Document behavior in case of CalledProcessError and its rationale</p>
 </dd></dl>
 
 <dl class="class">

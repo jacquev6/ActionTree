@@ -59,8 +59,15 @@ Import:
 
 Execute some action:
 
->>> link = CallSubprocess(["g++", "-o", "test", "a.o", "b.o"])
+>>> link = CallSubprocess(["g++", "a.o", "b.o", "-o", "test"])
 >>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/a.cpp", "-o", "a.o"]))
 >>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/b.cpp", "-o", "b.o"]))
 >>> execute(link, jobs=2).is_success
 True
+
+.. testcleanup::
+
+    import os
+    os.unlink("a.o")
+    os.unlink("b.o")
+    os.unlink("test")

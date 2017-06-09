@@ -5,6 +5,8 @@
 from __future__ import division, absolute_import, print_function
 
 import errno
+import pickle
+import subprocess
 import unittest
 
 from ActionTree.stock import *
@@ -30,10 +32,13 @@ class CreateDirectoryTestCase(PatchingTestCase):
         self.makedirs.assert_not_called()
         self.isdir.assert_not_called()
 
+    def test_pickle(self):
+        self.assertIsInstance(pickle.dumps(CreateDirectory("xxx")), bytes)
+
     def test_success(self):
         self.makedirs.expect("xxx")
 
-        execute(CreateDirectory("xxx"))
+        CreateDirectory("xxx").do_execute()
 
         self.makedirs.assert_called_once_with("xxx")
         self.isdir.assert_not_called()
@@ -42,7 +47,7 @@ class CreateDirectoryTestCase(PatchingTestCase):
         self.makedirs.side_effect = OSError(errno.EEXIST, "File exists")
         self.isdir.return_value = True
 
-        execute(CreateDirectory("xxx"))
+        CreateDirectory("xxx").do_execute()
 
         self.makedirs.assert_called_once_with("xxx")
         self.isdir.assert_called_once_with("xxx")
@@ -51,8 +56,8 @@ class CreateDirectoryTestCase(PatchingTestCase):
         self.makedirs.side_effect = OSError(errno.EEXIST, "File exists")
         self.isdir.return_value = False
 
-        with self.assertRaises(CompoundException):
-            execute(CreateDirectory("xxx"))
+        with self.assertRaises(OSError):
+            CreateDirectory("xxx").do_execute()
 
         self.makedirs.assert_called_once_with("xxx")
         self.isdir.assert_called_once_with("xxx")
@@ -60,8 +65,8 @@ class CreateDirectoryTestCase(PatchingTestCase):
     def test_other_failure(self):
         self.makedirs.side_effect = OSError(-1, "Foobar")
 
-        with self.assertRaises(CompoundException):
-            execute(CreateDirectory("xxx"))
+        with self.assertRaises(OSError):
+            CreateDirectory("xxx").do_execute()
 
         self.makedirs.assert_called_once_with("xxx")
         self.isdir.assert_not_called()
@@ -76,21 +81,31 @@ class CallSubprocessTestCase(PatchingTestCase):
 
         self.check_call.assert_not_called()
 
+    def test_pickle(self):
+        self.assertIsInstance(pickle.dumps(CallSubprocess(["xxx", "yyy"])), bytes)
+
     def test_simple_call(self):
-        execute(CallSubprocess(["xxx"]))
+        CallSubprocess(["xxx"]).do_execute()
 
         self.check_call.assert_called_once_with(["xxx"])
 
     def test_call_with_several_args(self):
         self.check_call.expect(["xxx", "yyy"])
-        execute(CallSubprocess(["xxx", "yyy"]))
+        CallSubprocess(["xxx", "yyy"]).do_execute()
 
         self.check_call.assert_called_once_with(["xxx", "yyy"])
 
     def test_call_with_kwds(self):
-        execute(CallSubprocess(["xxx", "yyy"], foo="bar"))
+        CallSubprocess(["xxx", "yyy"], foo="bar").do_execute()
 
         self.check_call.assert_called_once_with(["xxx", "yyy"], foo="bar")
+
+
+class CallSubprocessForRealTestCase(unittest.TestCase):
+    def test_called_process_error(self):
+        with self.assertRaises(CompoundException) as catcher:
+            execute(CallSubprocess(["false"]))
+        self.assertEqual(catcher.exception.exceptions[0].args, (1, ["false"], None))
 
 
 class DeleteFileTestCase(PatchingTestCase):
@@ -102,23 +117,26 @@ class DeleteFileTestCase(PatchingTestCase):
 
         self.unlink.assert_not_called()
 
+    def test_pickle(self):
+        self.assertIsInstance(pickle.dumps(DeleteFile("xxx")), bytes)
+
     def test_success(self):
-        execute(DeleteFile("xxx"))
+        DeleteFile("xxx").do_execute()
 
         self.unlink.assert_called_once_with("xxx")
 
     def test_file_does_not_exist(self):
         self.unlink.side_effect = OSError(errno.ENOENT, "No such file or directory")
 
-        execute(DeleteFile("xxx"))
+        DeleteFile("xxx").do_execute()
 
         self.unlink.assert_called_once_with("xxx")
 
     def test_other_failure(self):
         self.unlink.side_effect = OSError(-1, "Foobar")
 
-        with self.assertRaises(CompoundException):
-            execute(DeleteFile("xxx"))
+        with self.assertRaises(OSError):
+            DeleteFile("xxx").do_execute()
 
         self.unlink.assert_called_once_with("xxx")
 
@@ -132,16 +150,19 @@ class CopyFileTestCase(PatchingTestCase):
 
         self.copy.assert_not_called()
 
+    def test_pickle(self):
+        self.assertIsInstance(pickle.dumps(CopyFile("from", "to")), bytes)
+
     def test_success(self):
-        execute(CopyFile("from", "to"))
+        CopyFile("from", "to").do_execute()
 
         self.copy.assert_called_once_with("from", "to")
 
     def test_failure(self):
         self.copy.side_effect = OSError(-1, "Foobar")
 
-        with self.assertRaises(CompoundException):
-            execute(CopyFile("from", "to"))
+        with self.assertRaises(OSError):
+            CopyFile("from", "to").do_execute()
 
         self.copy.assert_called_once_with("from", "to")
 
@@ -157,8 +178,11 @@ class TouchFileTestCase(PatchingTestCase):
         self.open.assert_not_called()
         self.utime.assert_not_called()
 
+    def test_pickle(self):
+        self.assertIsInstance(pickle.dumps(TouchFile("xxx")), bytes)
+
     def test_success(self):
-        execute(TouchFile("xxx"))
+        TouchFile("xxx").do_execute()
 
         self.open.assert_called_once_with("xxx", "ab")
         self.open().close.assert_called_once_with()
@@ -166,15 +190,29 @@ class TouchFileTestCase(PatchingTestCase):
 
 
 class NullActionTestCase(unittest.TestCase):
+    def test_label(self):
+        self.assertIsNone(NullAction().label)
+
+    def test_pickle(self):
+        self.assertIsInstance(pickle.dumps(NullAction()), bytes)
+
     def test(self):
-        execute(NullAction())
+        NullAction().do_execute()
 
 
 class SleepTestCase(PatchingTestCase):
     def setUp(self):
         self.sleep = self.patch("time.sleep")
 
+    def test_label(self):
+        self.assertEqual(Sleep(1).label, "sleep 1")
+
+        self.sleep.assert_not_called()
+
+    def test_pickle(self):
+        self.assertIsInstance(pickle.dumps(Sleep(1)), bytes)
+
     def test(self):
-        execute(Sleep(1))
+        Sleep(1).do_execute()
 
         self.sleep.assert_called_once_with(1)

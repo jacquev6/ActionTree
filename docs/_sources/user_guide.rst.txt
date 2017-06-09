@@ -11,9 +11,11 @@ For example, let's say you want to generate three files, and then concatenate th
 
 First, import :mod:`.ActionTree`
 
->>> from ActionTree import Action, ActionFromCallable, execute, DependencyGraph, GanttChart, CompoundException
+>>> from ActionTree import Action, execute, DependencyGraph, GanttChart, CompoundException
 
 Then create your specialized :class:`.Action` classes:
+
+.. BEGIN_TEMPORARY_DOCTEST_IMPORT
 
 >>> class CreateFile(Action):
 ...   def __init__(self, name):
@@ -36,6 +38,39 @@ Then create your specialized :class:`.Action` classes:
 ...         with open(file) as input:
 ...           output.write(input.read())
 
+.. END_TEMPORARY_DOCTEST_IMPORT
+
+.. We have to import these classes to make them pickle-able in doctests
+
+
+.. doctest::
+    :hide:
+
+    >>> import os
+    >>> import pickle
+    >>> pickle.loads(pickle.dumps(CreateFile("foo")))
+    Traceback (most recent call last):
+    ...
+    PicklingError: Can't pickle <class 'CreateFile'>: it's not found as __builtin__.CreateFile
+
+    >>> with open("doc/user_guide.rst") as in_f:
+    ...   with open("temporary_doctest_import.py", "w") as out_f:
+    ...     out_f.write("from ActionTree import Action\n\n")
+    ...     do_output = False
+    ...     for line in in_f:
+    ...       if "END_TEMPORARY_DOCTEST_IMPORT" in line:
+    ...         break
+    ...       if do_output:
+    ...         out_f.write(line[4:])
+    ...       if "BEGIN_TEMPORARY_DOCTEST_IMPORT" in line:
+    ...         do_output = True
+
+    >>> from temporary_doctest_import import CreateFile, ConcatFiles
+    >>> os.unlink("temporary_doctest_import.py")
+    >>> import pickle
+    >>> pickle.loads(pickle.dumps(CreateFile("foo")))
+    <temporary_doctest_import.CreateFile object at 0x...>
+
 Create an actions dependency graph:
 
 >>> concat = ConcatFiles(["first", "second", "third"], "fourth")
@@ -46,7 +81,7 @@ Create an actions dependency graph:
 And :func:`.execute` it:
 
 >>> execute(concat)
-<ActionTree.ExecutionReport...>
+<ActionTree.ExecutionReport object at 0x...>
 
 You have no guaranty about the order of execution of the ``CreateFile`` actions,
 but you are sure that they are all finished before the ``ConcatFiles`` action starts.
@@ -63,30 +98,6 @@ True
     os.unlink("second")
     os.unlink("third")
     os.unlink("fourth")
-
-Simple actions from callable
-============================
-
-The :class:`.ActionFromCallable` class accepts a callable in its constructor to be usable without subclassing.
-The previous example could be rewritten like:
-
->>> def create_file(name):
-...   with open(name, "w") as f:
-...     f.write("This is {}\\n".format(name))
-
->>> def concat_files(files, name):
-...   with open(name, "w") as output:
-...     for file in files:
-...       with open(file) as input:
-...         output.write(input.read())
-
->>> concat = ActionFromCallable(lambda: concat_files(["first", "second", "third"], "fourth"), "concat")
->>> concat.add_dependency(ActionFromCallable(lambda: create_file("first"), "create first"))
->>> concat.add_dependency(ActionFromCallable(lambda: create_file("second"), "create second"))
->>> concat.add_dependency(ActionFromCallable(lambda: create_file("third"), "create third"))
-
->>> execute(concat)
-<ActionTree.ExecutionReport...>
 
 Preview
 =======
@@ -122,11 +133,14 @@ Say you want to compile two C++ files and link them:
 
 .. testcleanup::
 
+    import os
     os.unlink("a.o")
     os.unlink("b.o")
     os.unlink("test")
 
 .. @todo If you're really looking to compile stuff using ActionTree, you may want to have a look at devlpr
+
+.. @todo Demonstrate return values and captured output
 
 Drawings
 ========

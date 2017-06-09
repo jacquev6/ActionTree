@@ -12,14 +12,14 @@ from ActionTree import *
 
 class GraphTestCase(unittest.TestCase):
     def test_internal_graph_not_returned(self):
-        g = DependencyGraph(ActionFromCallable(None, "a"))
+        g = DependencyGraph(Action("a"))
         g1 = g.get_graphviz_graph()
         self.assertEqual(g1.format, "pdf")
         g1.format = "png"
         self.assertEqual(g.get_graphviz_graph().format, "pdf")
 
     def test_single_action(self):
-        a = ActionFromCallable(None, "a")
+        a = Action("a")
 
         self.assertEqual(
             DependencyGraph(a).get_graphviz_graph().source,
@@ -33,8 +33,8 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def test_dependency(self):
-        b = ActionFromCallable(None, "b")
-        a = ActionFromCallable(None, "a")
+        b = Action("b")
+        a = Action("a")
         a.add_dependency(b)
 
         self.assertEqual(
@@ -51,9 +51,9 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def test_add_dependency_after_constructing_graph(self):
-        a = ActionFromCallable(None, "a")
+        a = Action("a")
         g = DependencyGraph(a)
-        a.add_dependency(ActionFromCallable(None, "b"))
+        a.add_dependency(Action("b"))
 
         self.assertEqual(
             g.get_graphviz_graph().source,
@@ -68,12 +68,12 @@ class GraphTestCase(unittest.TestCase):
 
     def test_diamond(self):
         for i in range(1000):
-            a = ActionFromCallable(None, "a")
-            b = ActionFromCallable(None, "b")
+            a = Action("a")
+            b = Action("b")
             b.add_dependency(a)
-            c = ActionFromCallable(None, "c")
+            c = Action("c")
             c.add_dependency(a)
-            d = ActionFromCallable(None, "d")
+            d = Action("d")
             d.add_dependency(c)
             d.add_dependency(b)
 
@@ -112,7 +112,7 @@ class GraphTestCase(unittest.TestCase):
             )
 
     def test_typed_label(self):
-        a = ActionFromCallable(None, ("a", "curious", "label", 42))
+        a = Action(("a", "curious", "label", 42))
 
         self.assertEqual(
             DependencyGraph(a).get_graphviz_graph().source,
@@ -126,7 +126,7 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def test_weird_string_label(self):
-        a = ActionFromCallable(None, "spaces and; semi=columns")
+        a = Action("spaces and; semi=columns")
 
         self.assertEqual(
             DependencyGraph(a).get_graphviz_graph().source,
@@ -140,7 +140,7 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def test_None_label(self):
-        a = ActionFromCallable(None, None)
+        a = Action(None)
 
         self.assertEqual(
             DependencyGraph(a).get_graphviz_graph().source,
@@ -154,8 +154,8 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def test_None_label_twice(self):
-        a = ActionFromCallable(None, None)
-        b = ActionFromCallable(None, None)
+        a = Action(None)
+        b = Action(None)
         a.add_dependency(b)
 
         self.assertEqual(

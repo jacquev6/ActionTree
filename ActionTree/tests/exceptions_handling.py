@@ -4,97 +4,64 @@
 
 from __future__ import division, absolute_import, print_function
 
-import time
-import unittest
-
 from ActionTree import *
+from . import *
 
 
-class ExceptionsHandlingTestCase(unittest.TestCase):
-    def __create_mocked_action(self, name):
-        mock = unittest.mock.Mock()
-        action = ActionFromCallable(mock, name)
-        return action, mock
-
+class ExceptionsHandlingTestCase(ActionTreeTestCase):
     def test_simple_failure(self):
-        a, aMock = self.__create_mocked_action("a")
-
-        e = Exception("FooBar")
-        aMock.side_effect = e
+        a = self._action("a", exception=Exception("foobar"))
 
         with self.assertRaises(CompoundException) as catcher:
-            execute(a)
-        report = catcher.exception.execution_report
-
-        self.assertEqual(catcher.exception.exceptions, [e])
-
-        aMock.assert_called_once_with()
-
-        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Failed)
-
-    def test_simple_failure_without_raise(self):
-        a, aMock = self.__create_mocked_action("a")
-
-        e = Exception("FooBar")
-        aMock.side_effect = e
-
-        report = execute(a, do_raise=False)
-
-        aMock.assert_called_once_with()
-
-        self.assertFalse(report.is_success)
-        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Failed)
-        self.assertIs(report.get_action_status(a).exception, e)
-
-    def test_exception_in_dependency(self):
-        a, aMock = self.__create_mocked_action("a")
-        b, bMock = self.__create_mocked_action("b")
-
-        a.add_dependency(b)
-
-        e = Exception()
-        bMock.side_effect = e
-
-        with self.assertRaises(CompoundException) as catcher:
-            execute(a)
+            execute(a, jobs=1)
         report = catcher.exception.execution_report
 
         self.assertEqual(len(catcher.exception.exceptions), 1)
-        self.assertIs(catcher.exception.exceptions[0], e)
+        self.assertEqual(catcher.exception.exceptions[0].args, ("foobar",))
 
-        bMock.assert_called_once_with()
-        aMock.assert_not_called()
+        self.assertFalse(report.is_success)
+        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Failed)
 
+    def test_simple_failure_without_raise(self):
+        a = self._action("a", exception=Exception("foobar"))
+
+        report = execute(a, jobs=1, do_raise=False)
+
+        self.assertFalse(report.is_success)
+        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Failed)
+        self.assertEqual(report.get_action_status(a).exception.args, ("foobar",))
+
+    def test_exception_in_dependency(self):
+        a = self._action("a")
+        b = self._action("b", exception=Exception("foobar"))
+        a.add_dependency(b)
+
+        with self.assertRaises(CompoundException) as catcher:
+            execute(a, jobs=1)
+        report = catcher.exception.execution_report
+
+        self.assertEqual(len(catcher.exception.exceptions), 1)
+        self.assertEqual(catcher.exception.exceptions[0].args, ("foobar",))
+
+        self.assertFalse(report.is_success)
         self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Canceled)
         self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.Failed)
 
     def test_exceptions_in_dependencies_with_keep_going(self):
-        a, aMock = self.__create_mocked_action("a")
-        b, bMock = self.__create_mocked_action("b")
-        c, cMock = self.__create_mocked_action("c")
-        d, dMock = self.__create_mocked_action("d")
-
+        a = self._action("a")
+        b = self._action("b", exception=Exception("eb"))
+        c = self._action("c", exception=Exception("ec"))
+        d = self._action("d")
         a.add_dependency(b)
         a.add_dependency(c)
         a.add_dependency(d)
 
-        eb = Exception("eb", 42)
-        ec = Exception("ec")
-        bMock.side_effect = eb
-        cMock.side_effect = ec
-
         with self.assertRaises(CompoundException) as catcher:
-            execute(a, keep_going=True)
+            execute(a, jobs=1, keep_going=True)
         report = catcher.exception.execution_report
 
         self.assertEqual(len(catcher.exception.exceptions), 2)
-        self.assertIn(eb, catcher.exception.exceptions)
-        self.assertIn(ec, catcher.exception.exceptions)
-
-        aMock.assert_not_called()
-        bMock.assert_called_once_with()
-        cMock.assert_called_once_with()
-        dMock.assert_called_once_with()
+        self.assertEqual(sorted(ex.args for ex in catcher.exception.exceptions), [("eb",), ("ec",)])
 
         self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Canceled)
         self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.Failed)
@@ -102,14 +69,13 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
         self.assertEqual(report.get_action_status(d).status, ExecutionReport.ActionStatus.Successful)
 
     def test_exceptions_in_long_branch_dependencies_with_keep_going(self):
-        a, aMock = self.__create_mocked_action("a")
-        b, bMock = self.__create_mocked_action("b")
-        c, cMock = self.__create_mocked_action("c")
-        d, dMock = self.__create_mocked_action("d")
-        e, eMock = self.__create_mocked_action("e")
-        f, fMock = self.__create_mocked_action("f")
-        g, gMock = self.__create_mocked_action("g")
-
+        a = self._action("a")
+        b = self._action("b")
+        c = self._action("c")
+        d = self._action("d")
+        e = self._action("e", exception=Exception("foobar"))
+        f = self._action("f")
+        g = self._action("g")
         a.add_dependency(b)
         b.add_dependency(c)
         a.add_dependency(d)
@@ -117,22 +83,12 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
         a.add_dependency(f)
         f.add_dependency(g)
 
-        ex = Exception()
-        eMock.side_effect = ex
-
         with self.assertRaises(CompoundException) as catcher:
-            execute(a, keep_going=True)
+            execute(a, jobs=1, keep_going=True)
         report = catcher.exception.execution_report
 
-        self.assertEqual(catcher.exception.exceptions, [ex])
-
-        aMock.assert_not_called()
-        bMock.assert_called_once_with()
-        cMock.assert_called_once_with()
-        dMock.assert_not_called()
-        eMock.assert_called_once_with()
-        fMock.assert_called_once_with()
-        gMock.assert_called_once_with()
+        self.assertEqual(len(catcher.exception.exceptions), 1)
+        self.assertEqual(catcher.exception.exceptions[0].args, ("foobar",))
 
         self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Canceled)
         self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.Successful)
@@ -142,40 +98,45 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
         self.assertEqual(report.get_action_status(f).status, ExecutionReport.ActionStatus.Successful)
         self.assertEqual(report.get_action_status(g).status, ExecutionReport.ActionStatus.Successful)
 
-    def test_exceptions_in_dependencies_without_keep_going(self):
-        a, aMock = self.__create_mocked_action("a")
-        b, bMock = self.__create_mocked_action("b")
-        c, cMock = self.__create_mocked_action("c")
-        d, dMock = self.__create_mocked_action("d")
+    # def test_exceptions_in_dependencies_without_keep_going(self):
+    #     a = self._action("a")
+    #     b = self._action("b", delay=5, exception=Exception())
+    #     c = self._action("c", delay=5, exception=Exception())
+    #     d = self._action("d", delay=5, exception=Exception())
+    #     a.add_dependency(b)
+    #     a.add_dependency(c)
+    #     a.add_dependency(d)
 
-        a.add_dependency(b)
-        a.add_dependency(c)
-        a.add_dependency(d)
+    #     with self.assertRaises(CompoundException) as catcher:
+    #         execute(a, jobs=1, keep_going=False)
+    #     report = catcher.exception.execution_report
 
-        def side_effect():
-            time.sleep(0.1)
-            raise Exception()
+    #     failed = len(catcher.exception.exceptions)
 
-        bMock.side_effect = side_effect
-        cMock.side_effect = side_effect
-        dMock.side_effect = side_effect
+    #     if failed == 1:
+    #         self.assertEventsIn([
+    #             ["b"],
+    #             ["c"],
+    #             ["d"],
+    #         ])
+    #     else:
+    #         self.assertEqual(failed, 2)
+    #         self.assertEventsIn([
+    #             ["b", "c"],
+    #             ["b", "d"],
+    #             ["c", "b"],
+    #             ["c", "d"],
+    #             ["d", "b"],
+    #             ["d", "c"],
+    #         ])
 
-        with self.assertRaises(CompoundException) as catcher:
-            execute(a)
-        report = catcher.exception.execution_report
-
-        failed = len(catcher.exception.exceptions)
-        self.assertIn(failed, [1, 2])
-
-        aMock.assert_not_called()
-        self.assertEqual(bMock.called + cMock.called + dMock.called, failed)
-
-        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Canceled)
-        self.assertEqual(
-            len([x for x in [b, c, d] if report.get_action_status(x).status == ExecutionReport.ActionStatus.Canceled]),
-            3 - failed
-        )
-        self.assertEqual(
-            len([x for x in [b, c, d] if report.get_action_status(x).status == ExecutionReport.ActionStatus.Failed]),
-            failed
-        )
+    #     self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Canceled)
+    #     self.assertEqual(
+    #         len([x for x in [b, c, d] if report.get_action_status(x).status ==
+    #                ExecutionReport.ActionStatus.Canceled]),
+    #         3 - failed
+    #     )
+    #     self.assertEqual(
+    #         len([x for x in [b, c, d] if report.get_action_status(x).status == ExecutionReport.ActionStatus.Failed]),
+    #         failed
+    #     )

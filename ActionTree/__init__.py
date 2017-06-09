@@ -6,7 +6,6 @@ from __future__ import division, absolute_import, print_function
 
 import concurrent.futures as futures
 import datetime
-import multiprocessing
 import os.path
 
 import graphviz
@@ -30,8 +29,6 @@ def execute(action, jobs=1, keep_going=False, do_raise=True):
 
     :rtype: ExecutionReport
     """
-    if jobs <= 0 or jobs is None:
-        jobs = multiprocessing.cpu_count() + 1
     return Executor(jobs, keep_going, do_raise).execute(action)
 
 
@@ -175,6 +172,18 @@ class ExecutionReport(object):
         return self.__action_statuses.items()
 
 
+def _time_execute(action):  # pragma no cover (Executed in child process)
+    exception = None
+    return_value = None
+    start_time = datetime.datetime.now()
+    try:
+        return_value = action.do_execute()
+    except Exception as e:
+        exception = e
+    end_time = datetime.datetime.now()
+    return (exception, return_value, start_time, end_time)
+
+
 class Executor(object):
     def __init__(self, jobs, keep_going, do_raise):
         self.__jobs = jobs
@@ -195,10 +204,10 @@ class Executor(object):
             self.report = ExecutionReport()
 
     def execute(self, action):
-        # Threads in pool just call self.__time_execute, which has no side effects.
+        # Threads in pool just call _time_execute, which has no side effects.
         # To avoid races, only the thread calling Executor.execute is allowed to modify anything.
 
-        with futures.ThreadPoolExecutor(max_workers=self.__jobs) as executor:
+        with futures.ProcessPoolExecutor(max_workers=self.__jobs) as executor:
             execution = Executor.Execution(executor, action.get_all_dependencies())
             while execution.pending or execution.submitted:
                 self.__progress(execution)
@@ -228,22 +237,10 @@ class Executor(object):
                         execution.pending.remove(action)
                         go_on = True
                     else:
-                        execution.submitted[execution.executor.submit(self.__time_execute, action)] = action
+                        execution.submitted[execution.executor.submit(_time_execute, action)] = action
                         execution.submitted_at[action] = now
                         execution.pending.remove(action)
                         go_on = True
-
-    @staticmethod
-    def __time_execute(action):
-        exception = None
-        return_value = None
-        start_time = datetime.datetime.now()
-        try:
-            return_value = action.do_execute()
-        except Exception as e:
-            exception = e
-        end_time = datetime.datetime.now()
-        return (exception, return_value, start_time, end_time)
 
     def __cancel(self, execution, now):
         for (f, action) in execution.submitted.items():
@@ -322,10 +319,11 @@ class Action(object):
     Its return value is ignored.
     If it raises and exception, it is captured and re-raised in a :exc:`CompoundException`.
 
-    See also :class:`.ActionFromCallable` if you just want to create an action from a simple callable.
     """
     # @todo Add a note about printing anything in do_execute
-    # @todo Add a note saying
+    # @todo Add a note saying that outputs, return values and exceptions are captured
+    # @todo Add a note saying that output channels MUST be flushed before returning
+    # @todo Add a note saying that the class, the return value and any exceptions raised MUST be pickle-able
 
     def __init__(self, label):
         """
@@ -387,23 +385,6 @@ class Action(object):
                 actions += dependency.get_possible_execution_order(seen_actions)
             actions.append(self)
         return actions
-
-
-class ActionFromCallable(Action):
-    """
-    An :class:`.Action` sub-class for the simple use-case of using a plain callable as an action.
-    """
-
-    def __init__(self, do_execute, label):
-        """
-        :param label: see :class:`.Action`.
-        :param callable do_execute: the function to execute the action.
-        """
-        super(ActionFromCallable, self).__init__(label)
-        self.__do_execute = do_execute
-
-    def do_execute(self):
-        return self.__do_execute()
 
 
 class CompoundException(Exception):
