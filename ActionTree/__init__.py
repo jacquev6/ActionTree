@@ -16,7 +16,7 @@ import matplotlib.figure
 import matplotlib.backends.backend_agg
 
 
-def execute(action, jobs=1, keep_going=False):
+def execute(action, jobs=1, keep_going=False, do_raise=True):
     """
     Recursively execute an action's dependencies then the action.
 
@@ -24,14 +24,15 @@ def execute(action, jobs=1, keep_going=False):
     :param int jobs: number of actions to execute in parallel. Pass ``None`` to let ActionTree choose.
     :param bool keep_going: if ``True``, then execution does not stop on first failure,
         but executes as many dependencies as possible.
+    :param bool do_raise: if ``False``, then exceptions are caught and put in the :class:`.ExecutionReport`.
 
-    :raises CompoundException: when dependencies raise exceptions.
+    :raises CompoundException: when ``do_raise`` is ``True`` and dependencies raise exceptions.
 
     :rtype: ExecutionReport
     """
     if jobs <= 0 or jobs is None:
         jobs = multiprocessing.cpu_count() + 1
-    return Executor(jobs, keep_going).execute(action)
+    return Executor(jobs, keep_going, do_raise).execute(action)
 
 
 class ExecutionReport(object):
@@ -55,30 +56,36 @@ class ExecutionReport(object):
         Failed = "Failed"
         "The :attr:`status` after a failed execution where this action raised an exception."
 
-        def __init__(self, ready_time=None, start_time=None, cancel_time=None, failure_time=None, success_time=None):
-            ready = bool(ready_time)
-            start = bool(start_time)
-            cancel = bool(cancel_time)
-            failure = bool(failure_time)
-            success = bool(success_time)
-            if ready:
-                if start:
-                    assert not cancel
-                    assert (failure or success)
-                    self.__status = self.Successful if success else self.Failed
+        def __init__(
+            self,
+            ready_time=None, start_time=None, cancel_time=None, failure_time=None, success_time=None,
+            return_value=None, exception=None,
+        ):
+            if start_time:
+                assert ready_time
+                assert not cancel_time
+                assert (failure_time or success_time)
+                # return_value can be whatever was returned, including None
+                if success_time:
+                    assert not exception
+                    self.__status = self.Successful
                 else:
-                    assert cancel
-                    assert not (failure or success)
-                    self.__status = self.Canceled
+                    assert exception
+                    self.__status = self.Failed
             else:
-                assert cancel
-                assert not (start or failure or success)
+                # ready_time can be None if the action was cancelled before it was ever ready,
+                # or not None if it was ready, then cancelled
+                assert cancel_time
+                assert not (failure_time or success_time)
+                assert return_value is None
                 self.__status = self.Canceled
             self.__ready_time = ready_time
             self.__cancel_time = cancel_time
             self.__start_time = start_time
-            self.__success_time = success_time
             self.__failure_time = failure_time
+            self.__success_time = success_time
+            self.__return_value = return_value
+            self.__exception = exception
 
         @property
         def status(self):
@@ -122,6 +129,20 @@ class ExecutionReport(object):
             """
             return self.__cancel_time
 
+        @property
+        def return_value(self):
+            """
+            @todo Document
+            """
+            return self.__return_value
+
+        @property
+        def exception(self):
+            """
+            @todo Document
+            """
+            return self.__exception
+
     def __init__(self):
         self.__is_success = True
         self.__action_statuses = dict()
@@ -155,9 +176,10 @@ class ExecutionReport(object):
 
 
 class Executor(object):
-    def __init__(self, jobs, keep_going):
+    def __init__(self, jobs, keep_going, do_raise):
         self.__jobs = jobs
         self.__keep_going = keep_going
+        self.__do_raise = do_raise
 
     class Execution:
         # An aggregate for things that cannot be stored in Executor
@@ -181,7 +203,7 @@ class Executor(object):
             while execution.pending or execution.submitted:
                 self.__progress(execution)
 
-        if execution.exceptions:
+        if self.__do_raise and execution.exceptions:
             raise CompoundException(execution.exceptions, execution.report)
         else:
             return execution.report
@@ -202,7 +224,7 @@ class Executor(object):
                 done = execution.succeeded | execution.failed
                 if all(d in done for d in action.dependencies):
                     if any(d in execution.failed for d in action.dependencies):
-                        self.__mark_action_canceled(execution, action, now)
+                        self.__mark_action_canceled(execution, action, cancel_time=now)
                         execution.pending.remove(action)
                         go_on = True
                     else:
@@ -214,21 +236,22 @@ class Executor(object):
     @staticmethod
     def __time_execute(action):
         exception = None
+        return_value = None
+        start_time = datetime.datetime.now()
         try:
-            begin_time = datetime.datetime.now()
-            action.do_execute()
+            return_value = action.do_execute()
         except Exception as e:
             exception = e
         end_time = datetime.datetime.now()
-        return (exception, begin_time, end_time)
+        return (exception, return_value, start_time, end_time)
 
     def __cancel(self, execution, now):
         for (f, action) in execution.submitted.items():
             if f.cancel():
-                self.__mark_action_canceled(execution, action, now)
+                self.__mark_action_canceled(execution, action, cancel_time=now)
                 del execution.submitted[f]
         for action in execution.pending:
-            self.__mark_action_canceled(execution, action, now)
+            self.__mark_action_canceled(execution, action, cancel_time=now)
         execution.pending.clear()
 
     def __wait(self, execution):
@@ -236,13 +259,19 @@ class Executor(object):
         for f in waited.done:
             action = execution.submitted[f]
             del execution.submitted[f]
-            (exception, begin_time, end_time) = f.result()
+            (exception, return_value, start_time, end_time) = f.result()
             if exception:
-                self.__mark_action_failed(execution, action, begin_time, end_time)
+                self.__mark_action_failed(
+                    execution, action,
+                    start_time=start_time, failure_time=end_time, exception=exception,
+                )
                 execution.exceptions.append(exception)
                 execution.report.set_success(False)
             else:
-                self.__mark_action_successful(execution, action, begin_time, end_time)
+                self.__mark_action_successful(
+                    execution, action,
+                    start_time=start_time, success_time=end_time, return_value=return_value,
+                )
 
     @staticmethod
     def __mark_action_canceled(execution, action, cancel_time):
@@ -256,7 +285,7 @@ class Executor(object):
         )
 
     @staticmethod
-    def __mark_action_successful(execution, action, start_time, success_time):
+    def __mark_action_successful(execution, action, start_time, success_time, return_value):
         execution.succeeded.add(action)
         execution.report.set_action_status(
             action,
@@ -264,11 +293,12 @@ class Executor(object):
                 ready_time=execution.submitted_at[action],
                 start_time=start_time,
                 success_time=success_time,
+                return_value=return_value,
             ),
         )
 
     @staticmethod
-    def __mark_action_failed(execution, action, start_time, failure_time):
+    def __mark_action_failed(execution, action, start_time, failure_time, exception):
         execution.failed.add(action)
         execution.report.set_action_status(
             action,
@@ -276,6 +306,7 @@ class Executor(object):
                 ready_time=execution.submitted_at[action],
                 start_time=start_time,
                 failure_time=failure_time,
+                exception=exception,
             )
         )
 
@@ -372,7 +403,7 @@ class ActionFromCallable(Action):
         self.__do_execute = do_execute
 
     def do_execute(self):
-        self.__do_execute()
+        return self.__do_execute()
 
 
 class CompoundException(Exception):

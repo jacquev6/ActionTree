@@ -7,7 +7,7 @@ set -o errexit
 
 coverage2 run --include "ActionTree/*" --branch setup.py test --quiet
 
-coverage2 report | grep -v "^ActionTree.*100%$"
+coverage2 report --show-missing | grep -v "^ActionTree.*100%$"
 
 coverage2 html --directory=build/coverage
 echo

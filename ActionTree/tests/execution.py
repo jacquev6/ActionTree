@@ -31,6 +31,13 @@ class ExecutionTestCase(unittest.TestCase):
 
         self.assertEqual(self.calls, ["a"])
 
+    def test_return_value(self):
+        a = ActionFromCallable(lambda: "yup", "a")
+
+        report = execute(a)
+
+        self.assertEqual(report.get_action_status(a).return_value, "yup")
+
     def test_many_dependencies(self):
         #     a
         #    /|\

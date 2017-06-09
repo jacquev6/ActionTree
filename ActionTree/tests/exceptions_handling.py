@@ -32,6 +32,20 @@ class ExceptionsHandlingTestCase(unittest.TestCase):
 
         self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Failed)
 
+    def test_simple_failure_without_raise(self):
+        a, aMock = self.__create_mocked_action("a")
+
+        e = Exception("FooBar")
+        aMock.side_effect = e
+
+        report = execute(a, do_raise=False)
+
+        aMock.assert_called_once_with()
+
+        self.assertFalse(report.is_success)
+        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Failed)
+        self.assertIs(report.get_action_status(a).exception, e)
+
     def test_exception_in_dependency(self):
         a, aMock = self.__create_mocked_action("a")
         b, bMock = self.__create_mocked_action("b")
