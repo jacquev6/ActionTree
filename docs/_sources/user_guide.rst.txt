@@ -5,15 +5,15 @@ User guide
 Introduction
 ============
 
-In ActionTree, you create the graph of the actions to be executed and then call the ``execute`` method of its root.
+In ActionTree, you create the graph of the actions to be executed and then call the :func:`.execute` function on its root.
 
 For example, let's say you want to generate three files, and then concatenate them into a fourth file.
 
-First, import ActionTree
+First, import :mod:`.ActionTree`
 
 >>> from ActionTree import Action, ActionFromCallable, execute, DependencyGraph, GanttChart, CompoundException
 
-Then create your specialized action classes:
+Then create your specialized :class:`.Action` classes:
 
 >>> class CreateFile(Action):
 ...   def __init__(self, name):
@@ -43,7 +43,7 @@ Create an actions dependency graph:
 >>> concat.add_dependency(CreateFile("second"))
 >>> concat.add_dependency(CreateFile("third"))
 
-And execute it:
+And :func:`.execute` it:
 
 >>> execute(concat)
 <ActionTree.ExecutionReport...>
@@ -67,8 +67,8 @@ True
 Simple actions from callable
 ============================
 
-:class:`.ActionFromCallable` accepts a callable in its constructor to be usable without subclassing.
-The previous example could be rewriten like:
+The :class:`.ActionFromCallable` class accepts a callable in its constructor to be usable without subclassing.
+The previous example could be rewritten like:
 
 >>> def create_file(name):
 ...   with open(name, "w") as f:
@@ -125,6 +125,8 @@ Say you want to compile two C++ files and link them:
     os.unlink("a.o")
     os.unlink("b.o")
     os.unlink("test")
+
+.. @todo If you're really looking to compile stuff using ActionTree, you may want to have a look at devlpr
 
 Drawings
 ========
