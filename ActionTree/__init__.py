@@ -7,6 +7,7 @@ from __future__ import division, absolute_import, print_function
 import concurrent.futures as futures
 import datetime
 import os.path
+import pickle
 
 import graphviz
 import matplotlib
@@ -181,7 +182,16 @@ def _time_execute(action):  # pragma no cover (Executed in child process)
     except Exception as e:
         exception = e
     end_time = datetime.datetime.now()
-    return (exception, return_value, start_time, end_time)
+    ret = (exception, return_value, start_time, end_time)
+    _check_picklability(ret)
+    return ret
+
+
+def _check_picklability(stuff):
+    # This is a way to fail fast if we see a non-picklable object
+    # because ProcessPoolExecutor freezes forever if we try to transfer
+    # a non-picklable object through its queues
+    pickle.loads(pickle.dumps(stuff))
 
 
 class Executor(object):
@@ -209,6 +219,7 @@ class Executor(object):
 
         with futures.ProcessPoolExecutor(max_workers=self.__jobs) as executor:
             execution = Executor.Execution(executor, action.get_all_dependencies())
+            _check_picklability(execution.pending)
             while execution.pending or execution.submitted:
                 self.__progress(execution)
 
@@ -323,7 +334,7 @@ class Action(object):
     # @todo Add a note about printing anything in do_execute
     # @todo Add a note saying that outputs, return values and exceptions are captured
     # @todo Add a note saying that output channels MUST be flushed before returning
-    # @todo Add a note saying that the class, the return value and any exceptions raised MUST be pickle-able
+    # @todo Add a note saying that the class, the return value and any exceptions raised MUST be picklable
 
     def __init__(self, label):
         """
