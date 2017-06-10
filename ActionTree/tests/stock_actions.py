@@ -100,6 +100,13 @@ class CallSubprocessTestCase(PatchingTestCase):
 
         self.check_call.assert_called_once_with(["xxx", "yyy"], foo="bar")
 
+    def test_called_process_error(self):
+        self.check_call.side_effect = subprocess.CalledProcessError(1, ["false"], None)
+
+        with self.assertRaises(CalledProcessError) as catcher:
+            CallSubprocess(["false"]).do_execute()
+        self.assertEqual(catcher.exception.args, (1, ["false"], None))
+
 
 class CallSubprocessForRealTestCase(unittest.TestCase):
     def test_called_process_error(self):
