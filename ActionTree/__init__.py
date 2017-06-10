@@ -6,6 +6,7 @@ from __future__ import division, absolute_import, print_function
 
 import concurrent.futures as futures
 import datetime
+import io
 import os.path
 import pickle
 
@@ -14,6 +15,7 @@ import matplotlib
 import matplotlib.dates
 import matplotlib.figure
 import matplotlib.backends.backend_agg
+import wurlitzer
 
 
 def execute(action, jobs=1, keep_going=False, do_raise=True):
@@ -57,12 +59,13 @@ class ExecutionReport(object):
         def __init__(
             self,
             ready_time=None, start_time=None, cancel_time=None, failure_time=None, success_time=None,
-            return_value=None, exception=None,
+            return_value=None, exception=None, output=None
         ):
             if start_time:
                 assert ready_time
                 assert not cancel_time
                 assert (failure_time or success_time)
+                assert output is not None
                 # return_value can be whatever was returned, including None
                 if success_time:
                     assert not exception
@@ -75,6 +78,7 @@ class ExecutionReport(object):
                 # or not None if it was ready, then cancelled
                 assert cancel_time
                 assert not (failure_time or success_time)
+                assert not output
                 assert return_value is None
                 self.__status = self.Canceled
             self.__ready_time = ready_time
@@ -84,6 +88,7 @@ class ExecutionReport(object):
             self.__success_time = success_time
             self.__return_value = return_value
             self.__exception = exception
+            self.__output = output
 
         @property
         def status(self):
@@ -141,6 +146,13 @@ class ExecutionReport(object):
             """
             return self.__exception
 
+        @property
+        def output(self):
+            """
+            @todo Document
+            """
+            return self.__output
+
     def __init__(self):
         self.__is_success = True
         self.__action_statuses = dict()
@@ -176,13 +188,17 @@ class ExecutionReport(object):
 def _time_execute(action):  # pragma no cover (Executed in child process)
     exception = None
     return_value = None
+    output = None
     start_time = datetime.datetime.now()
+    out = io.StringIO()
     try:
-        return_value = action.do_execute()
+        with wurlitzer.pipes(stdout=out, stderr=wurlitzer.STDOUT):
+            return_value = action.do_execute()
     except Exception as e:
         exception = e
     end_time = datetime.datetime.now()
-    ret = (exception, return_value, start_time, end_time)
+    output = out.getvalue()
+    ret = (exception, return_value, output, start_time, end_time)
     _check_picklability(ret)
     return ret
 
@@ -267,18 +283,18 @@ class Executor(object):
         for f in waited.done:
             action = execution.submitted[f]
             del execution.submitted[f]
-            (exception, return_value, start_time, end_time) = f.result()
+            (exception, return_value, output, start_time, end_time) = f.result()
             if exception:
                 self.__mark_action_failed(
                     execution, action,
-                    start_time=start_time, failure_time=end_time, exception=exception,
+                    start_time=start_time, failure_time=end_time, exception=exception, output=output,
                 )
                 execution.exceptions.append(exception)
                 execution.report.set_success(False)
             else:
                 self.__mark_action_successful(
                     execution, action,
-                    start_time=start_time, success_time=end_time, return_value=return_value,
+                    start_time=start_time, success_time=end_time, return_value=return_value, output=output,
                 )
 
     @staticmethod
@@ -293,7 +309,7 @@ class Executor(object):
         )
 
     @staticmethod
-    def __mark_action_successful(execution, action, start_time, success_time, return_value):
+    def __mark_action_successful(execution, action, start_time, success_time, return_value, output):
         execution.succeeded.add(action)
         execution.report.set_action_status(
             action,
@@ -302,11 +318,12 @@ class Executor(object):
                 start_time=start_time,
                 success_time=success_time,
                 return_value=return_value,
+                output=output,
             ),
         )
 
     @staticmethod
-    def __mark_action_failed(execution, action, start_time, failure_time, exception):
+    def __mark_action_failed(execution, action, start_time, failure_time, exception, output):
         execution.failed.add(action)
         execution.report.set_action_status(
             action,
@@ -315,6 +332,7 @@ class Executor(object):
                 start_time=start_time,
                 failure_time=failure_time,
                 exception=exception,
+                output=output,
             )
         )
 
