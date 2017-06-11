@@ -68,9 +68,9 @@ class TimingTestCase(ActionTreeTestCase):
 
             report = execute(a0, keep_going=True, do_raise=False)
 
-            # a is not cancelled before all its dependencies are done
+            # a is not canceled before all its dependencies are done
             self.assertGreater(report.get_action_status(a).cancel_time, report.get_action_status(b).failure_time)
             for dep in deps:
                 self.assertGreater(report.get_action_status(a).cancel_time, report.get_action_status(dep).success_time)
-            # a0 is cancelled at the same time as a
+            # a0 is canceled at the same time as a
             self.assertEqual(report.get_action_status(a0).cancel_time, report.get_action_status(a).cancel_time)

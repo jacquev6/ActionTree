@@ -74,8 +74,8 @@ class ExecutionReport(object):
                     assert exception
                     self.__status = self.Failed
             else:
-                # ready_time can be None if the action was cancelled before it was ever ready,
-                # or not None if it was ready, then cancelled
+                # ready_time can be None if the action was canceled before it was ever ready,
+                # or not None if it was ready, then canceled
                 assert cancel_time
                 assert not (failure_time or success_time)
                 assert not output
