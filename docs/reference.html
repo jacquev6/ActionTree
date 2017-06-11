@@ -48,7 +48,7 @@
 <span id="core"></span><h2>Core<a class="headerlink" href="#module-ActionTree" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="ActionTree.execute">
-<code class="descclassname">ActionTree.</code><code class="descname">execute</code><span class="sig-paren">(</span><em>action</em>, <em>jobs=1</em>, <em>keep_going=False</em>, <em>do_raise=True</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.execute" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">ActionTree.</code><code class="descname">execute</code><span class="sig-paren">(</span><em>action</em>, <em>jobs=1</em>, <em>keep_going=False</em>, <em>do_raise=True</em>, <em>hooks=&lt;ActionTree.Hooks object&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.execute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Recursively execute an action’s dependencies then the action.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -60,6 +60,7 @@
 <li><strong>keep_going</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – if <code class="docutils literal"><span class="pre">True</span></code>, then execution does not stop on first failure,
 but executes as many dependencies as possible.</li>
 <li><strong>do_raise</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – if <code class="docutils literal"><span class="pre">False</span></code>, then exceptions are caught and put in the <a class="reference internal" href="#ActionTree.ExecutionReport" title="ActionTree.ExecutionReport"><code class="xref py py-class docutils literal"><span class="pre">ExecutionReport</span></code></a>.</li>
+<li><strong>hooks</strong> – &#64;todo Document</li>
 </ul>
 </td>
 </tr>

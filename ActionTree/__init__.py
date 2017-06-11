@@ -18,7 +18,27 @@ import matplotlib.backends.backend_agg
 import wurlitzer
 
 
-def execute(action, jobs=1, keep_going=False, do_raise=True):
+class Hooks(object):
+    def action_pending(self, action):
+        pass
+
+    def action_ready(self, action):
+        pass
+
+    # def action_started(self, action):
+    #     pass
+
+    def action_successful(self, action):
+        pass
+
+    def action_failed(self, action):
+        pass
+
+    def action_canceled(self, action):
+        pass
+
+
+def execute(action, jobs=1, keep_going=False, do_raise=True, hooks=Hooks()):
     """
     Recursively execute an action's dependencies then the action.
 
@@ -27,12 +47,13 @@ def execute(action, jobs=1, keep_going=False, do_raise=True):
     :param bool keep_going: if ``True``, then execution does not stop on first failure,
         but executes as many dependencies as possible.
     :param bool do_raise: if ``False``, then exceptions are caught and put in the :class:`.ExecutionReport`.
+    :param hooks: @todo Document
 
     :raises CompoundException: when ``do_raise`` is ``True`` and dependencies raise exceptions.
 
     :rtype: ExecutionReport
     """
-    return Executor(jobs, keep_going, do_raise).execute(action)
+    return Executor(jobs, keep_going, do_raise).execute(action, hooks)
 
 
 class ExecutionReport(object):
@@ -219,7 +240,8 @@ class Executor(object):
     class Execution:
         # An aggregate for things that cannot be stored in Executor
         # (to allow several parallel calls to Executor.execute)
-        def __init__(self, executor, pending):
+        def __init__(self, executor, pending, hooks):
+            self.hooks = hooks
             self.executor = executor
             self.pending = set(pending)  # Action
             self.submitted = dict()  # Future -> Action
@@ -229,13 +251,15 @@ class Executor(object):
             self.exceptions = []
             self.report = ExecutionReport()
 
-    def execute(self, action):
+    def execute(self, action, hooks):
         # Threads in pool just call _time_execute, which has no side effects.
         # To avoid races, only the thread calling Executor.execute is allowed to modify anything.
 
         with futures.ProcessPoolExecutor(max_workers=self.__jobs) as executor:
-            execution = Executor.Execution(executor, action.get_all_dependencies())
+            execution = Executor.Execution(executor, action.get_all_dependencies(), hooks)
             _check_picklability(execution.pending)
+            for action in execution.pending:
+                execution.hooks.action_pending(action)
             while execution.pending or execution.submitted:
                 self.__progress(execution)
 
@@ -264,9 +288,7 @@ class Executor(object):
                         execution.pending.remove(action)
                         go_on = True
                     else:
-                        execution.submitted[execution.executor.submit(_time_execute, action)] = action
-                        execution.submitted_at[action] = now
-                        execution.pending.remove(action)
+                        self.__submit_action(execution, action, ready_time=now)
                         go_on = True
 
     def __cancel(self, execution, now):
@@ -285,17 +307,22 @@ class Executor(object):
             del execution.submitted[f]
             (exception, return_value, output, start_time, end_time) = f.result()
             if exception:
-                self.__mark_action_failed(
+                self.__acknowledge_action_failure(
                     execution, action,
                     start_time=start_time, failure_time=end_time, exception=exception, output=output,
                 )
-                execution.exceptions.append(exception)
-                execution.report.set_success(False)
             else:
-                self.__mark_action_successful(
+                self.__acknowledge_action_success(
                     execution, action,
                     start_time=start_time, success_time=end_time, return_value=return_value, output=output,
                 )
+
+    @staticmethod
+    def __submit_action(execution, action, ready_time):
+        execution.submitted[execution.executor.submit(_time_execute, action)] = action
+        execution.submitted_at[action] = ready_time
+        execution.pending.remove(action)
+        execution.hooks.action_ready(action)
 
     @staticmethod
     def __mark_action_canceled(execution, action, cancel_time):
@@ -307,9 +334,10 @@ class Executor(object):
                 cancel_time=cancel_time,
             )
         )
+        execution.hooks.action_canceled(action)
 
     @staticmethod
-    def __mark_action_successful(execution, action, start_time, success_time, return_value, output):
+    def __acknowledge_action_success(execution, action, start_time, success_time, return_value, output):
         execution.succeeded.add(action)
         execution.report.set_action_status(
             action,
@@ -321,9 +349,12 @@ class Executor(object):
                 output=output,
             ),
         )
+        execution.hooks.action_successful(action)
 
     @staticmethod
-    def __mark_action_failed(execution, action, start_time, failure_time, exception, output):
+    def __acknowledge_action_failure(execution, action, start_time, failure_time, exception, output):
+        execution.exceptions.append(exception)
+        execution.report.set_success(False)
         execution.failed.add(action)
         execution.report.set_action_status(
             action,
@@ -335,6 +366,7 @@ class Executor(object):
                 output=output,
             )
         )
+        execution.hooks.action_failed(action)
 
 
 class Action(object):

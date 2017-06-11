@@ -14,7 +14,7 @@ echo
 echo "See coverage details in $(pwd)/build/coverage/index.html"
 echo
 
-python setup.py build_sphinx --quiet --builder=doctest
+python setup.py build_sphinx --builder=doctest
 
 python3 setup.py test --quiet
 
