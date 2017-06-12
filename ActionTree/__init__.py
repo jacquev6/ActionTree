@@ -18,25 +18,25 @@ import wurlitzer
 
 
 class Hooks(object):
-    def action_pending(self, action):
+    def action_pending(self, time, action):
         pass
 
-    def action_ready(self, action):
+    def action_ready(self, time, action):
         pass
 
-    def action_canceled(self, action):
+    def action_canceled(self, time, action):
         pass
 
-    def action_started(self, action):
+    def action_started(self, time, action):
         pass
 
-    def action_printed(self, action, text):
+    def action_printed(self, time, action, text):
         pass
 
-    def action_successful(self, action):
+    def action_successful(self, time, action):
         pass
 
-    def action_failed(self, action):
+    def action_failed(self, time, action):
         pass
 
 
@@ -291,7 +291,7 @@ class _StartedEvent(_Event):
 
     def apply(self, execution, action):
         execution.report.get_action_status(action)._set_start_time(self.start_time)
-        execution.hooks.action_started(action)
+        execution.hooks.action_started(self.start_time, action)
 
 
 class _SuccessedEvent(_Event):
@@ -304,7 +304,7 @@ class _SuccessedEvent(_Event):
         execution.submitted.remove(action)
         execution.successful.add(action)
         execution.report.get_action_status(action)._set_success(self.success_time, self.return_value)
-        execution.hooks.action_successful(action)
+        execution.hooks.action_successful(self.success_time, action)
 
 
 class _PrintedEvent(_Event):
@@ -315,7 +315,7 @@ class _PrintedEvent(_Event):
 
     def apply(self, execution, action):
         execution.report.get_action_status(action)._add_output(self.text)
-        execution.hooks.action_printed(action, self.text)
+        execution.hooks.action_printed(self.print_time, action, self.text)
 
 
 class _FailedEvent(_Event):
@@ -329,7 +329,7 @@ class _FailedEvent(_Event):
         execution.failed.add(action)
         execution.exceptions.append(self.exception)
         execution.report.get_action_status(action)._set_failure(self.failure_time, self.exception)
-        execution.hooks.action_failed(action)
+        execution.hooks.action_failed(self.failure_time, action)
 
 
 class _PicklingExceptionEvent(_Event):
@@ -354,8 +354,9 @@ class _Execution(object):
         self.report = ExecutionReport(self.pending)
 
     def run(self):
+        now = datetime.datetime.now()
         for action in self.pending:
-            self.hooks.action_pending(action)
+            self.hooks.action_pending(now, action)
         while self.pending or self.submitted:
             self._progress()
 
@@ -402,12 +403,12 @@ class _Execution(object):
         self.tasks.put((id(action), action))
         self.submitted.add(action)
         self.pending.remove(action)
-        self.hooks.action_ready(action)
+        self.hooks.action_ready(ready_time, action)
 
     def __mark_action_canceled(self, action, cancel_time):
         self.failed.add(action)
         self.report.get_action_status(action)._set_cancel_time(cancel_time)
-        self.hooks.action_canceled(action)
+        self.hooks.action_canceled(cancel_time, action)
 
 
 class Action(object):

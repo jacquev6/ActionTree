@@ -4,6 +4,8 @@
 
 from __future__ import division, absolute_import, print_function
 
+import datetime
+
 from ActionTree import *
 from . import *
 
@@ -12,25 +14,32 @@ class TestHooks(Hooks):
     def __init__(self):
         self.events = []
 
-    def action_pending(self, action):
+    def action_pending(self, time, action):
+        assert isinstance(time, datetime.datetime)
         self.events.append(("pending", action.label))
 
-    def action_ready(self, action):
+    def action_ready(self, time, action):
+        assert isinstance(time, datetime.datetime)
         self.events.append(("ready", action.label))
 
-    def action_canceled(self, action):
+    def action_canceled(self, time, action):
+        assert isinstance(time, datetime.datetime)
         self.events.append(("canceled", action.label))
 
-    def action_started(self, action):
+    def action_started(self, time, action):
+        assert isinstance(time, datetime.datetime)
         self.events.append(("started", action.label))
 
-    def action_printed(self, action, text):
+    def action_printed(self, time, action, text):
+        assert isinstance(time, datetime.datetime)
         self.events.append(("printed", action.label, text))
 
-    def action_successful(self, action):
+    def action_successful(self, time, action):
+        assert isinstance(time, datetime.datetime)
         self.events.append(("successful", action.label))
 
-    def action_failed(self, action):
+    def action_failed(self, time, action):
+        assert isinstance(time, datetime.datetime)
         self.events.append(("failed", action.label))
 
 
