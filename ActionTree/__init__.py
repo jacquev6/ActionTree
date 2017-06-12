@@ -5,7 +5,6 @@
 from __future__ import division, absolute_import, print_function
 
 import concurrent.futures as futures
-import contextlib
 import datetime
 import io
 import multiprocessing
@@ -217,8 +216,12 @@ class ExecutionReport(object):
         return self.__action_statuses.items()
 
 
-@contextlib.contextmanager
-def redirect(action_id):  # pragma no cover (Executed in child process)
+def _time_execute(action_id, action):  # pragma no cover (Executed in child process)
+    exception = None
+    return_value = None
+    outputs_queue.put((action_id, 0))
+    start_time = datetime.datetime.now()
+
     # This is a highly contrieved use of Wurlitzer:
     # We just need to *capture* standards streams, so we trick Wurlitzer,
     # passing True instead of writeable file-like objects, and we redefine
@@ -230,17 +233,8 @@ def redirect(action_id):  # pragma no cover (Executed in child process)
 
     w._handle_stdout = handle
     w._handle_stderr = handle
-    with w:
-        yield
-
-
-def _time_execute(action_id, action):  # pragma no cover (Executed in child process)
-    exception = None
-    return_value = None
-    outputs_queue.put((action_id, 0))
-    start_time = datetime.datetime.now()
     try:
-        with redirect(action_id):
+        with w:
             return_value = action.do_execute()
     except Exception as e:
         exception = e
