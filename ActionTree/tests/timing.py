@@ -7,101 +7,70 @@ from __future__ import division, absolute_import, print_function
 import unittest
 
 from ActionTree import *
+from . import *
 
 
-class Counter:
-    def __init__(self):
-        self.__value = 0
-
-    def reset(self):
-        self.__value = 0
-
-    def __call__(self):
-        self.__value += 1
-        return self.__value
-
-
-class TimingTestCase(unittest.TestCase):
-    def __create_mocked_action(self, name):
-        mock = unittest.mock.Mock()
-        action = ActionFromCallable(mock, name)
-        return action, mock
-
-    def setUp(self):
-        patcher = unittest.mock.patch("datetime.datetime")
-        self.datetime = patcher.start()
-        self.datetime.now.side_effect = Counter()
-        self.addCleanup(patcher.stop)
-
+class TimingTestCase(ActionTreeTestCase):
     def test_success(self):
-        a, aMock = self.__create_mocked_action("a")
+        a = self._action("a")
 
         report = execute(a)
 
-        self.assertEqual(report.get_action_status(a).ready_time, 1)
+        self.assertIsInstance(report.get_action_status(a).ready_time, datetime.datetime)
         self.assertIsNone(report.get_action_status(a).cancel_time)
-        self.assertEqual(report.get_action_status(a).start_time, 2)
-        self.assertEqual(report.get_action_status(a).success_time, 3)
+        self.assertGreater(report.get_action_status(a).start_time, report.get_action_status(a).ready_time)
+        self.assertGreater(report.get_action_status(a).success_time, report.get_action_status(a).start_time)
         self.assertIsNone(report.get_action_status(a).failure_time)
 
     def test_failure(self):
-        a, aMock = self.__create_mocked_action("a")
-        aMock.side_effect = Exception()
+        a = self._action("a", exception=Exception())
 
-        with self.assertRaises(CompoundException) as catcher:
-            execute(a)
-        report = catcher.exception.execution_report
+        report = execute(a, do_raise=False)
 
-        self.assertEqual(report.get_action_status(a).ready_time, 1)
+        self.assertIsInstance(report.get_action_status(a).ready_time, datetime.datetime)
         self.assertIsNone(report.get_action_status(a).cancel_time)
-        self.assertEqual(report.get_action_status(a).start_time, 2)
+        self.assertGreater(report.get_action_status(a).start_time, report.get_action_status(a).ready_time)
         self.assertIsNone(report.get_action_status(a).success_time)
-        self.assertEqual(report.get_action_status(a).failure_time, 3)
+        self.assertGreater(report.get_action_status(a).failure_time, report.get_action_status(a).start_time)
 
     def test_cancelation_before_ready(self):
-        a, aMock = self.__create_mocked_action("a")
-        b, bMock = self.__create_mocked_action("b")
-        bMock.side_effect = Exception()
+        a = self._action("a")
+        b = self._action("b", exception=Exception())
         a.add_dependency(b)
 
-        with self.assertRaises(CompoundException) as catcher:
-            execute(a)
-        report = catcher.exception.execution_report
+        report = execute(a, do_raise=False)
 
-        self.assertEqual(report.get_action_status(b).ready_time, 1)
+        self.assertIsInstance(report.get_action_status(b).ready_time, datetime.datetime)
         self.assertIsNone(report.get_action_status(b).cancel_time)
-        self.assertEqual(report.get_action_status(b).start_time, 2)
+        self.assertGreater(report.get_action_status(b).start_time, report.get_action_status(b).ready_time)
         self.assertIsNone(report.get_action_status(b).success_time)
-        self.assertEqual(report.get_action_status(b).failure_time, 3)
+        self.assertGreater(report.get_action_status(b).failure_time, report.get_action_status(b).start_time)
 
         self.assertIsNone(report.get_action_status(a).ready_time)
-        self.assertEqual(report.get_action_status(a).cancel_time, 4)
+        self.assertGreater(report.get_action_status(a).cancel_time, report.get_action_status(b).failure_time)
         self.assertIsNone(report.get_action_status(a).start_time)
         self.assertIsNone(report.get_action_status(a).success_time)
         self.assertIsNone(report.get_action_status(a).failure_time)
 
     def test_cancelation_with_keep_going(self):
         for i in range(10):
-            self.datetime.now.side_effect.reset()
-
-            a0, a0Mock = self.__create_mocked_action("a0")
-            a, aMock = self.__create_mocked_action("a")
+            a0 = self._action("a0")
+            a = self._action("a")
             a0.add_dependency(a)
-            b, bMock = self.__create_mocked_action("b")
-            bMock.side_effect = Exception()
+            b = self._action("b", exception=Exception())
             a.add_dependency(b)
             DEPS = 10
             deps = []
             for i in range(DEPS):
-                c, cMock = self.__create_mocked_action("c")
+                c = self._action("c")
                 a.add_dependency(c)
                 deps.append(c)
 
-            with self.assertRaises(CompoundException) as catcher:
-                execute(a0, keep_going=True)
-            report = catcher.exception.execution_report
+            report = execute(a0, keep_going=True, do_raise=False)
 
             # a is not cancelled before all its dependencies are done
-            self.assertGreater(report.get_action_status(a).cancel_time, 3 + 2 * DEPS)
+            self.assertGreater(report.get_action_status(a).cancel_time, report.get_action_status(b).failure_time)
+            for dep in deps:
+                self.assertGreater(report.get_action_status(a).cancel_time, report.get_action_status(dep).success_time)
             # a0 is cancelled at the same time as a
             self.assertEqual(report.get_action_status(a0).cancel_time, report.get_action_status(a).cancel_time)
