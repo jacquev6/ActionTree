@@ -142,6 +142,8 @@ Say you want to compile two C++ files and link them:
 
 .. @todo Demonstrate return values and captured output
 
+.. @todo Demonstrate hooks
+
 Drawings
 ========
 

@@ -7,8 +7,11 @@ from __future__ import division, absolute_import, print_function
 import concurrent.futures as futures
 import datetime
 import io
+import multiprocessing
 import os.path
 import pickle
+import Queue
+import sys
 
 import graphviz
 import matplotlib
@@ -18,6 +21,10 @@ import matplotlib.backends.backend_agg
 import wurlitzer
 
 
+# @todo Make this queue Execution-specific
+outputs_queue = multiprocessing.Queue()
+
+
 class Hooks(object):
     def action_pending(self, action):
         pass
@@ -25,8 +32,11 @@ class Hooks(object):
     def action_ready(self, action):
         pass
 
-    # def action_started(self, action):
-    #     pass
+    def action_started(self, action):
+        pass
+
+    def action_printed(self, action, text):
+        pass
 
     def action_successful(self, action):
         pass
@@ -206,20 +216,31 @@ class ExecutionReport(object):
         return self.__action_statuses.items()
 
 
-def _time_execute(action):  # pragma no cover (Executed in child process)
+def _time_execute(action_id, action):  # pragma no cover (Executed in child process)
     exception = None
     return_value = None
-    output = None
+    outputs_queue.put((action_id, 0))
     start_time = datetime.datetime.now()
-    out = io.StringIO()
+
+    # This is a highly contrieved use of Wurlitzer:
+    # We just need to *capture* standards streams, so we trick Wurlitzer,
+    # passing True instead of writeable file-like objects, and we redefine
+    # _handle_xxx methods to intercept what it would write
+    w = wurlitzer.Wurlitzer(stdout=True, stderr=True)
+
+    def handle(data):
+        outputs_queue.put((action_id, data))
+
+    w._handle_stdout = handle
+    w._handle_stderr = handle
     try:
-        with wurlitzer.pipes(stdout=out, stderr=wurlitzer.STDOUT):
+        with w:
             return_value = action.do_execute()
     except Exception as e:
         exception = e
     end_time = datetime.datetime.now()
-    output = out.getvalue()
-    ret = (exception, return_value, output, start_time, end_time)
+    outputs_queue.put((action_id, None))
+    ret = (exception, return_value, start_time, end_time)
     _check_picklability(ret)
     return ret
 
@@ -244,16 +265,18 @@ class Executor(object):
             self.hooks = hooks
             self.executor = executor
             self.pending = set(pending)  # Action
-            self.submitted = dict()  # Future -> Action
-            self.submitted_at = dict()  # Action -> datetime.datetime
+            self.actions_by_id = {id(action): action for action in pending}  # id -> Action
+            self.submitted = set()  # Future
+            self.ready_times = dict()  # Action -> datetime.datetime
+            self.outputs = dict()  # Action -> list of str (with object() and None sentinels at begin and end)
             self.succeeded = set()  # Action
             self.failed = set()  # Action
             self.exceptions = []
             self.report = ExecutionReport()
 
     def execute(self, action, hooks):
-        # Threads in pool just call _time_execute, which has no side effects.
-        # To avoid races, only the thread calling Executor.execute is allowed to modify anything.
+        # To avoid races, threads in pools only call pure functions (with no side effects),
+        # and only the thread calling Executor.execute is allowed to modify anything.
 
         with futures.ProcessPoolExecutor(max_workers=self.__jobs) as executor:
             execution = Executor.Execution(executor, action.get_all_dependencies(), hooks)
@@ -292,35 +315,57 @@ class Executor(object):
                         go_on = True
 
     def __cancel(self, execution, now):
-        for (f, action) in execution.submitted.items():
-            if f.cancel():
-                self.__mark_action_canceled(execution, action, cancel_time=now)
-                del execution.submitted[f]
+        for future in list(execution.submitted):
+            if future.cancel():
+                self.__mark_action_canceled(execution, future.action, cancel_time=now)
+                execution.submitted.remove(future)
         for action in execution.pending:
             self.__mark_action_canceled(execution, action, cancel_time=now)
         execution.pending.clear()
 
+    def __dequeue_some_output(self, execution):
+        try:
+            (action_id, output) = outputs_queue.get_nowait()
+            action = execution.actions_by_id[action_id]
+            if output == 0:
+                execution.hooks.action_started(action)
+            else:
+                execution.outputs[action].append(output)
+                if output is not None:
+                    execution.hooks.action_printed(action, output)
+        except Queue.Empty:
+            pass
+
     def __wait(self, execution):
-        waited = futures.wait(execution.submitted.keys(), return_when=futures.FIRST_COMPLETED)
-        for f in waited.done:
-            action = execution.submitted[f]
-            del execution.submitted[f]
-            (exception, return_value, output, start_time, end_time) = f.result()
+        self.__dequeue_some_output(execution)
+        waited = futures.wait(execution.submitted, return_when=futures.FIRST_COMPLETED, timeout=0.1)
+        for future in waited.done:
+            execution.submitted.remove(future)
+            while execution.outputs[future.action][-1] is not None:
+                self.__dequeue_some_output(execution)
+            (exception, return_value, start_time, end_time) = future.result()
+            ready_time = execution.ready_times[future.action]
+            output = b"".join(execution.outputs[future.action][1:-1])
             if exception:
                 self.__acknowledge_action_failure(
-                    execution, action,
-                    start_time=start_time, failure_time=end_time, exception=exception, output=output,
+                    execution, future.action,
+                    ready_time=ready_time, start_time=start_time, failure_time=end_time,
+                    exception=exception, output=output,
                 )
             else:
                 self.__acknowledge_action_success(
-                    execution, action,
-                    start_time=start_time, success_time=end_time, return_value=return_value, output=output,
+                    execution, future.action,
+                    ready_time=ready_time, start_time=start_time, success_time=end_time,
+                    return_value=return_value, output=output,
                 )
 
-    @staticmethod
-    def __submit_action(execution, action, ready_time):
-        execution.submitted[execution.executor.submit(_time_execute, action)] = action
-        execution.submitted_at[action] = ready_time
+    @classmethod
+    def __submit_action(cls, execution, action, ready_time):
+        future = execution.executor.submit(_time_execute, id(action), action)
+        future.action = action
+        execution.submitted.add(future)
+        execution.outputs[action] = [object()]
+        execution.ready_times[action] = ready_time
         execution.pending.remove(action)
         execution.hooks.action_ready(action)
 
@@ -330,19 +375,19 @@ class Executor(object):
         execution.report.set_action_status(
             action,
             ExecutionReport.ActionStatus(
-                ready_time=execution.submitted_at.get(action),
+                ready_time=execution.ready_times.get(action),
                 cancel_time=cancel_time,
             )
         )
         execution.hooks.action_canceled(action)
 
     @staticmethod
-    def __acknowledge_action_success(execution, action, start_time, success_time, return_value, output):
+    def __acknowledge_action_success(execution, action, ready_time, start_time, success_time, return_value, output):
         execution.succeeded.add(action)
         execution.report.set_action_status(
             action,
             ExecutionReport.ActionStatus(
-                ready_time=execution.submitted_at[action],
+                ready_time=ready_time,
                 start_time=start_time,
                 success_time=success_time,
                 return_value=return_value,
@@ -352,14 +397,14 @@ class Executor(object):
         execution.hooks.action_successful(action)
 
     @staticmethod
-    def __acknowledge_action_failure(execution, action, start_time, failure_time, exception, output):
+    def __acknowledge_action_failure(execution, action, ready_time, start_time, failure_time, exception, output):
         execution.exceptions.append(exception)
         execution.report.set_success(False)
         execution.failed.add(action)
         execution.report.set_action_status(
             action,
             ExecutionReport.ActionStatus(
-                ready_time=execution.submitted_at[action],
+                ready_time=ready_time,
                 start_time=start_time,
                 failure_time=failure_time,
                 exception=exception,
