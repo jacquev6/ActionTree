@@ -4,14 +4,10 @@
 
 from __future__ import division, absolute_import, print_function
 
-import concurrent.futures as futures
 import datetime
-import io
 import multiprocessing
 import os.path
 import pickle
-import Queue
-import sys
 
 import graphviz
 import matplotlib
@@ -21,15 +17,14 @@ import matplotlib.backends.backend_agg
 import wurlitzer
 
 
-# @todo Make this queue Execution-specific
-outputs_queue = multiprocessing.Queue()
-
-
 class Hooks(object):
     def action_pending(self, action):
         pass
 
     def action_ready(self, action):
+        pass
+
+    def action_canceled(self, action):
         pass
 
     def action_started(self, action):
@@ -42,9 +37,6 @@ class Hooks(object):
         pass
 
     def action_failed(self, action):
-        pass
-
-    def action_canceled(self, action):
         pass
 
 
@@ -63,7 +55,30 @@ def execute(action, jobs=1, keep_going=False, do_raise=True, hooks=Hooks()):
 
     :rtype: ExecutionReport
     """
-    return Executor(jobs, keep_going, do_raise).execute(action, hooks)
+    _check_picklability(action)
+    if jobs is None:
+        jobs = multiprocessing.cpu_count()
+    tasks = multiprocessing.JoinableQueue()
+    events = multiprocessing.Queue()
+    workers = [_Worker(tasks, events) for _ in xrange(jobs)]
+    for worker in workers:
+        worker.start()
+    execution = _Execution(tasks, events, jobs, keep_going, do_raise, hooks, action)
+    try:
+        return execution.run()
+    finally:
+        for i in xrange(jobs):
+            tasks.put(None)
+        tasks.join()
+        for worker in workers:
+            worker.join()
+
+
+def _check_picklability(stuff):
+    # This is a way to fail fast if we see a non-picklable object
+    # because ProcessPoolExecutor freezes forever if we try to transfer
+    # a non-picklable object through its queues
+    pickle.loads(pickle.dumps(stuff))
 
 
 class ExecutionReport(object):
@@ -87,46 +102,52 @@ class ExecutionReport(object):
         Failed = "Failed"
         "The :attr:`status` after a failed execution where this action raised an exception."
 
-        def __init__(
-            self,
-            ready_time=None, start_time=None, cancel_time=None, failure_time=None, success_time=None,
-            return_value=None, exception=None, output=None
-        ):
-            if start_time:
-                assert ready_time
-                assert not cancel_time
-                assert (failure_time or success_time)
-                assert output is not None
-                # return_value can be whatever was returned, including None
-                if success_time:
-                    assert not exception
-                    self.__status = self.Successful
-                else:
-                    assert exception
-                    self.__status = self.Failed
-            else:
-                # ready_time can be None if the action was canceled before it was ever ready,
-                # or not None if it was ready, then canceled
-                assert cancel_time
-                assert not (failure_time or success_time)
-                assert not output
-                assert return_value is None
-                self.__status = self.Canceled
+        def __init__(self):
+            self.__ready_time = None
+            self.__cancel_time = None
+            self.__start_time = None
+            self.__success_time = None
+            self.__return_value = None
+            self.__failure_time = None
+            self.__exception = None
+            self.__output = None
+
+        def _set_ready_time(self, ready_time):
             self.__ready_time = ready_time
+
+        def _set_cancel_time(self, cancel_time):
             self.__cancel_time = cancel_time
+
+        def _set_start_time(self, start_time):
             self.__start_time = start_time
-            self.__failure_time = failure_time
+
+        def _set_success(self, success_time, return_value):
             self.__success_time = success_time
             self.__return_value = return_value
+            self._add_output(b"")
+
+        def _set_failure(self, failure_time, exception):
+            self.__failure_time = failure_time
             self.__exception = exception
-            self.__output = output
+            self._add_output(b"")
+
+        def _add_output(self, output):
+            self.__output = (self.__output or b"") + output
 
         @property
         def status(self):
             """
             @todo Document
             """
-            return self.__status
+            if self.start_time:
+                if self.success_time:
+                    return self.Successful
+                else:
+                    assert self.failure_time
+                    return self.Failed
+            else:
+                assert self.cancel_time
+                return self.Canceled
 
         @property
         def ready_time(self):
@@ -134,6 +155,13 @@ class ExecutionReport(object):
             The local :class:`~datetime.datetime` when this action was ready to execute.
             """
             return self.__ready_time
+
+        @property
+        def cancel_time(self):
+            """
+            The local :class:`~datetime.datetime` when this action was canceled.
+            """
+            return self.__cancel_time
 
         @property
         def start_time(self):
@@ -150,25 +178,18 @@ class ExecutionReport(object):
             return self.__success_time
 
         @property
-        def failure_time(self):
-            """
-            The local :class:`~datetime.datetime` at the successful end of the execution of this action.
-            """
-            return self.__failure_time
-
-        @property
-        def cancel_time(self):
-            """
-            The local :class:`~datetime.datetime` when this action was canceled.
-            """
-            return self.__cancel_time
-
-        @property
         def return_value(self):
             """
             @todo Document
             """
             return self.__return_value
+
+        @property
+        def failure_time(self):
+            """
+            The local :class:`~datetime.datetime` at the successful end of the execution of this action.
+            """
+            return self.__failure_time
 
         @property
         def exception(self):
@@ -184,12 +205,8 @@ class ExecutionReport(object):
             """
             return self.__output
 
-    def __init__(self):
-        self.__is_success = True
-        self.__action_statuses = dict()
-
-    def set_success(self, is_success):
-        self.__is_success = is_success
+    def __init__(self, actions):
+        self.__action_statuses = {action: self.ActionStatus() for action in actions}
 
     @property
     def is_success(self):
@@ -198,10 +215,10 @@ class ExecutionReport(object):
 
         :rtype: bool
         """
-        return self.__is_success
-
-    def set_action_status(self, action, status):
-        self.__action_statuses[action] = status
+        return all(
+            action_status.status == self.ActionStatus.Successful
+            for action_status in self.__action_statuses.itervalues()
+        )
 
     def get_action_status(self, action):
         """
@@ -216,202 +233,181 @@ class ExecutionReport(object):
         return self.__action_statuses.items()
 
 
-def _time_execute(action_id, action):  # pragma no cover (Executed in child process)
-    exception = None
-    return_value = None
-    outputs_queue.put((action_id, 0))
-    start_time = datetime.datetime.now()
+class _Worker(multiprocessing.Process):
+    def __init__(self, tasks, events):
+        multiprocessing.Process.__init__(self)
+        self.tasks = tasks
+        self.events = events
 
-    # This is a highly contrieved use of Wurlitzer:
-    # We just need to *capture* standards streams, so we trick Wurlitzer,
-    # passing True instead of writeable file-like objects, and we redefine
-    # _handle_xxx methods to intercept what it would write
-    w = wurlitzer.Wurlitzer(stdout=True, stderr=True)
+    def run(self):  # pragma no cover (Code run in child process)
+        go_on = True
+        while go_on:
+            action = self.tasks.get()
+            if action is None:
+                go_on = False
+            else:
+                (action_id, action) = action
+                self.execute_action(action_id, action)
+            self.tasks.task_done()
 
-    def handle(data):
-        outputs_queue.put((action_id, data))
-
-    w._handle_stdout = handle
-    w._handle_stderr = handle
-    try:
+    def execute_action(self, action_id, action):  # pragma no cover (Code run in child process)
+        def handle(data):
+            self.events.put(_PrintedEvent(action_id, datetime.datetime.now(), data))
+        # This is a highly contrived use of Wurlitzer:
+        # We just need to *capture* standards streams, so we trick Wurlitzer,
+        # passing True instead of writeable file-like objects, and we redefine
+        # _handle_xxx methods to intercept what it would write
+        w = wurlitzer.Wurlitzer(stdout=True, stderr=True)
+        w._handle_stdout = handle
+        w._handle_stderr = handle
         with w:
-            return_value = action.do_execute()
-    except Exception as e:
-        exception = e
-    end_time = datetime.datetime.now()
-    outputs_queue.put((action_id, None))
-    ret = (exception, return_value, start_time, end_time)
-    _check_picklability(ret)
-    return ret
-
-
-def _check_picklability(stuff):
-    # This is a way to fail fast if we see a non-picklable object
-    # because ProcessPoolExecutor freezes forever if we try to transfer
-    # a non-picklable object through its queues
-    pickle.loads(pickle.dumps(stuff))
-
-
-class Executor(object):
-    def __init__(self, jobs, keep_going, do_raise):
-        self.__jobs = jobs
-        self.__keep_going = keep_going
-        self.__do_raise = do_raise
-
-    class Execution:
-        # An aggregate for things that cannot be stored in Executor
-        # (to allow several parallel calls to Executor.execute)
-        def __init__(self, executor, pending, hooks):
-            self.hooks = hooks
-            self.executor = executor
-            self.pending = set(pending)  # Action
-            self.actions_by_id = {id(action): action for action in pending}  # id -> Action
-            self.submitted = set()  # Future
-            self.ready_times = dict()  # Action -> datetime.datetime
-            self.outputs = dict()  # Action -> list of str (with object() and None sentinels at begin and end)
-            self.succeeded = set()  # Action
-            self.failed = set()  # Action
-            self.exceptions = []
-            self.report = ExecutionReport()
-
-    def execute(self, action, hooks):
-        # To avoid races, threads in pools only call pure functions (with no side effects),
-        # and only the thread calling Executor.execute is allowed to modify anything.
-
-        with futures.ProcessPoolExecutor(max_workers=self.__jobs) as executor:
-            execution = Executor.Execution(executor, action.get_all_dependencies(), hooks)
-            _check_picklability(execution.pending)
-            for action in execution.pending:
-                execution.hooks.action_pending(action)
-            while execution.pending or execution.submitted:
-                self.__progress(execution)
-
-        if self.__do_raise and execution.exceptions:
-            raise CompoundException(execution.exceptions, execution.report)
+            return_value = exception = None
+            try:
+                self.events.put(_StartedEvent(action_id, datetime.datetime.now()))
+                return_value = action.do_execute()
+            except Exception as e:
+                exception = e
+        try:
+            _check_picklability((exception, return_value))
+        except:
+            self.events.put(_PicklingExceptionEvent(action_id))
         else:
-            return execution.report
+            end_time = datetime.datetime.now()
+            if exception:
+                self.events.put(_FailedEvent(action_id, end_time, exception))
+            else:
+                self.events.put(_SuccessedEvent(action_id, end_time, return_value))
 
-    def __progress(self, execution):
+
+class _Event(object):
+    def __init__(self, action_id):  # pragma no cover (Code run in child process)
+        self.action_id = action_id
+
+
+class _StartedEvent(_Event):
+    def __init__(self, action_id, start_time):  # pragma no cover (Code run in child process)
+        super(_StartedEvent, self).__init__(action_id)
+        self.start_time = start_time
+
+    def apply(self, execution, action):
+        execution.report.get_action_status(action)._set_start_time(self.start_time)
+        execution.hooks.action_started(action)
+
+
+class _SuccessedEvent(_Event):
+    def __init__(self, action_id, success_time, return_value):  # pragma no cover (Code run in child process)
+        super(_SuccessedEvent, self).__init__(action_id)
+        self.success_time = success_time
+        self.return_value = return_value
+
+    def apply(self, execution, action):
+        execution.submitted.remove(action)
+        execution.successful.add(action)
+        execution.report.get_action_status(action)._set_success(self.success_time, self.return_value)
+        execution.hooks.action_successful(action)
+
+
+class _PrintedEvent(_Event):
+    def __init__(self, action_id, print_time, text):  # pragma no cover (Code run in child process)
+        super(_PrintedEvent, self).__init__(action_id)
+        self.print_time = print_time
+        self.text = text
+
+    def apply(self, execution, action):
+        execution.report.get_action_status(action)._add_output(self.text)
+        execution.hooks.action_printed(action, self.text)
+
+
+class _FailedEvent(_Event):
+    def __init__(self, action_id, failure_time, exception):  # pragma no cover (Code run in child process)
+        super(_FailedEvent, self).__init__(action_id)
+        self.failure_time = failure_time
+        self.exception = exception
+
+    def apply(self, execution, action):
+        execution.submitted.remove(action)
+        execution.failed.add(action)
+        execution.exceptions.append(self.exception)
+        execution.report.get_action_status(action)._set_failure(self.failure_time, self.exception)
+        execution.hooks.action_failed(action)
+
+
+class _PicklingExceptionEvent(_Event):
+    def apply(self, execution, action):
+        raise pickle.PicklingError()
+
+
+class _Execution(object):
+    def __init__(self, tasks, events, jobs, keep_going, do_raise, hooks, action):
+        self.tasks = tasks
+        self.events = events
+        self.jobs = jobs
+        self.keep_going = keep_going
+        self.do_raise = do_raise
+        self.hooks = hooks
+        self.actions_by_id = {id(action): action for action in action.get_all_dependencies()}
+        self.pending = set(self.actions_by_id.itervalues())
+        self.submitted = set()
+        self.successful = set()
+        self.failed = set()
+        self.exceptions = []
+        self.report = ExecutionReport(self.pending)
+
+    def run(self):
+        for action in self.pending:
+            self.hooks.action_pending(action)
+        while self.pending or self.submitted:
+            self._progress()
+
+        if self.do_raise and self.exceptions:
+            raise CompoundException(self.exceptions, self.report)
+        else:
+            return self.report
+
+    def _progress(self):
         now = datetime.datetime.now()
-        if self.__keep_going or not execution.exceptions:
-            self.__submit_or_cancel(execution, now)
+        if self.keep_going or not self.exceptions:
+            self._submit_or_cancel(now)
         else:
-            self.__cancel(execution, now)
-        self.__wait(execution)
+            self._cancel(now)
+        self.__wait()
 
-    def __submit_or_cancel(self, execution, now):
+    def _submit_or_cancel(self, now):
         go_on = True
         while go_on:
             go_on = False
-            for action in set(execution.pending):
-                done = execution.succeeded | execution.failed
+            for action in set(self.pending):
+                done = self.successful | self.failed
                 if all(d in done for d in action.dependencies):
-                    if any(d in execution.failed for d in action.dependencies):
-                        self.__mark_action_canceled(execution, action, cancel_time=now)
-                        execution.pending.remove(action)
+                    if any(d in self.failed for d in action.dependencies):
+                        self.__mark_action_canceled(action, cancel_time=now)
+                        self.pending.remove(action)
                         go_on = True
                     else:
-                        self.__submit_action(execution, action, ready_time=now)
-                        go_on = True
+                        self.report.get_action_status(action)._set_ready_time(now)
+                        if len(self.submitted) <= self.jobs:
+                            self._submit_action(action, ready_time=now)
 
-    def __cancel(self, execution, now):
-        for future in list(execution.submitted):
-            if future.cancel():
-                self.__mark_action_canceled(execution, future.action, cancel_time=now)
-                execution.submitted.remove(future)
-        for action in execution.pending:
-            self.__mark_action_canceled(execution, action, cancel_time=now)
-        execution.pending.clear()
+    def _cancel(self, now):
+        for action in self.pending:
+            self.__mark_action_canceled(action, cancel_time=now)
+        self.pending.clear()
 
-    def __dequeue_some_output(self, execution):
-        try:
-            (action_id, output) = outputs_queue.get_nowait()
-            action = execution.actions_by_id[action_id]
-            if output == 0:
-                execution.hooks.action_started(action)
-            else:
-                execution.outputs[action].append(output)
-                if output is not None:
-                    execution.hooks.action_printed(action, output)
-        except Queue.Empty:
-            pass
+    def __wait(self):
+        if self.submitted:
+            event = self.events.get()
+            event.apply(self, self.actions_by_id[event.action_id])
 
-    def __wait(self, execution):
-        self.__dequeue_some_output(execution)
-        waited = futures.wait(execution.submitted, return_when=futures.FIRST_COMPLETED, timeout=0.1)
-        for future in waited.done:
-            execution.submitted.remove(future)
-            while execution.outputs[future.action][-1] is not None:
-                self.__dequeue_some_output(execution)
-            (exception, return_value, start_time, end_time) = future.result()
-            ready_time = execution.ready_times[future.action]
-            output = b"".join(execution.outputs[future.action][1:-1])
-            if exception:
-                self.__acknowledge_action_failure(
-                    execution, future.action,
-                    ready_time=ready_time, start_time=start_time, failure_time=end_time,
-                    exception=exception, output=output,
-                )
-            else:
-                self.__acknowledge_action_success(
-                    execution, future.action,
-                    ready_time=ready_time, start_time=start_time, success_time=end_time,
-                    return_value=return_value, output=output,
-                )
+    def _submit_action(self, action, ready_time):
+        self.tasks.put((id(action), action))
+        self.submitted.add(action)
+        self.pending.remove(action)
+        self.hooks.action_ready(action)
 
-    @classmethod
-    def __submit_action(cls, execution, action, ready_time):
-        future = execution.executor.submit(_time_execute, id(action), action)
-        future.action = action
-        execution.submitted.add(future)
-        execution.outputs[action] = [object()]
-        execution.ready_times[action] = ready_time
-        execution.pending.remove(action)
-        execution.hooks.action_ready(action)
-
-    @staticmethod
-    def __mark_action_canceled(execution, action, cancel_time):
-        execution.failed.add(action)
-        execution.report.set_action_status(
-            action,
-            ExecutionReport.ActionStatus(
-                ready_time=execution.ready_times.get(action),
-                cancel_time=cancel_time,
-            )
-        )
-        execution.hooks.action_canceled(action)
-
-    @staticmethod
-    def __acknowledge_action_success(execution, action, ready_time, start_time, success_time, return_value, output):
-        execution.succeeded.add(action)
-        execution.report.set_action_status(
-            action,
-            ExecutionReport.ActionStatus(
-                ready_time=ready_time,
-                start_time=start_time,
-                success_time=success_time,
-                return_value=return_value,
-                output=output,
-            ),
-        )
-        execution.hooks.action_successful(action)
-
-    @staticmethod
-    def __acknowledge_action_failure(execution, action, ready_time, start_time, failure_time, exception, output):
-        execution.exceptions.append(exception)
-        execution.report.set_success(False)
-        execution.failed.add(action)
-        execution.report.set_action_status(
-            action,
-            ExecutionReport.ActionStatus(
-                ready_time=ready_time,
-                start_time=start_time,
-                failure_time=failure_time,
-                exception=exception,
-                output=output,
-            )
-        )
-        execution.hooks.action_failed(action)
+    def __mark_action_canceled(self, action, cancel_time):
+        self.failed.add(action)
+        self.report.get_action_status(action)._set_cancel_time(cancel_time)
+        self.hooks.action_canceled(action)
 
 
 class Action(object):

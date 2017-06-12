@@ -9,6 +9,25 @@ from . import *
 
 
 class ExecutionTestCase(ActionTreeTestCase):
+    def test_successful_nothing(self):
+        a = self._action("a")
+        report = execute(a)
+
+        self.assertEqual(report.get_action_status(a).output, b"")
+
+    def test_failed_nothing(self):
+        a = self._action("a", exception=Exception())
+        report = execute(a, do_raise=False)
+
+        self.assertEqual(report.get_action_status(a).output, b"")
+
+    def test_canceled_nothing(self):
+        a = self._action("a")
+        a.add_dependency(self._action("b", exception=Exception()))
+        report = execute(a, do_raise=False)
+
+        self.assertIsNone(report.get_action_status(a).output)
+
     def test_print(self):
         a = self._action("a", print_on_stdout="printed on stdout")
         report = execute(a)

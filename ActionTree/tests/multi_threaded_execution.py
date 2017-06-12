@@ -27,6 +27,24 @@ class MultiThreadedExecutionTestCase(ActionTreeTestCase):
 
         self.assertEventsEqual("bcd BCD a")
 
+    def test_many_dependencies_with_default_jobs(self):
+        #     a
+        #    /|\
+        #   / | \
+        #  b  c  d
+
+        a = self._action("a")
+        b = self._action("b", delay=0.1, end_event=True)
+        c = self._action("c", delay=0.1, end_event=True)
+        d = self._action("d", delay=0.1, end_event=True)
+        a.add_dependency(b)
+        a.add_dependency(c)
+        a.add_dependency(d)
+
+        execute(a, jobs=None)
+
+        self.assertEventsEqual("bcd BCD a")
+
     def test_deep_dependencies(self):
         #  a
         #  |

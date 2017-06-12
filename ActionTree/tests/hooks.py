@@ -18,6 +18,9 @@ class TestHooks(Hooks):
     def action_ready(self, action):
         self.events.append(("ready", action.label))
 
+    def action_canceled(self, action):
+        self.events.append(("canceled", action.label))
+
     def action_started(self, action):
         self.events.append(("started", action.label))
 
@@ -29,9 +32,6 @@ class TestHooks(Hooks):
 
     def action_failed(self, action):
         self.events.append(("failed", action.label))
-
-    def action_canceled(self, action):
-        self.events.append(("canceled", action.label))
 
 
 class ExecutionTestCase(ActionTreeTestCase):
@@ -83,7 +83,7 @@ class ExecutionTestCase(ActionTreeTestCase):
 
     def test_successful_action_print(self):
         hooks = TestHooks()
-        execute(self._action("a", print_on_stdout="something\nsomething else"), hooks=hooks)
+        execute(self._action("a", print_on_stdout="something"), hooks=hooks)
 
         self.assertEqual(
             hooks.events,
@@ -91,7 +91,7 @@ class ExecutionTestCase(ActionTreeTestCase):
                 ("pending", "a"),
                 ("ready", "a"),
                 ("started", "a"),
-                ("printed", "a", b"something\nsomething else\n"),
+                ("printed", "a", b"something\n"),
                 ("successful", "a"),
             ]
         )
