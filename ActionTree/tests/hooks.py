@@ -18,8 +18,8 @@ class TestHooks(Hooks):
     def action_ready(self, action):
         self.events.append(("ready", action.label))
 
-    # def action_started(self, action):
-    #     self.events.append(("started", action.label))
+    def action_started(self, action):
+        self.events.append(("started", action.label))
 
     def action_printed(self, action, text):
         self.events.append(("printed", action.label, text))
@@ -44,7 +44,7 @@ class ExecutionTestCase(ActionTreeTestCase):
             [
                 ("pending", "a"),
                 ("ready", "a"),
-                # ("started", "a"),
+                ("started", "a"),
                 ("successful", "a"),
             ]
         )
@@ -58,7 +58,7 @@ class ExecutionTestCase(ActionTreeTestCase):
             [
                 ("pending", "a"),
                 ("ready", "a"),
-                # ("started", "a"),
+                ("started", "a"),
                 ("failed", "a"),
             ]
         )
@@ -75,7 +75,7 @@ class ExecutionTestCase(ActionTreeTestCase):
             hooks.events[2:],
             [
                 ("ready", "b"),
-                # ("started", "b"),
+                ("started", "b"),
                 ("failed", "b"),
                 ("canceled", "a"),
             ]
@@ -90,7 +90,7 @@ class ExecutionTestCase(ActionTreeTestCase):
             [
                 ("pending", "a"),
                 ("ready", "a"),
-                # ("started", "a"),
+                ("started", "a"),
                 ("printed", "a", b"something\nsomething else\n"),
                 ("successful", "a"),
             ]
@@ -105,7 +105,7 @@ class ExecutionTestCase(ActionTreeTestCase):
             [
                 ("pending", "a"),
                 ("ready", "a"),
-                # ("started", "a"),
+                ("started", "a"),
                 ("printed", "a", b"something\n"),
                 ("failed", "a"),
             ]
@@ -121,7 +121,7 @@ class ExecutionTestCase(ActionTreeTestCase):
             [
                 ("pending", "a"),
                 ("ready", "a"),
-                # ("started", "a"),
+                ("started", "a"),
                 ("printed", "a", b"something 1\n"),
                 ("printed", "a", b"something 2\n"),
                 ("printed", "a", b"something 3\n"),

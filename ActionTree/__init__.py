@@ -33,8 +33,8 @@ class Hooks(object):
     def action_ready(self, action):
         pass
 
-    # def action_started(self, action):
-    #     pass
+    def action_started(self, action):
+        pass
 
     def action_printed(self, action, text):
         pass
@@ -237,6 +237,7 @@ def redirect(action_id):  # pragma no cover (Executed in child process)
 def _time_execute(action_id, action):  # pragma no cover (Executed in child process)
     exception = None
     return_value = None
+    outputs_queue.put((action_id, 0))
     start_time = datetime.datetime.now()
     try:
         with redirect(action_id):
@@ -244,9 +245,9 @@ def _time_execute(action_id, action):  # pragma no cover (Executed in child proc
     except Exception as e:
         exception = e
     end_time = datetime.datetime.now()
+    outputs_queue.put((action_id, None))
     ret = (exception, return_value, start_time, end_time)
     _check_picklability(ret)
-    outputs_queue.put((action_id, None))
     return ret
 
 
@@ -283,8 +284,6 @@ class Executor(object):
         # To avoid races, threads in pools only call pure functions (with no side effects),
         # and only the thread calling Executor.execute is allowed to modify anything.
 
-        # assert outputs_queue.empty()
-
         with futures.ProcessPoolExecutor(max_workers=self.__jobs) as executor:
             execution = Executor.Execution(executor, action.get_all_dependencies(), hooks)
             _check_picklability(execution.pending)
@@ -292,8 +291,6 @@ class Executor(object):
                 execution.hooks.action_pending(action)
             while execution.pending or execution.submitted:
                 self.__progress(execution)
-
-        # assert outputs_queue.empty()
 
         if self.__do_raise and execution.exceptions:
             raise CompoundException(execution.exceptions, execution.report)
@@ -336,9 +333,12 @@ class Executor(object):
         try:
             (action_id, output) = outputs_queue.get_nowait()
             action = execution.actions_by_id[action_id]
-            execution.outputs[action].append(output)
-            if output is not None:
-                execution.hooks.action_printed(action, output)
+            if output == 0:
+                execution.hooks.action_started(action)
+            else:
+                execution.outputs[action].append(output)
+                if output is not None:
+                    execution.hooks.action_printed(action, output)
         except Queue.Empty:
             pass
 
@@ -347,10 +347,10 @@ class Executor(object):
         waited = futures.wait(execution.submitted, return_when=futures.FIRST_COMPLETED, timeout=0.1)
         for future in waited.done:
             execution.submitted.remove(future)
-            (exception, return_value, start_time, end_time) = future.result()
-            ready_time = execution.ready_times[future.action]
             while execution.outputs[future.action][-1] is not None:
                 self.__dequeue_some_output(execution)
+            (exception, return_value, start_time, end_time) = future.result()
+            ready_time = execution.ready_times[future.action]
             output = b"".join(execution.outputs[future.action][1:-1])
             if exception:
                 self.__acknowledge_action_failure(
