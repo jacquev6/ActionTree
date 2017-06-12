@@ -11,10 +11,10 @@ addons:
 install:
 - pip install --upgrade pip setuptools
 - pip install --upgrade sphinx coveralls
-- pip install --upgrade graphviz matplotlib
+- pip install --upgrade graphviz matplotlib wurlitzer
 - if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ];
   then
-    pip install --upgrade futures mock;
+    pip install --upgrade mock;
   fi
 script:
 - coverage run setup.py test
