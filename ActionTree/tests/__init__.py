@@ -40,7 +40,7 @@ class TestAction(Action):
         self.__puts_on_stdout = puts_on_stdout
         self.__echo_on_stdout = echo_on_stdout
 
-    def do_execute(self):  # pragma no cover (Test code executed in child process)
+    def do_execute(self):
         with open(self.__events_file, "a") as f:
             f.write("{}\n".format(self.label.lower()))
         if self.__delay:

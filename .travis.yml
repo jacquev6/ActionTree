@@ -17,7 +17,8 @@ install:
     pip install --upgrade futures mock;
   fi
 script:
-- coverage run "--include=ActionTree/*" setup.py test
+- coverage run setup.py test
+- coverage combine
 - if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ];
   then
     python setup.py build_sphinx --builder=doctest;

@@ -5,7 +5,9 @@ set -o errexit
 # pip2 install --quiet --upgrade --user matplotlib graphviz sphinx coverage mock futures
 # pip3 install --quiet --upgrade --user matplotlib graphviz pep8
 
-coverage2 run --include "ActionTree/*" --branch setup.py test --quiet
+coverage2 run setup.py test --quiet
+
+coverage2 combine
 
 coverage2 report --show-missing | grep -v "^ActionTree.*100%$"
 

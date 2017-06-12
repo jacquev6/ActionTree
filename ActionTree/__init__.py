@@ -239,7 +239,7 @@ class _Worker(multiprocessing.Process):
         self.tasks = tasks
         self.events = events
 
-    def run(self):  # pragma no cover (Code run in child process)
+    def run(self):
         go_on = True
         while go_on:
             action = self.tasks.get()
@@ -250,7 +250,7 @@ class _Worker(multiprocessing.Process):
                 self.execute_action(action_id, action)
             self.tasks.task_done()
 
-    def execute_action(self, action_id, action):  # pragma no cover (Code run in child process)
+    def execute_action(self, action_id, action):
         def handle(data):
             self.events.put(_PrintedEvent(action_id, datetime.datetime.now(), data))
         # This is a highly contrived use of Wurlitzer:
@@ -280,12 +280,12 @@ class _Worker(multiprocessing.Process):
 
 
 class _Event(object):
-    def __init__(self, action_id):  # pragma no cover (Code run in child process)
+    def __init__(self, action_id):
         self.action_id = action_id
 
 
 class _StartedEvent(_Event):
-    def __init__(self, action_id, start_time):  # pragma no cover (Code run in child process)
+    def __init__(self, action_id, start_time):
         super(_StartedEvent, self).__init__(action_id)
         self.start_time = start_time
 
@@ -295,7 +295,7 @@ class _StartedEvent(_Event):
 
 
 class _SuccessedEvent(_Event):
-    def __init__(self, action_id, success_time, return_value):  # pragma no cover (Code run in child process)
+    def __init__(self, action_id, success_time, return_value):
         super(_SuccessedEvent, self).__init__(action_id)
         self.success_time = success_time
         self.return_value = return_value
@@ -308,7 +308,7 @@ class _SuccessedEvent(_Event):
 
 
 class _PrintedEvent(_Event):
-    def __init__(self, action_id, print_time, text):  # pragma no cover (Code run in child process)
+    def __init__(self, action_id, print_time, text):
         super(_PrintedEvent, self).__init__(action_id)
         self.print_time = print_time
         self.text = text
@@ -319,7 +319,7 @@ class _PrintedEvent(_Event):
 
 
 class _FailedEvent(_Event):
-    def __init__(self, action_id, failure_time, exception):  # pragma no cover (Code run in child process)
+    def __init__(self, action_id, failure_time, exception):
         super(_FailedEvent, self).__init__(action_id)
         self.failure_time = failure_time
         self.exception = exception
@@ -371,7 +371,7 @@ class _Execution(object):
             self._submit_or_cancel(now)
         else:
             self._cancel(now)
-        self.__wait()
+        self._wait()
 
     def _submit_or_cancel(self, now):
         go_on = True
@@ -381,7 +381,7 @@ class _Execution(object):
                 done = self.successful | self.failed
                 if all(d in done for d in action.dependencies):
                     if any(d in self.failed for d in action.dependencies):
-                        self.__mark_action_canceled(action, cancel_time=now)
+                        self._mark_action_canceled(action, cancel_time=now)
                         self.pending.remove(action)
                         go_on = True
                     else:
@@ -391,10 +391,10 @@ class _Execution(object):
 
     def _cancel(self, now):
         for action in self.pending:
-            self.__mark_action_canceled(action, cancel_time=now)
+            self._mark_action_canceled(action, cancel_time=now)
         self.pending.clear()
 
-    def __wait(self):
+    def _wait(self):
         if self.submitted:
             event = self.events.get()
             event.apply(self, self.actions_by_id[event.action_id])
@@ -405,7 +405,7 @@ class _Execution(object):
         self.pending.remove(action)
         self.hooks.action_ready(ready_time, action)
 
-    def __mark_action_canceled(self, action, cancel_time):
+    def _mark_action_canceled(self, action, cancel_time):
         self.failed.add(action)
         self.report.get_action_status(action)._set_cancel_time(cancel_time)
         self.hooks.action_canceled(cancel_time, action)

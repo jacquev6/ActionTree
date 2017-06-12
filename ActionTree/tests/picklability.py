@@ -23,12 +23,12 @@ unpicklable = Unpicklable()
 
 class UnpicklableReturnValue(Action):
     def do_execute(self):
-        return unpicklable  # pragma no cover (Test code executed in child process)
+        return unpicklable
 
 
 class UnpicklableException(Action):
     def do_execute(self):
-        raise Exception(unpicklable)  # pragma no cover (Test code executed in child process)
+        raise Exception(unpicklable)
 
 
 class PicklabilityTestCase(ActionTreeTestCase):
