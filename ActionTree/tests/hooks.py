@@ -32,7 +32,7 @@ class TestHooks(Hooks):
 
 
 class ExecutionTestCase(ActionTreeTestCase):
-    def test_one_successful_action(self):
+    def test_successful_action(self):
         hooks = TestHooks()
         execute(self._action("a"), hooks=hooks)
 
@@ -46,7 +46,7 @@ class ExecutionTestCase(ActionTreeTestCase):
             ]
         )
 
-    def test_one_failed_action(self):
+    def test_failed_action(self):
         hooks = TestHooks()
         execute(self._action("a", exception=Exception()), do_raise=False, hooks=hooks)
 
@@ -60,7 +60,7 @@ class ExecutionTestCase(ActionTreeTestCase):
             ]
         )
 
-    def test_one_failed_dependency(self):
+    def test_failed_dependency(self):
         hooks = TestHooks()
         a = self._action("a")
         b = self._action("b", exception=Exception())
