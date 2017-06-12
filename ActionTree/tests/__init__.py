@@ -48,8 +48,13 @@ class TestAction(Action):
         if self.__end_event:
             with open(self.__events_file, "a") as f:
                 f.write("{}\n".format(self.label.upper()))
-        if self.__print_on_stdout:
+        if isinstance(self.__print_on_stdout, str):
             print(self.__print_on_stdout)
+        elif isinstance(self.__print_on_stdout, list):
+            for (p, d) in self.__print_on_stdout:
+                print(p)
+                sys.stdout.flush()
+                time.sleep(d)
         if self.__print_on_stderr:
             print(self.__print_on_stderr, file=sys.stderr)
         if self.__puts_on_stdout:
