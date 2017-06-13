@@ -31,7 +31,6 @@ class Hooks(object):
         pass
 
     def action_printed(self, time, action, text):
-        # @todo Decide if we should pass bytes or unicode (in Python 3)
         pass
 
     def action_successful(self, time, action):
@@ -125,15 +124,15 @@ class ExecutionReport(object):
         def _set_success(self, success_time, return_value):
             self.__success_time = success_time
             self.__return_value = return_value
-            self._add_output(b"")
+            self._add_output("")
 
         def _set_failure(self, failure_time, exception):
             self.__failure_time = failure_time
             self.__exception = exception
-            self._add_output(b"")
+            self._add_output("")
 
         def _add_output(self, output):
-            self.__output = (self.__output or b"") + output
+            self.__output = (self.__output or "") + output
 
         @property
         def status(self):
@@ -245,7 +244,7 @@ class WurlitzerToEvents(wurlitzer.Wurlitzer):
         self.action_id = action_id
 
     def _handle_stdout(self, data):
-        self.events.put(_PrintedEvent(self.action_id, datetime.datetime.now(), data))
+        self.events.put(_PrintedEvent(self.action_id, datetime.datetime.now(), self._decode(data)))
 
     def _handle_stderr(self, data):
         self._handle_stdout(data)

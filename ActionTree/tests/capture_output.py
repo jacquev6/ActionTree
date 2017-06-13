@@ -13,13 +13,13 @@ class ExecutionTestCase(ActionTreeTestCase):
         a = self._action("a")
         report = execute(a)
 
-        self.assertEqual(report.get_action_status(a).output, b"")
+        self.assertEqual(report.get_action_status(a).output, "")
 
     def test_failed_nothing(self):
         a = self._action("a", exception=Exception())
         report = execute(a, do_raise=False)
 
-        self.assertEqual(report.get_action_status(a).output, b"")
+        self.assertEqual(report.get_action_status(a).output, "")
 
     def test_canceled_nothing(self):
         a = self._action("a")
@@ -32,25 +32,25 @@ class ExecutionTestCase(ActionTreeTestCase):
         a = self._action("a", print_on_stdout="printed on stdout")
         report = execute(a)
 
-        self.assertEqual(report.get_action_status(a).output, b"printed on stdout\n")
+        self.assertEqual(report.get_action_status(a).output, "printed on stdout\n")
 
     def test_print_stderr(self):
         a = self._action("a", print_on_stderr="printed on stderr")
         report = execute(a)
 
-        self.assertEqual(report.get_action_status(a).output, b"printed on stderr\n")
+        self.assertEqual(report.get_action_status(a).output, "printed on stderr\n")
 
     def test_echo(self):
         a = self._action("a", echo_on_stdout="echoed on stdout")
         report = execute(a)
 
-        self.assertEqual(report.get_action_status(a).output, b"echoed on stdout\n")
+        self.assertEqual(report.get_action_status(a).output, "echoed on stdout\n")
 
     def test_puts(self):
         a = self._action("a", puts_on_stdout=b"putsed on stdout")
         report = execute(a)
 
-        self.assertEqual(report.get_action_status(a).output, b"putsed on stdout\n")
+        self.assertEqual(report.get_action_status(a).output, "putsed on stdout\n")
 
     def test_many_print(self):
         MANY = 5
@@ -61,5 +61,5 @@ class ExecutionTestCase(ActionTreeTestCase):
         a.add_dependency(y)
         report = execute(a, jobs=2)
 
-        self.assertEqual(report.get_action_status(x).output, b"x\n" * MANY)
-        self.assertEqual(report.get_action_status(y).output, b"y\n" * MANY)
+        self.assertEqual(report.get_action_status(x).output, "x\n" * MANY)
+        self.assertEqual(report.get_action_status(y).output, "y\n" * MANY)
