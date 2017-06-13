@@ -34,4 +34,9 @@ echo
 echo "See documentation in $(pwd)/docs/index.html"
 echo
 
+# python3 setup.py install
+
+# cd demo
+# ./demo.py
+
 echo "Development cycle OK"
