@@ -469,7 +469,6 @@ class GanttChart(object):  # pragma no cover (Too difficult to unit test)
         last_ordinate = compute(report._root_action, len(self.__actions) - 1)
         assert last_ordinate == 0, last_ordinate
 
-    # @todo Factorize Actions
     class SuccessfulAction(object):
         def __init__(self, action, status):
             self.__label = str(action.label)

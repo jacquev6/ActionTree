@@ -1,4 +1,4 @@
 Hooks
 =====
 
-.. @todo Demonstrate hooks
+.. @todoc Demonstrate hooks

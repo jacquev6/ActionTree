@@ -33,4 +33,3 @@ class GanttChartTestCase(ActionTreeTestCase):
         chart = GanttChart(execute(c, jobs=2))
         ax = unittest.mock.Mock()
         chart.plot_on_mpl_axes(ax)
-        # @todo Assert something about calls to ax

@@ -559,7 +559,17 @@ Useful as a placeholder for several dependencies.</p>
 <em class="property">class </em><code class="descclassname">ActionTree.stock.</code><code class="descname">CallSubprocess</code><span class="sig-paren">(</span><em>args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.CallSubprocess" title="Permalink to this definition">¶</a></dt>
 <dd><p>A stock action that calls a subprocess.</p>
 <p>Arguments are forwarded exactly to <a class="reference external" href="https://docs.python.org/2/library/subprocess.html#subprocess.check_call" title="(in Python v2.7)"><code class="xref py py-func docutils literal"><span class="pre">subprocess.check_call()</span></code></a>.</p>
-<p>&#64;todo Document behavior in case of CalledProcessError and its rationale</p>
+<p>Note: if the process fails,
+<a class="reference external" href="https://docs.python.org/2/library/subprocess.html#subprocess.check_call" title="(in Python v2.7)"><code class="xref py py-func docutils literal"><span class="pre">check_call()</span></code></a> raises a <a class="reference external" href="https://docs.python.org/2/library/subprocess.html#subprocess.CalledProcessError" title="(in Python v2.7)"><code class="xref py py-exc docutils literal"><span class="pre">subprocess.CalledProcessError</span></code></a>,
+which <a class="reference external" href="http://bugs.python.org/issue1692335">cannot be pickled</a> in Python 2.
+So, in that case, this action catches the original exception and
+raises a <a class="reference internal" href="#ActionTree.stock.CalledProcessError" title="ActionTree.stock.CalledProcessError"><code class="xref py py-exc docutils literal"><span class="pre">CalledProcessError</span></code></a>.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="ActionTree.stock.CalledProcessError">
+<em class="property">exception </em><code class="descclassname">ActionTree.stock.</code><code class="descname">CalledProcessError</code><a class="headerlink" href="#ActionTree.stock.CalledProcessError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raised by <a class="reference internal" href="#ActionTree.stock.CallSubprocess" title="ActionTree.stock.CallSubprocess"><code class="xref py py-class docutils literal"><span class="pre">CallSubprocess</span></code></a></p>
 </dd></dl>
 
 <dl class="class">

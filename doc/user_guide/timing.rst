@@ -1,4 +1,4 @@
 Timing information
 ==================
 
-.. @todo Demonstrate xxx_time attributes
+.. @todoc Demonstrate xxx_time attributes
