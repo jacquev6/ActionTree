@@ -734,14 +734,10 @@ class _Execute(object):
         self.exceptions = []
 
         # Actions by status
-        # not done
         self.pending = set(actions)
         self.ready = set()
         self.running = set()
-        # done
-        self.succeeded = set()
-        self.canceled = set()
-        self.failed = set()
+        self.done = set()
         for action in actions:
             if not action.dependencies:
                 self._prepare_action(action, now)
@@ -764,25 +760,21 @@ class _Execute(object):
         self.hooks.action_canceled(now, action)
 
         if action in self.pending:
-            self._change_status(action, self.pending, self.canceled)
+            self._change_status(action, self.pending, self.done)
         else:
-            self._change_status(action, self.ready, self.canceled)
+            self._change_status(action, self.ready, self.done)
 
         if not self.keep_going:
             for d in action.dependencies:
                 if d in self.pending or d in self.ready:
                     self._cancel_action(d, now)
-        self._triage_pending_dependents(action, now)
+        self._triage_pending_dependents(action, True, now)
 
-    def _triage_pending_dependents(self, action, now):
+    def _triage_pending_dependents(self, action, failed, now):
         for dependent in self.pending & self.dependents[action]:
-            # @todo Optimize the any(...) away by accepting a "failed" parameter
-            if (
-                not dependent.weak_dependencies and
-                any(d in self.failed or d in self.canceled for d in dependent.dependencies)
-            ):
+            if failed and not dependent.weak_dependencies:
                 self._cancel_action(dependent, now)
-            elif all(d in self.succeeded or d in self.failed or d in self.canceled for d in dependent.dependencies):
+            elif all(d in self.done for d in dependent.dependencies):
                 self._prepare_action(dependent, now)
 
     def _prepare_action(self, action, now):
@@ -822,8 +814,8 @@ class _Execute(object):
         self.report.get_action_status(action)._set_success(success_time, return_value)
         self.hooks.action_successful(success_time, action)
 
-        self._change_status(action, self.running, self.succeeded)
-        self._triage_pending_dependents(action, success_time)
+        self._change_status(action, self.running, self.done)
+        self._triage_pending_dependents(action, False, success_time)
 
     def _handle_printed_event(self, action, print_time, text):
         self.report.get_action_status(action)._add_output(text)
@@ -833,9 +825,9 @@ class _Execute(object):
         self.report.get_action_status(action)._set_failure(failure_time, exception)
         self.hooks.action_failed(failure_time, action)
 
-        self._change_status(action, self.running, self.failed)
+        self._change_status(action, self.running, self.done)
         self.exceptions.append(exception)
-        self._triage_pending_dependents(action, failure_time)
+        self._triage_pending_dependents(action, True, failure_time)
 
     def _handle_pickling_exception_event(self, action):
         raise pickle.PicklingError()
