@@ -18,26 +18,44 @@ import wurlitzer
 
 
 class Hooks(object):
+    """
+    Base class to derive from when defining your hooks.
+    :func:`.execute` will call its methods during execution.
+    """
     def action_pending(self, time, action):
-        pass
+        """
+        @todo Document
+        """
 
     def action_ready(self, time, action):
-        pass
+        """
+        @todo Document
+        """
 
     def action_canceled(self, time, action):
-        pass
+        """
+        @todo Document
+        """
 
     def action_started(self, time, action):
-        pass
+        """
+        @todo Document
+        """
 
     def action_printed(self, time, action, text):
-        pass
+        """
+        @todo Document
+        """
 
     def action_successful(self, time, action):
-        pass
+        """
+        @todo Document
+        """
 
     def action_failed(self, time, action):
-        pass
+        """
+        @todo Document
+        """
 
 
 def execute(action, jobs=1, keep_going=False, do_raise=True, hooks=Hooks()):
@@ -77,8 +95,6 @@ class ExecutionReport(object):
 
     class ActionStatus(object):
         """
-        ActionStatus()
-
         Status of a single :class:`.Action`.
         """
 
@@ -90,6 +106,7 @@ class ExecutionReport(object):
         "The :attr:`status` after a failed execution where this action raised an exception."
 
         def __init__(self):
+            # @todo Add __pending_time (to be consistent with hooks)
             self.__ready_time = None
             self.__cancel_time = None
             self.__start_time = None
