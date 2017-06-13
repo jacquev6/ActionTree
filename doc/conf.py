@@ -1,6 +1,6 @@
 # coding: utf8
 
-# Copyright 2013-2015 Vincent Jacques <vincent@vincent-jacques.net>
+# Copyright 2013-2017 Vincent Jacques <vincent@vincent-jacques.net>
 
 import os
 import sys
@@ -10,7 +10,7 @@ import glob
 master_doc = "index"
 project = "ActionTree"
 author = '<a href="http://vincent-jacques.net/contact">Vincent Jacques</a>'
-copyright = "2013-2015 {}".format(author)
+copyright = "2013-2017 {}".format(author)
 extensions = []
 
 
