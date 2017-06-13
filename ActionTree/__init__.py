@@ -234,6 +234,23 @@ class ExecutionReport(object):
         return self.__action_statuses.items()
 
 
+class WurlitzerToEvents(wurlitzer.Wurlitzer):
+    # This is a highly contrived use of Wurlitzer:
+    # We just need to *capture* standards streams, so we trick Wurlitzer,
+    # passing True instead of writeable file-like objects, and we redefine
+    # _handle_xxx methods to intercept what it would write
+    def __init__(self, events, action_id):
+        super(WurlitzerToEvents, self).__init__(stdout=True, stderr=True)
+        self.events = events
+        self.action_id = action_id
+
+    def _handle_stdout(self, data):
+        self.events.put(_PrintedEvent(self.action_id, datetime.datetime.now(), data))
+
+    def _handle_stderr(self, data):
+        self._handle_stdout(data)
+
+
 class _Worker(multiprocessing.Process):
     def __init__(self, tasks, events):
         multiprocessing.Process.__init__(self)
@@ -252,17 +269,7 @@ class _Worker(multiprocessing.Process):
             self.tasks.task_done()
 
     def execute_action(self, action_id, action):
-        # @todo Derive a class from Wurlitzer
-        def handle(data):
-            self.events.put(_PrintedEvent(action_id, datetime.datetime.now(), data))
-        # This is a highly contrived use of Wurlitzer:
-        # We just need to *capture* standards streams, so we trick Wurlitzer,
-        # passing True instead of writeable file-like objects, and we redefine
-        # _handle_xxx methods to intercept what it would write
-        w = wurlitzer.Wurlitzer(stdout=True, stderr=True)
-        w._handle_stdout = handle
-        w._handle_stderr = handle
-        with w:
+        with WurlitzerToEvents(self.events, action_id):
             return_value = exception = None
             try:
                 self.events.put(_StartedEvent(action_id, datetime.datetime.now()))
