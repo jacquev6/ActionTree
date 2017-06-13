@@ -49,7 +49,9 @@ class Action(object):
     Pass it to :func:`.execute`.
 
     This is a base class for your custom actions.
-    You must define a ``do_execute(self)`` method that performs the action.
+    You must define a ``do_execute(self, dependency_statuses)`` method that performs the action.
+    The ``dependency_statuses`` argument is a dictionary whose keys are ``self.dependencies`` and values are their
+    :class:`.ActionStatus`.
     :ref:`outputs` describes how its return values, the exceptions it may raise and what it may print is handled.
 
     Actions, return values and exceptions raised must be picklable.
@@ -58,7 +60,7 @@ class Action(object):
     def __init__(self, label, weak_dependencies=False):
         """
         :param label: whatever you want to attach to the action.
-            `str(label)` must succeed and return a string.
+            ``str(label)`` must succeed and return a string.
             Can be retrieved by :attr:`label`.
         :param bool weak_dependencies:
             it ``True``, then the action will execute even if some of its dependencies failed.
@@ -372,7 +374,7 @@ class ExecutionReport(object):
         def output(self):
             """
             Everything printed (and flushed in time) by this action.
-            (`None` if it never started, `""` it if didn't print anything)
+            (``None`` if it never started, ``""`` it if didn't print anything)
 
             :rtype: str or None
             """
@@ -683,17 +685,18 @@ class WurlitzerToEvents(wurlitzer.Wurlitzer):
 
 
 class _Worker(multiprocessing.Process):
-    def __init__(self, action_id, action, events):
+    def __init__(self, action_id, action, events, dependency_statuses):
         multiprocessing.Process.__init__(self)
         self.action_id = action_id
         self.action = action
         self.events = events
+        self.dependency_statuses = dependency_statuses
 
     def run(self):
         with WurlitzerToEvents(self.events, self.action_id):
             return_value = exception = None
             try:
-                return_value = self.action.do_execute()
+                return_value = self.action.do_execute(self.dependency_statuses)
             except Exception as e:
                 exception = e
         try:
@@ -796,8 +799,8 @@ class _Execute(object):
         self.report.get_action_status(action)._set_start_time(now)
         self.hooks.action_started(now, action)
 
-        # @todo Pass values and exceptions returned by dependencies to do_execute (as a dict)
-        _Worker(id(action), action, self.events).start()
+        dependency_statuses = {d: self.report.get_action_status(d) for d in action.dependencies}
+        _Worker(id(action), action, self.events, dependency_statuses).start()
         self._change_status(action, self.ready, self.running)
 
     def _handle_next_event(self):

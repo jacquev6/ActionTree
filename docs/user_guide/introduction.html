@@ -59,7 +59,7 @@
 <span class="gp">... </span>    <span class="nb">super</span><span class="p">(</span><span class="n">CreateFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;create </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
 <span class="gp">... </span>    <span class="bp">self</span><span class="o">.</span><span class="n">__name</span> <span class="o">=</span> <span class="n">name</span>
 <span class="gp">...</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">do_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>  <span class="k">def</span> <span class="nf">do_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dependency_statuses</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
 <span class="gp">... </span>      <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;This is </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="p">))</span>
 </pre></div>
@@ -70,7 +70,7 @@
 <span class="gp">... </span>    <span class="bp">self</span><span class="o">.</span><span class="n">__files</span> <span class="o">=</span> <span class="n">files</span>
 <span class="gp">... </span>    <span class="bp">self</span><span class="o">.</span><span class="n">__name</span> <span class="o">=</span> <span class="n">name</span>
 <span class="gp">...</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">do_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="gp">... </span>  <span class="k">def</span> <span class="nf">do_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dependency_statuses</span><span class="p">):</span>
 <span class="gp">... </span>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
 <span class="gp">... </span>      <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__files</span><span class="p">:</span>
 <span class="gp">... </span>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">as</span> <span class="nb">input</span><span class="p">:</span>

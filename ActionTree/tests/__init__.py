@@ -41,7 +41,9 @@ class TestAction(Action):
         self.__puts_on_stdout = puts_on_stdout
         self.__echo_on_stdout = echo_on_stdout
 
-    def do_execute(self):
+    def do_execute(self, dependency_statuses):
+        for d in self.dependencies:
+            assert self.weak_dependencies or dependency_statuses[d].status == ExecutionReport.ActionStatus.SUCCESSFUL
         with open(self.__events_file, "a") as f:
             f.write("{}\n".format(str(self.label).lower()))
         if self.__delay:

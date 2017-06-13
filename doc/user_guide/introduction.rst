@@ -25,7 +25,7 @@ Then create your specialized :class:`.Action` classes:
 ...     super(CreateFile, self).__init__("create {}".format(name))
 ...     self.__name = name
 ...
-...   def do_execute(self):
+...   def do_execute(self, dependency_statuses):
 ...     with open(self.__name, "w") as f:
 ...       f.write("This is {}\n".format(self.__name))
 
@@ -35,7 +35,7 @@ Then create your specialized :class:`.Action` classes:
 ...     self.__files = files
 ...     self.__name = name
 ...
-...   def do_execute(self):
+...   def do_execute(self, dependency_statuses):
 ...     with open(self.__name, "w") as output:
 ...       for file in self.__files:
 ...         with open(file) as input:

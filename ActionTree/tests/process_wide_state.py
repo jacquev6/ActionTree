@@ -12,13 +12,13 @@ from ActionTree.stock import *
 
 
 class ChdirAction(Action):
-    def do_execute(self):
+    def do_execute(self, dependency_statuses):
         print(os.getcwd())
         os.chdir("/")
 
 
 class ChangeEnvironAction(Action):
-    def do_execute(self):
+    def do_execute(self, dependency_statuses):
         print(os.environ.get("FOO"))
         os.environ["FOO"] = "bar"
 

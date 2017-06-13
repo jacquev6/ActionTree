@@ -82,7 +82,9 @@ but only included in the <a class="reference internal" href="#ActionTree.Executi
 An action to be started after all its dependencies are finished.
 Pass it to <a class="reference internal" href="#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal"><span class="pre">execute()</span></code></a>.</p>
 <p>This is a base class for your custom actions.
-You must define a <code class="docutils literal"><span class="pre">do_execute(self)</span></code> method that performs the action.
+You must define a <code class="docutils literal"><span class="pre">do_execute(self,</span> <span class="pre">dependency_statuses)</span></code> method that performs the action.
+The <code class="docutils literal"><span class="pre">dependency_statuses</span></code> argument is a dictionary whose keys are <code class="docutils literal"><span class="pre">self.dependencies</span></code> and values are their
+<a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus" title="ActionTree.ExecutionReport.ActionStatus"><code class="xref py py-class docutils literal"><span class="pre">ActionStatus</span></code></a>.
 <a class="reference internal" href="user_guide/outputs.html#outputs"><span class="std std-ref">Outputs and side-effects</span></a> describes how its return values, the exceptions it may raise and what it may print is handled.</p>
 <p>Actions, return values and exceptions raised must be picklable.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -91,7 +93,7 @@ You must define a <code class="docutils literal"><span class="pre">do_execute(se
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>label</strong> – whatever you want to attach to the action.
-<cite>str(label)</cite> must succeed and return a string.
+<code class="docutils literal"><span class="pre">str(label)</span></code> must succeed and return a string.
 Can be retrieved by <a class="reference internal" href="#ActionTree.Action.label" title="ActionTree.Action.label"><code class="xref py py-attr docutils literal"><span class="pre">label</span></code></a>.</li>
 <li><strong>weak_dependencies</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – it <code class="docutils literal"><span class="pre">True</span></code>, then the action will execute even if some of its dependencies failed.
 Note that if you want this behavior for only a subset of the dependencies,
@@ -457,7 +459,7 @@ and <a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus
 <dt id="ActionTree.ExecutionReport.ActionStatus.output">
 <code class="descname">output</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.output" title="Permalink to this definition">¶</a></dt>
 <dd><p>Everything printed (and flushed in time) by this action.
-(<cite>None</cite> if it never started, <cite>“”</cite> it if didn’t print anything)</p>
+(<code class="docutils literal"><span class="pre">None</span></code> if it never started, <code class="docutils literal"><span class="pre">&quot;&quot;</span></code> it if didn’t print anything)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />

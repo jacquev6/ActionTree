@@ -22,12 +22,12 @@ unpicklable = Unpicklable()
 
 
 class UnpicklableReturnValue(Action):
-    def do_execute(self):
+    def do_execute(self, dependency_statuses):
         return unpicklable
 
 
 class UnpicklableException(Action):
-    def do_execute(self):
+    def do_execute(self, dependency_statuses):
         raise Exception(unpicklable)
 
 

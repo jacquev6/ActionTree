@@ -27,7 +27,7 @@ class NullAction(Action):
     def __init__(self, weak_dependencies=False):
         Action.__init__(self, None, weak_dependencies=weak_dependencies)
 
-    def do_execute(self):
+    def do_execute(self, dependency_statuses):
         pass
 
 
@@ -48,7 +48,7 @@ class CallSubprocess(Action):
         self.__args = args
         self.__kwds = kwds
 
-    def do_execute(self):
+    def do_execute(self, dependency_statuses):
         # subprocess.CalledProcessError can't be pickled in Python2
         # See http://bugs.python.org/issue1692335
         try:
@@ -75,7 +75,7 @@ class CreateDirectory(Action):
         Action.__init__(self, "mkdir {}".format(name))
         self.__name = name
 
-    def do_execute(self):
+    def do_execute(self, dependency_statuses):
         try:
             os.makedirs(self.__name)
         except OSError as e:
@@ -94,7 +94,7 @@ class DeleteFile(Action):
         Action.__init__(self, "rm {}".format(name))
         self.__name = name
 
-    def do_execute(self):
+    def do_execute(self, dependency_statuses):
         try:
             os.unlink(self.__name)
         except OSError as e:
@@ -114,7 +114,7 @@ class CopyFile(Action):
         self.__src = src
         self.__dst = dst
 
-    def do_execute(self):
+    def do_execute(self, dependency_statuses):
         shutil.copy(self.__src, self.__dst)
 
 
@@ -134,7 +134,7 @@ class TouchFile(Action):
         Action.__init__(self, "touch {}".format(name))
         self.__name = name
 
-    def do_execute(self):
+    def do_execute(self, dependency_statuses):
         open(self.__name, "ab").close()  # Create the file if needed
         os.utime(self.__name, None)  # Actually change its time
 
@@ -149,5 +149,5 @@ class Sleep(Action):
         Action.__init__(self, "sleep {}".format(secs))
         self.__secs = secs
 
-    def do_execute(self):
+    def do_execute(self, dependency_statuses):
         time.sleep(self.__secs)
