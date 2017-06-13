@@ -362,7 +362,8 @@ class ExecutionReport(object):
             """
             return self.__output
 
-    def __init__(self, actions, now):
+    def __init__(self, root_action, actions, now):
+        self._root_action = root_action
         self.__action_statuses = {action: self.ActionStatus(now) for action in actions}
 
     @property
@@ -440,11 +441,33 @@ class GanttChart(object):  # pragma no cover (Too difficult to unit test)
     """
 
     def __init__(self, report):
-        # @todo Sort actions somehow to improve readability (top-left to bottom-right)
         self.__actions = {
             id(action): self.__make_action(action, status)
             for (action, status) in report.get_actions_and_statuses()
         }
+
+        self.__ordinates = {}
+
+        dependents = {}
+        for (action, _) in report.get_actions_and_statuses():
+            dependents.setdefault(action, set())
+            for dependency in action.dependencies:
+                dependents.setdefault(dependency, set()).add(action)
+
+        def compute(action, ordinate):
+            self.__ordinates[id(action)] = len(self.__actions) - ordinate
+            for d in sorted(
+                action.dependencies,
+                key=lambda d: report.get_action_status(d).success_time or report.get_action_status(d).failure_time
+            ):
+                if len(dependents[d]) == 1:
+                    ordinate = compute(d, ordinate - 1)
+                else:
+                    dependents[d].remove(action)
+            return ordinate
+
+        last_ordinate = compute(report._root_action, len(self.__actions) - 1)
+        assert last_ordinate == 0, last_ordinate
 
     # @todo Factorize Actions
     class SuccessfulAction(object):
@@ -587,10 +610,8 @@ class GanttChart(object):  # pragma no cover (Too difficult to unit test)
 
         See also :meth:`write_to_png` and :meth:`get_mpl_figure` for the simpler use-cases.
         """
-        ordinates = {ident: len(self.__actions) - i for (i, ident) in enumerate(self.__actions.iterkeys())}
-
         for action in self.__actions.itervalues():
-            action.draw(ax, ordinates, self.__actions)
+            action.draw(ax, self.__ordinates, self.__actions)
 
         ax.get_yaxis().set_ticklabels([])
         ax.set_ylim(0.5, len(self.__actions) + 1)
@@ -727,6 +748,7 @@ class _PicklingExceptionEvent(_Event):
 
 class _Execution(object):
     def __init__(self, jobs, keep_going, do_raise, hooks, action):
+        self.root_action = action
         self.events = multiprocessing.Queue()
         self.jobs = jobs
         self.keep_going = keep_going
@@ -742,7 +764,7 @@ class _Execution(object):
 
     def run(self):
         now = datetime.datetime.now()
-        self.report = ExecutionReport(self.pending, now)
+        self.report = ExecutionReport(self.root_action, self.pending, now)
         for action in self.pending:
             self.hooks.action_pending(now, action)
         while self.pending or self.submitted:
