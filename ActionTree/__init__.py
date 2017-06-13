@@ -58,22 +58,7 @@ def execute(action, jobs=1, keep_going=False, do_raise=True, hooks=Hooks()):
     _check_picklability(action)
     if jobs is None:
         jobs = multiprocessing.cpu_count()
-    tasks = multiprocessing.JoinableQueue()
-    events = multiprocessing.Queue()
-    # @todo Don't use long-lived workers
-    # Actions could modify stuff (sys.environ, os.getwd, etc.) that would affect next actions
-    workers = [_Worker(tasks, events) for _ in xrange(jobs)]
-    for worker in workers:
-        worker.start()
-    execution = _Execution(tasks, events, jobs, keep_going, do_raise, hooks, action)
-    try:
-        return execution.run()
-    finally:
-        for i in xrange(jobs):
-            tasks.put(None)
-        tasks.join()
-        for worker in workers:
-            worker.join()
+    return _Execution(jobs, keep_going, do_raise, hooks, action).run()
 
 
 def _check_picklability(stuff):
@@ -253,40 +238,30 @@ class WurlitzerToEvents(wurlitzer.Wurlitzer):
 
 
 class _Worker(multiprocessing.Process):
-    def __init__(self, tasks, events):
+    def __init__(self, action_id, action, events):
         multiprocessing.Process.__init__(self)
-        self.tasks = tasks
+        self.action_id = action_id
+        self.action = action
         self.events = events
 
     def run(self):
-        go_on = True
-        while go_on:
-            action = self.tasks.get()
-            if action is None:
-                go_on = False
-            else:
-                (action_id, action) = action
-                self.execute_action(action_id, action)
-            self.tasks.task_done()
-
-    def execute_action(self, action_id, action):
-        with WurlitzerToEvents(self.events, action_id):
+        with WurlitzerToEvents(self.events, self.action_id):
             return_value = exception = None
             try:
-                self.events.put(_StartedEvent(action_id, datetime.datetime.now()))
-                return_value = action.do_execute()
+                self.events.put(_StartedEvent(self.action_id, datetime.datetime.now()))
+                return_value = self.action.do_execute()
             except Exception as e:
                 exception = e
         try:
             _check_picklability((exception, return_value))
         except:
-            self.events.put(_PicklingExceptionEvent(action_id))
+            self.events.put(_PicklingExceptionEvent(self.action_id))
         else:
             end_time = datetime.datetime.now()
             if exception:
-                self.events.put(_FailedEvent(action_id, end_time, exception))
+                self.events.put(_FailedEvent(self.action_id, end_time, exception))
             else:
-                self.events.put(_SuccessedEvent(action_id, end_time, return_value))
+                self.events.put(_SuccessedEvent(self.action_id, end_time, return_value))
 
 
 class _Event(object):
@@ -348,9 +323,8 @@ class _PicklingExceptionEvent(_Event):
 
 
 class _Execution(object):
-    def __init__(self, tasks, events, jobs, keep_going, do_raise, hooks, action):
-        self.tasks = tasks
-        self.events = events
+    def __init__(self, jobs, keep_going, do_raise, hooks, action):
+        self.events = multiprocessing.Queue()
         self.jobs = jobs
         self.keep_going = keep_going
         self.do_raise = do_raise
@@ -369,6 +343,9 @@ class _Execution(object):
             self.hooks.action_pending(now, action)
         while self.pending or self.submitted:
             self._progress()
+
+        for w in multiprocessing.active_children():
+            w.join()
 
         if self.do_raise and self.exceptions:
             raise CompoundException(self.exceptions, self.report)
@@ -413,7 +390,7 @@ class _Execution(object):
             event.apply(self, self.actions_by_id[event.action_id])
 
     def _submit_action(self, action, ready_time):
-        self.tasks.put((id(action), action))
+        _Worker(id(action), action, self.events).start()
         self.submitted.add(action)
         self.pending.remove(action)
 
