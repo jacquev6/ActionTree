@@ -1,0 +1,165 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Stock actions &#8212; ActionTree 0.7.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.7.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Outputs and side-effects" href="outputs.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="stock-actions">
+<h1>Stock actions<a class="headerlink" href="#stock-actions" title="Permalink to this headline">¶</a></h1>
+<p>ActionTree is shipped with some <a class="reference internal" href="../reference.html#module-ActionTree.stock" title="ActionTree.stock"><code class="xref py py-mod docutils literal"><span class="pre">stock</span></code></a> actions for common tasks,
+including running subprocesses and basic operations on files and directories.</p>
+<p>Say you want to compile two C++ files and link them:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="k">import</span> <span class="n">execute</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree.stock</span> <span class="k">import</span> <span class="n">CreateDirectory</span><span class="p">,</span> <span class="n">CallSubprocess</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">make_build_dir</span> <span class="o">=</span> <span class="n">CreateDirectory</span><span class="p">(</span><span class="s2">&quot;_build&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">compile_a</span> <span class="o">=</span> <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;a.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/a.o&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compile_a</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">make_build_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">compile_b</span> <span class="o">=</span> <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;b.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/b.o&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compile_b</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">make_build_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">link</span> <span class="o">=</span> <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/test&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/a.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/b.o&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">link</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">compile_a</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">link</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">compile_b</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">link_report</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you’re really looking to compile stuff using <a class="reference internal" href="../reference.html#module-ActionTree" title="ActionTree"><code class="xref py py-mod docutils literal"><span class="pre">ActionTree</span></code></a>,
+you may want to have a look at <a class="reference external" href="https://github.com/jacquev6/devlpr">devlpr</a>.
+It’s the reason why I wrote <a class="reference internal" href="../reference.html#module-ActionTree" title="ActionTree"><code class="xref py py-mod docutils literal"><span class="pre">ActionTree</span></code></a> in the first place.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+<h1 class="logo"><a href="../index.html">ActionTree</a></h1>
+
+
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=jacquev6&repo=ActionTree&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+    
+
+<p>
+<a href="https://travis-ci.org/jacquev6/ActionTree">
+    <img
+        alt="https://secure.travis-ci.org/jacquev6/ActionTree.svg?branch=master"
+        src="https://secure.travis-ci.org/jacquev6/ActionTree.svg?branch=master"
+    />
+</a>
+</p>
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../user_guide.html">User guide</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Stock actions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="outputs.html">Outputs and side-effects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="hooks.html">Hooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="timing.html">Timing information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="drawings.html">Drawings</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../reference.html">Reference</a></li>
+</ul>
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2013-2015 <a href="http://vincent-jacques.net/contact">Vincent Jacques</a>.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/user_guide/stock.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/jacquev6/ActionTree" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

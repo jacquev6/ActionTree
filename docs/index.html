@@ -45,7 +45,7 @@
   <div class="section" id="actiontree">
 <h1>ActionTree<a class="headerlink" href="#actiontree" title="Permalink to this headline">¶</a></h1>
 <p>ActionTree is a Python (2.7 and 3.5+) library to execute (long) actions in parallel, respecting dependencies between those actions.
-You create the graph of the actions to be executed and then call the <code class="docutils literal"><span class="pre">execute</span></code> function on its root,
+You create a dependency graph of actions to be executed and then call the <code class="docutils literal"><span class="pre">execute</span></code> function on its root,
 specifying how many actions must be run in parallel and if errors should stop the execution.</p>
 <p>It’s licensed under the <a class="reference external" href="http://choosealicense.com/licenses/mit/">MIT license</a>.
 It’s available on the <a class="reference external" href="http://pypi.python.org/pypi/ActionTree">Python package index</a>,
@@ -77,9 +77,15 @@ and its <a class="reference external" href="https://github.com/jacquev6/ActionTr
 </div>
 <p>Execute some action:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">link</span> <span class="o">=</span> <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;a.o&quot;</span><span class="p">,</span> <span class="s2">&quot;b.o&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">link</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;doc/a.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;a.o&quot;</span><span class="p">]))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">link</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;doc/b.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;b.o&quot;</span><span class="p">]))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">execute</span><span class="p">(</span><span class="n">link</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">is_success</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">link</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;a.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;a.o&quot;</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">link</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;b.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;b.o&quot;</span><span class="p">]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">report</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">link</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>And verify everything went well:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">report</span><span class="o">.</span><span class="n">is_success</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
 <span class="go">True</span>
 </pre></div>
 </div>
@@ -89,10 +95,24 @@ and its <a class="reference external" href="https://github.com/jacquev6/ActionTr
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="user_guide.html">User guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="user_guide.html#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user_guide.html#preview">Preview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user_guide.html#stock-actions">Stock actions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="user_guide.html#drawings">Drawings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/introduction.html">Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="user_guide/introduction.html#actions-and-dependencies">Actions and dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user_guide/introduction.html#preview">Preview</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/stock.html">Stock actions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/outputs.html">Outputs and side-effects</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="user_guide/outputs.html#return-values-exceptions-and-printed-output">Return values, exceptions and printed output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user_guide/outputs.html#other-side-effects">Other side effects</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/hooks.html">Hooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/timing.html">Timing information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/drawings.html">Drawings</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="user_guide/drawings.html#dependency-graph">Dependency graph</a></li>
+<li class="toctree-l3"><a class="reference internal" href="user_guide/drawings.html#gantt-chart">Gantt chart</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a><ul>

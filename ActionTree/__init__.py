@@ -60,6 +60,8 @@ def execute(action, jobs=1, keep_going=False, do_raise=True, hooks=Hooks()):
         jobs = multiprocessing.cpu_count()
     tasks = multiprocessing.JoinableQueue()
     events = multiprocessing.Queue()
+    # @todo Don't use long-lived workers
+    # Actions could modify stuff (sys.environ, os.getwd, etc.) that would affect next actions
     workers = [_Worker(tasks, events) for _ in xrange(jobs)]
     for worker in workers:
         worker.start()
@@ -473,6 +475,7 @@ class Action(object):
         """
         return list(self.__dependencies)
 
+    # @todo Remove? (get_possible_execution_order does it already)
     def get_all_dependencies(self):
         """
         Return the set of this action's recursive dependencies, including itself.
@@ -482,6 +485,7 @@ class Action(object):
             dependencies |= dependency.get_all_dependencies()
         return dependencies
 
+    # @todo Remove?
     def get_preview(self):
         """
         Return the labels of this action and its dependencies, in an order that could be the execution order.
@@ -489,6 +493,9 @@ class Action(object):
         return [action.__label for action in self.get_possible_execution_order()]
 
     def get_possible_execution_order(self, seen_actions=None):
+        """
+        @todo Document
+        """
         if seen_actions is None:
             seen_actions = set()
         actions = []

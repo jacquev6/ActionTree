@@ -4,6 +4,8 @@
 
 import os
 import sys
+import glob
+
 
 master_doc = "index"
 project = "ActionTree"
@@ -46,8 +48,14 @@ add_class_names = False
 # http://sphinx-doc.org/ext/doctest.html
 extensions.append("sphinx.ext.doctest")
 # doctest_path
-# doctest_global_setup
-# doctest_global_cleanup
+doctest_global_setup = """
+import os
+os.chdir("doc/user_guide/artifacts")
+"""
+doctest_global_cleanup = """
+import os
+os.chdir("../../..")
+"""
 # doctest_test_doctest_blocks
 
 
@@ -59,3 +67,30 @@ intersphinx_mapping = {
     "matplotlib": ("http://matplotlib.org/", None),
 }
 # intersphinx_cache_limit
+
+
+for input_file in glob.glob("user_guide/*.rst"):
+    with open(input_file) as in_f:
+        seen = set()
+        out_f = None
+        output_file = None
+        for line in in_f:
+            if line.rstrip() == ".. END SECTION {}".format(output_file):
+                assert output_file is not None
+                out_f.close()
+                out_f = None
+                output_file = None
+            if out_f:
+                out_f.write(line[4:])
+            if line.startswith(".. BEGIN SECTION "):
+                assert output_file is None
+                output_file = line[17:].rstrip()
+                if output_file in seen:
+                    mode = "a"
+                else:
+                    mode = "w"
+                seen.add(output_file)
+                out_f = open("user_guide/artifacts/{}".format(output_file), mode)
+        assert output_file is None
+
+sys.path.append(os.path.join(os.getcwd(), "user_guide/artifacts"))

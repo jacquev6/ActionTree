@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Reference" href="reference.html" />
+    <link rel="next" title="Introduction" href="user_guide/introduction.html" />
     <link rel="prev" title="ActionTree" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -45,123 +45,27 @@
             
   <div class="section" id="user-guide">
 <h1>User guide<a class="headerlink" href="#user-guide" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>In ActionTree, you create the graph of the actions to be executed and then call the <a class="reference internal" href="reference.html#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal"><span class="pre">execute()</span></code></a> function on its root.</p>
-<p>For example, let’s say you want to generate three files, and then concatenate them into a fourth file.</p>
-<p>First, import <a class="reference internal" href="reference.html#module-ActionTree" title="ActionTree"><code class="xref py py-mod docutils literal"><span class="pre">ActionTree</span></code></a></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="k">import</span> <span class="n">Action</span><span class="p">,</span> <span class="n">execute</span><span class="p">,</span> <span class="n">DependencyGraph</span><span class="p">,</span> <span class="n">GanttChart</span><span class="p">,</span> <span class="n">CompoundException</span>
-</pre></div>
-</div>
-<p>Then create your specialized <a class="reference internal" href="reference.html#ActionTree.Action" title="ActionTree.Action"><code class="xref py py-class docutils literal"><span class="pre">Action</span></code></a> classes:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">CreateFile</span><span class="p">(</span><span class="n">Action</span><span class="p">):</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="nb">super</span><span class="p">(</span><span class="n">CreateFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;create </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
-<span class="gp">... </span>    <span class="bp">self</span><span class="o">.</span><span class="n">__name</span> <span class="o">=</span> <span class="n">name</span>
-<span class="gp">...</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">do_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-<span class="gp">... </span>      <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;This is </span><span class="si">{}</span><span class="se">\\</span><span class="s2">n&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="p">))</span>
-</pre></div>
-</div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">class</span> <span class="nc">ConcatFiles</span><span class="p">(</span><span class="n">Action</span><span class="p">):</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">files</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="nb">super</span><span class="p">(</span><span class="n">ConcatFiles</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s2">&quot;concat&quot;</span><span class="p">)</span>
-<span class="gp">... </span>    <span class="bp">self</span><span class="o">.</span><span class="n">__files</span> <span class="o">=</span> <span class="n">files</span>
-<span class="gp">... </span>    <span class="bp">self</span><span class="o">.</span><span class="n">__name</span> <span class="o">=</span> <span class="n">name</span>
-<span class="gp">...</span>
-<span class="gp">... </span>  <span class="k">def</span> <span class="nf">do_execute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="gp">... </span>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
-<span class="gp">... </span>      <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__files</span><span class="p">:</span>
-<span class="gp">... </span>        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">as</span> <span class="nb">input</span><span class="p">:</span>
-<span class="gp">... </span>          <span class="n">output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
-</pre></div>
-</div>
-<p>Create an actions dependency graph:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">concat</span> <span class="o">=</span> <span class="n">ConcatFiles</span><span class="p">([</span><span class="s2">&quot;first&quot;</span><span class="p">,</span> <span class="s2">&quot;second&quot;</span><span class="p">,</span> <span class="s2">&quot;third&quot;</span><span class="p">],</span> <span class="s2">&quot;fourth&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">concat</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">CreateFile</span><span class="p">(</span><span class="s2">&quot;first&quot;</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">concat</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">CreateFile</span><span class="p">(</span><span class="s2">&quot;second&quot;</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">concat</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">CreateFile</span><span class="p">(</span><span class="s2">&quot;third&quot;</span><span class="p">))</span>
-</pre></div>
-</div>
-<p>And <a class="reference internal" href="reference.html#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal"><span class="pre">execute()</span></code></a> it:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">execute</span><span class="p">(</span><span class="n">concat</span><span class="p">)</span>
-<span class="go">&lt;ActionTree.ExecutionReport object at 0x...&gt;</span>
-</pre></div>
-</div>
-<p>You have no guaranty about the order of execution of the <code class="docutils literal"><span class="pre">CreateFile</span></code> actions,
-but you are sure that they are all finished before the <code class="docutils literal"><span class="pre">ConcatFiles</span></code> action starts.</p>
-<p>You can execute them in parallel, keeping the same guaranties:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">execute</span><span class="p">(</span><span class="n">concat</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">is_success</span>
-<span class="go">True</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="preview">
-<h2>Preview<a class="headerlink" href="#preview" title="Permalink to this headline">¶</a></h2>
-<p>If you just want to know what <em>would</em> be done, use <a class="reference internal" href="reference.html#ActionTree.Action.get_preview" title="ActionTree.Action.get_preview"><code class="xref py py-meth docutils literal"><span class="pre">Action.get_preview()</span></code></a>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">concat</span><span class="o">.</span><span class="n">get_preview</span><span class="p">()</span>
-<span class="go">[&#39;create ...&#39;, &#39;create ...&#39;, &#39;create ...&#39;, &#39;concat&#39;]</span>
-</pre></div>
-</div>
-<p>As said earlier, you have no guaranty about the order of the first three actions,
-so <a class="reference internal" href="reference.html#ActionTree.Action.get_preview" title="ActionTree.Action.get_preview"><code class="xref py py-meth docutils literal"><span class="pre">get_preview()</span></code></a> returns one possible order.</p>
-<p>The values returned by <a class="reference internal" href="reference.html#ActionTree.Action.get_preview" title="ActionTree.Action.get_preview"><code class="xref py py-meth docutils literal"><span class="pre">get_preview()</span></code></a> are the labels passed in the constructor of <a class="reference internal" href="reference.html#ActionTree.Action" title="ActionTree.Action"><code class="xref py py-class docutils literal"><span class="pre">Action</span></code></a>,
-so they can be anything you want, not just strings.</p>
-</div>
-<div class="section" id="stock-actions">
-<h2>Stock actions<a class="headerlink" href="#stock-actions" title="Permalink to this headline">¶</a></h2>
-<p>ActionTree is shipped with some <a class="reference internal" href="reference.html#module-ActionTree.stock" title="ActionTree.stock"><code class="xref py py-mod docutils literal"><span class="pre">stock</span></code></a> actions for common tasks.</p>
-<p>Say you want to compile two C++ files and link them:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree.stock</span> <span class="k">import</span> <span class="n">CallSubprocess</span>
-</pre></div>
-</div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">link</span> <span class="o">=</span> <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="s2">&quot;a.o&quot;</span><span class="p">,</span> <span class="s2">&quot;b.o&quot;</span><span class="p">])</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">link</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span>
-<span class="gp">... </span>  <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;doc/a.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;a.o&quot;</span><span class="p">])</span>
-<span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">link</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span>
-<span class="gp">... </span>  <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;doc/b.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;b.o&quot;</span><span class="p">])</span>
-<span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">link_report</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="section" id="drawings">
-<h2>Drawings<a class="headerlink" href="#drawings" title="Permalink to this headline">¶</a></h2>
-<p>You can draw a dependency graph with <a class="reference internal" href="reference.html#ActionTree.DependencyGraph" title="ActionTree.DependencyGraph"><code class="xref py py-class docutils literal"><span class="pre">DependencyGraph</span></code></a>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">DependencyGraph</span><span class="p">(</span><span class="n">concat</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">g</span><span class="o">.</span><span class="n">write_to_png</span><span class="p">(</span><span class="s2">&quot;doc/doctest/concat_dependency_graph.png&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="figure align-center" id="id1">
-<img alt="_images/concat_dependency_graph.png" src="_images/concat_dependency_graph.png" />
-<p class="caption"><span class="caption-text"><code class="docutils literal"><span class="pre">doc/doctest/concat_dependency_graph.png</span></code></span></p>
-</div>
-<p>You can draw a Gantt chart of the execution with <a class="reference internal" href="reference.html#ActionTree.GanttChart" title="ActionTree.GanttChart"><code class="xref py py-class docutils literal"><span class="pre">GanttChart</span></code></a>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">chart</span> <span class="o">=</span> <span class="n">GanttChart</span><span class="p">(</span><span class="n">link_report</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">chart</span><span class="o">.</span><span class="n">write_to_png</span><span class="p">(</span><span class="s2">&quot;doc/doctest/link_gantt_chart.png&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="figure align-center" id="id2">
-<img alt="_images/link_gantt_chart.png" src="_images/link_gantt_chart.png" />
-<p class="caption"><span class="caption-text"><code class="docutils literal"><span class="pre">doc/doctest/link_gantt_chart.png</span></code></span></p>
-</div>
-<p>And if some action fails, you get:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">link</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span>
-<span class="gp">... </span>  <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;doc/c.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;c.o&quot;</span><span class="p">])</span>
-<span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
-<span class="gp">... </span>  <span class="n">execute</span><span class="p">(</span><span class="n">link</span><span class="p">,</span> <span class="n">keep_going</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="gp">... </span><span class="k">except</span> <span class="n">CompoundException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<span class="gp">... </span>  <span class="n">chart</span> <span class="o">=</span> <span class="n">GanttChart</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">execution_report</span><span class="p">)</span>
-<span class="gp">... </span>  <span class="n">chart</span><span class="o">.</span><span class="n">write_to_png</span><span class="p">(</span><span class="s2">&quot;doc/doctest/failed_link_gantt_chart.png&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="figure align-center" id="id3">
-<img alt="_images/failed_link_gantt_chart.png" src="_images/failed_link_gantt_chart.png" />
-<p class="caption"><span class="caption-text"><code class="docutils literal"><span class="pre">doc/doctest/failed_link_gantt_chart.png</span></code></span></p>
-</div>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/introduction.html#actions-and-dependencies">Actions and dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/introduction.html#preview">Preview</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/stock.html">Stock actions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/outputs.html">Outputs and side-effects</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/outputs.html#return-values-exceptions-and-printed-output">Return values, exceptions and printed output</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/outputs.html#other-side-effects">Other side effects</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/hooks.html">Hooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/timing.html">Timing information</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/drawings.html">Drawings</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/drawings.html#dependency-graph">Dependency graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/drawings.html#gantt-chart">Gantt chart</a></li>
+</ul>
+</li>
+</ul>
 </div>
 </div>
 
@@ -205,10 +109,12 @@ so they can be anything you want, not just strings.</p>
 <h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">User guide</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#preview">Preview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#stock-actions">Stock actions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#drawings">Drawings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/introduction.html">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/stock.html">Stock actions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/outputs.html">Outputs and side-effects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/hooks.html">Hooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/timing.html">Timing information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user_guide/drawings.html">Drawings</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="reference.html">Reference</a></li>

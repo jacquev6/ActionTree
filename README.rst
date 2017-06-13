@@ -1,5 +1,5 @@
 ActionTree is a Python (2.7 and 3.5+) library to execute (long) actions in parallel, respecting dependencies between those actions.
-You create the graph of the actions to be executed and then call the ``execute`` function on its root,
+You create a dependency graph of actions to be executed and then call the ``execute`` function on its root,
 specifying how many actions must be run in parallel and if errors should stop the execution.
 
 It's licensed under the `MIT license <http://choosealicense.com/licenses/mit/>`__.
@@ -60,14 +60,13 @@ Import:
 Execute some action:
 
 >>> link = CallSubprocess(["g++", "a.o", "b.o", "-o", "test"])
->>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/a.cpp", "-o", "a.o"]))
->>> link.add_dependency(CallSubprocess(["g++", "-c", "doc/b.cpp", "-o", "b.o"]))
->>> execute(link, jobs=2).is_success
+>>> link.add_dependency(CallSubprocess(["g++", "-c", "a.cpp", "-o", "a.o"]))
+>>> link.add_dependency(CallSubprocess(["g++", "-c", "b.cpp", "-o", "b.o"]))
+>>> report = execute(link, jobs=2)
+
+And verify everything went well:
+
+>>> report.is_success
 True
-
-.. testcleanup::
-
-    import os
-    os.unlink("a.o")
-    os.unlink("b.o")
-    os.unlink("test")
+>>> os.path.isfile("test")
+True

@@ -1,0 +1,4 @@
+Hooks
+=====
+
+.. @todo Demonstrate hooks
