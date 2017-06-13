@@ -49,6 +49,19 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.CANCELED)
         self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.FAILED)
 
+    def test_exceptions_in_dependency_with_weak_dependencies(self):
+        a = self._action("a", weak_dependencies=True)
+        b = self._action("b", exception=Exception("foobar"))
+        a.add_dependency(b)
+
+        with self.assertRaises(CompoundException) as catcher:
+            execute(a, jobs=1)
+        report = catcher.exception.execution_report
+
+        self.assertFalse(report.is_success)
+        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.SUCCESSFUL)
+        self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.FAILED)
+
     def test_exceptions_in_dependencies_with_keep_going(self):
         a = self._action("a")
         b = self._action("b", exception=Exception("eb"))

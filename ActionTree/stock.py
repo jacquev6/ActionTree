@@ -24,8 +24,8 @@ class NullAction(Action):
     A stock action that does nothing.
     Useful as a placeholder for several dependencies.
     """
-    def __init__(self):
-        Action.__init__(self, None)
+    def __init__(self, weak_dependencies=False):
+        Action.__init__(self, None, weak_dependencies=weak_dependencies)
 
     def do_execute(self):
         pass

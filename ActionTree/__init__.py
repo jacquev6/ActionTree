@@ -55,14 +55,19 @@ class Action(object):
     Actions, return values and exceptions raised must be picklable.
     """
 
-    def __init__(self, label):
+    def __init__(self, label, weak_dependencies=False):
         """
         :param label: whatever you want to attach to the action.
             `str(label)` must succeed and return a string.
             Can be retrieved by :attr:`label`.
+        :param bool weak_dependencies:
+            it ``True``, then the action will execute even if some of its dependencies failed.
+            Note that if you want this behavior for only a subset of the dependencies,
+            you can group them in a :class:`.stock.NullAction`.
         """
         str(label)
         self.__label = label
+        self.__weak_dependencies = weak_dependencies
         self.__dependencies = []
 
     @property
@@ -71,6 +76,15 @@ class Action(object):
         The label passed to the constructor.
         """
         return self.__label
+
+    @property
+    def weak_dependencies(self):
+        """
+        ``True`` if the action will execute even if some of its dependencies failed.
+
+        :rtype: bool
+        """
+        return self.__weak_dependencies
 
     def add_dependency(self, dependency):
         """
@@ -761,11 +775,15 @@ class _Execute(object):
         self._triage_pending_dependents(action, now)
 
     def _triage_pending_dependents(self, action, now):
-        for action in self.pending & self.dependents[action]:
-            if any(d in self.failed or d in self.canceled for d in action.dependencies):
-                self._cancel_action(action, now)
-            elif all(d in self.succeeded or d in self.failed or d in self.canceled for d in action.dependencies):
-                self._prepare_action(action, now)
+        for dependent in self.pending & self.dependents[action]:
+            # @todo Optimize the any(...) away by accepting a "failed" parameter
+            if (
+                not dependent.weak_dependencies and
+                any(d in self.failed or d in self.canceled for d in dependent.dependencies)
+            ):
+                self._cancel_action(dependent, now)
+            elif all(d in self.succeeded or d in self.failed or d in self.canceled for d in dependent.dependencies):
+                self._prepare_action(dependent, now)
 
     def _prepare_action(self, action, now):
         self.report.get_action_status(action)._set_ready_time(now)
