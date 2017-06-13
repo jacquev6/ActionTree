@@ -17,57 +17,18 @@ import matplotlib.backends.backend_agg
 import wurlitzer
 
 
-class Hooks(object):
+def execute(action, jobs=1, keep_going=False, do_raise=True, hooks=None):
     """
-    Base class to derive from when defining your hooks.
-    :func:`.execute` will call its methods during execution.
-    """
-    def action_pending(self, time, action):
-        """
-        @todo Document
-        """
-
-    def action_ready(self, time, action):
-        """
-        @todo Document
-        """
-
-    def action_canceled(self, time, action):
-        """
-        @todo Document
-        """
-
-    def action_started(self, time, action):
-        """
-        @todo Document
-        """
-
-    def action_printed(self, time, action, text):
-        """
-        @todo Document
-        """
-
-    def action_successful(self, time, action):
-        """
-        @todo Document
-        """
-
-    def action_failed(self, time, action):
-        """
-        @todo Document
-        """
-
-
-def execute(action, jobs=1, keep_going=False, do_raise=True, hooks=Hooks()):
-    """
-    Recursively execute an action's dependencies then the action.
+    Recursively execute an :class:`.Action`'s dependencies then the action.
 
     :param Action action: the action to execute.
-    :param int jobs: number of actions to execute in parallel. Pass ``None`` to let ActionTree choose.
+    :param jobs: number of actions to execute in parallel. Pass ``None`` to let ActionTree choose.
+    :type jobs: int or None
     :param bool keep_going: if ``True``, then execution does not stop on first failure,
         but executes as many dependencies as possible.
-    :param bool do_raise: if ``False``, then exceptions are caught and put in the :class:`.ExecutionReport`.
-    :param hooks: @todo Document
+    :param bool do_raise: if ``False``, then exceptions are not re-raised as :exc:`CompoundException`
+        but only included in the :class:`.ExecutionReport`.
+    :param Hooks hooks: its methods will be called when execution progresses.
 
     :raises CompoundException: when ``do_raise`` is ``True`` and dependencies raise exceptions.
 
@@ -76,14 +37,174 @@ def execute(action, jobs=1, keep_going=False, do_raise=True, hooks=Hooks()):
     _check_picklability(action)
     if jobs is None:
         jobs = multiprocessing.cpu_count()
+    if hooks is None:
+        hooks = Hooks()
     return _Execution(jobs, keep_going, do_raise, hooks, action).run()
 
 
-def _check_picklability(stuff):
-    # This is a way to fail fast if we see a non-picklable object
-    # because ProcessPoolExecutor freezes forever if we try to transfer
-    # a non-picklable object through its queues
-    pickle.loads(pickle.dumps(stuff))
+class Action(object):
+    """
+    The main class of ActionTree.
+    An action to be started after all its dependencies are finished.
+    Pass it to :func:`.execute`.
+
+    This is a base class for your custom actions.
+    You must define a ``do_execute(self)`` method that performs the action.
+    :ref:`outputs` describes how its return values, the exceptions it may raise and what it may print is handled.
+
+    Actions, return values and exceptions raised must be picklable.
+    """
+
+    def __init__(self, label):
+        """
+        :param label: whatever you want to attach to the action.
+            `str(label)` must succeed and return a string.
+            Can be retrieved by :attr:`label`.
+        """
+        str(label)
+        self.__label = label
+        self.__dependencies = []
+
+    @property
+    def label(self):
+        """
+        The label passed to the constructor.
+        """
+        return self.__label
+
+    def add_dependency(self, dependency):
+        """
+        Add a dependency to be executed before this action.
+        Order of insertion of dependencies is not important.
+
+        :param Action dependency:
+
+        :raises DependencyCycleException: when adding the new dependency would create a cycle.
+        """
+        if self in dependency.get_possible_execution_order():
+            raise DependencyCycleException()
+        self.__dependencies.append(dependency)
+
+    @property
+    def dependencies(self):
+        """
+        The list of this action's direct dependencies.
+        """
+        return list(self.__dependencies)
+
+    def get_possible_execution_order(self, seen_actions=None):
+        """
+        Return the list of all this action's dependencies (recursively),
+        in an order that is suitable for linear execution.
+        Note that this order is not unique.
+        The order chosen is not specified.
+        """
+        if seen_actions is None:
+            seen_actions = set()
+        actions = []
+        if self not in seen_actions:
+            seen_actions.add(self)
+            for dependency in self.__dependencies:
+                actions += dependency.get_possible_execution_order(seen_actions)
+            actions.append(self)
+        return actions
+
+
+class Hooks(object):
+    """
+    Base class to derive from when defining your hooks.
+    :func:`.execute` will call its methods when execution progresses.
+    """
+    def action_pending(self, time, action):
+        """
+        Called when an action is considered for execution, i.e. at the beginning of :func:`.execute`.
+
+        :param datetime.datetime time: the time at which the action was considered for execution.
+        :param Action action: the action.
+        """
+
+    def action_ready(self, time, action):
+        """
+        Called when an action is ready to be executed, i.e. when all its dependencies have succeeded.
+
+        :param datetime.datetime time: the time at which the action was ready.
+        :param Action action: the action.
+        """
+
+    def action_canceled(self, time, action):
+        """
+        Called when an action's execution is canceled, i.e. when some of its dependencies has failed.
+
+        :param datetime.datetime time: the time at which the action was canceled.
+        :param Action action: the action.
+        """
+
+    def action_started(self, time, action):
+        """
+        Called when an action's execution starts.
+
+        :param datetime.datetime time: the time at which the action was started.
+        :param Action action: the action.
+        """
+
+    def action_printed(self, time, action, text):
+        """
+        Called when an action prints something.
+
+        :param datetime.datetime time: the time at which the action printed the text.
+        :param Action action: the action.
+        :param str text: the text printed.
+        """
+
+    def action_successful(self, time, action):
+        """
+        Called when an action completes without error.
+
+        :param datetime.datetime time: the time at which the action completed.
+        :param Action action: the action.
+        """
+
+    def action_failed(self, time, action):
+        """
+        Called when an action completes with an exception.
+
+        :param datetime.datetime time: the time at which the action completed.
+        :param Action action: the action.
+        """
+
+
+class DependencyCycleException(Exception):
+    """
+    Exception thrown by :meth:`.Action.add_dependency` when adding the new dependency would create a cycle.
+    """
+
+    def __init__(self):
+        super(DependencyCycleException, self).__init__("Dependency cycle")
+
+
+class CompoundException(Exception):
+    """
+    Exception thrown by :func:`.execute` when dependencies raise exceptions.
+    """
+
+    def __init__(self, exceptions, execution_report):
+        super(CompoundException, self).__init__(exceptions)
+        self.__exceptions = exceptions
+        self.__execution_report = execution_report
+
+    @property
+    def exceptions(self):
+        """
+        The list of exceptions raised.
+        """
+        return self.__exceptions
+
+    @property
+    def execution_report(self):
+        """
+        The :class:`.ExecutionReport` of the failed execution.
+        """
+        return self.__execution_report
 
 
 class ExecutionReport(object):
@@ -98,12 +219,12 @@ class ExecutionReport(object):
         Status of a single :class:`.Action`.
         """
 
-        Successful = "Successful"
+        SUCCESSFUL = "SUCCESSFUL"
         "The :attr:`status` after a successful execution."
-        Canceled = "Canceled"
-        "The :attr:`status` after a failed execution where a dependency raised an exception."
-        Failed = "Failed"
+        FAILED = "FAILED"
         "The :attr:`status` after a failed execution where this action raised an exception."
+        CANCELED = "CANCELED"
+        "The :attr:`status` after a failed execution where a dependency raised an exception."
 
         def __init__(self):
             # @todo Add __pending_time (to be consistent with hooks)
@@ -141,71 +262,94 @@ class ExecutionReport(object):
         @property
         def status(self):
             """
-            @todo Document
+            The status of the action:
+            :attr:`SUCCESSFUL` if the action succeeded,
+            :attr:`FAILED` if the action failed,
+            and :attr:`CANCELED` if the action was canceled because some of its dependencies failed.
             """
             if self.start_time:
                 if self.success_time:
-                    return self.Successful
+                    return self.SUCCESSFUL
                 else:
                     assert self.failure_time
-                    return self.Failed
+                    return self.FAILED
             else:
                 assert self.cancel_time
-                return self.Canceled
+                return self.CANCELED
 
         @property
         def ready_time(self):
             """
-            The local :class:`~datetime.datetime` when this action was ready to execute.
+            The time when this action was ready to execute.
+            (`None` if it was canceled before being ready).
+
+            :rtype: datetime.datetime or None
             """
             return self.__ready_time
 
         @property
         def cancel_time(self):
             """
-            The local :class:`~datetime.datetime` when this action was canceled.
+            The time when this action was canceled.
+            (`None` if it was started).
+
+            :rtype: datetime.datetime or None
             """
             return self.__cancel_time
 
         @property
         def start_time(self):
             """
-            The local :class:`~datetime.datetime` at the begining of the execution of this action.
+            The time at the beginning of the execution of this action.
+            (`None` if it was never started).
+
+            :rtype: datetime.datetime or None
             """
             return self.__start_time
 
         @property
         def success_time(self):
             """
-            The local :class:`~datetime.datetime` at the successful end of the execution of this action.
+            The time at the successful end of the execution of this action.
+            (`None` if it was never started or if it failed).
+
+            :rtype: datetime.datetime or None
             """
             return self.__success_time
 
         @property
         def return_value(self):
             """
-            @todo Document
+            The value returned by this action
+            (`None` if it failed or was never started).
             """
             return self.__return_value
 
         @property
         def failure_time(self):
             """
-            The local :class:`~datetime.datetime` at the successful end of the execution of this action.
+            The time at the successful end of the execution of this action.
+            (`None` if it was never started or if it succeeded).
+
+            :rtype: datetime.datetime or None
             """
             return self.__failure_time
 
         @property
         def exception(self):
             """
-            @todo Document
+            The exception raised by this action
+            (`None` if it succeeded or was never started).
             """
             return self.__exception
 
         @property
         def output(self):
             """
-            @todo Document
+            Everything printed (and flushed in time) by this action.
+            (`None` if it never started, `""` it if didn't print anything)
+
+            :rtype: str or None
             """
             return self.__output
 
@@ -220,21 +364,254 @@ class ExecutionReport(object):
         :rtype: bool
         """
         return all(
-            action_status.status == self.ActionStatus.Successful
+            action_status.status == self.ActionStatus.SUCCESSFUL
             for action_status in self.__action_statuses.itervalues()
         )
 
     def get_action_status(self, action):
         """
-        @todo Document
+        Get the :class:`ActionStatus` of an action.
+
+        :param Action action:
+
+        :rtype: ActionStatus
         """
         return self.__action_statuses[action]
 
     def get_actions_and_statuses(self):
         """
-        @todo Document
+        Get a list of actions and their statuses.
+
+        :rtype: list(tuple(Action, ActionStatus))
         """
         return self.__action_statuses.items()
+
+
+class DependencyGraph(object):
+    """
+    A visual representation of the dependency graph, using `Graphviz <http://graphviz.org/>`__.
+    """
+
+    def __init__(self, action):
+        self.__graphviz_graph = graphviz.Digraph("action", node_attr={"shape": "box"})
+        nodes = {}
+        for (i, action) in enumerate(action.get_possible_execution_order()):
+            node = str(i)
+            nodes[action] = node
+            self.__graphviz_graph.node(node, str(action.label))
+            for dependency in action.dependencies:
+                assert dependency in nodes  # Because we are iterating a possible execution order
+                self.__graphviz_graph.edge(node, nodes[dependency])
+
+    def write_to_png(self, filename):  # pragma no cover (Untestable? But small.)
+        """
+        Write the graph as a PNG image to the specified file.
+
+        See also :meth:`get_graphviz_graph` if you want to draw the graph somewhere else.
+        """
+        directory = os.path.dirname(filename)
+        filename = os.path.basename(filename)
+        filename, ext = os.path.splitext(filename)
+        g = self.get_graphviz_graph()
+        g.format = "png"
+        g.render(directory=directory, filename=filename, cleanup=True)
+
+    def get_graphviz_graph(self):
+        """
+        Return a :class:`graphviz.Digraph` of this dependency graph.
+
+        See also :meth:`write_to_png` for the simplest use-case.
+        """
+        return self.__graphviz_graph.copy()
+
+
+class GanttChart(object):  # pragma no cover (Too difficult to unit test)
+    """
+    A visual representation of the timing of an execution.
+    """
+
+    def __init__(self, report):
+        # @todo Sort actions somehow to improve readability (top-left to bottom-right)
+        self.__actions = {
+            id(action): self.__make_action(action, status)
+            for (action, status) in report.get_actions_and_statuses()
+        }
+
+    # @todo Factorize Actions
+    class SuccessfulAction(object):
+        def __init__(self, action, status):
+            self.__label = str(action.label)
+            self.__id = id(action)
+            self.__dependencies = set(id(d) for d in action.dependencies)
+            self.__ready_time = status.ready_time
+            self.__start_time = status.start_time
+            self.__success_time = status.success_time
+
+        @property
+        def min_time(self):
+            return self.__ready_time
+
+        @property
+        def max_time(self):
+            return self.__success_time
+
+        def draw(self, ax, ordinates, actions):
+            ordinate = ordinates[self.__id]
+            ax.plot([self.__ready_time, self.__start_time], [ordinate, ordinate], color="blue", lw=1)
+            # @todo Use an other end-style to avoid pixels before/after min/max_time
+            ax.plot([self.__start_time, self.__success_time], [ordinate, ordinate], color="blue", lw=4)
+            # @todo Make sure the text is not outside the plot on the right
+            ax.annotate(self.__label, xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points")
+            for d in self.__dependencies:
+                ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
+
+    class FailedAction(object):
+        def __init__(self, action, status):
+            self.__label = str(action.label)
+            self.__id = id(action)
+            self.__dependencies = set(id(d) for d in action.dependencies)
+            self.__ready_time = status.ready_time
+            self.__start_time = status.start_time
+            self.__failure_time = status.failure_time
+
+        @property
+        def min_time(self):
+            return self.__ready_time
+
+        @property
+        def max_time(self):
+            return self.__failure_time
+
+        def draw(self, ax, ordinates, actions):
+            ordinate = ordinates[self.__id]
+            ax.plot([self.__ready_time, self.__start_time], [ordinate, ordinate], color="red", lw=1)
+            ax.plot([self.__start_time, self.__failure_time], [ordinate, ordinate], color="red", lw=4)
+            ax.annotate(self.__label, xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points")
+            for d in self.__dependencies:
+                ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
+
+    class CanceledAction(object):
+        def __init__(self, action, status):
+            self.__label = str(action.label)
+            self.__id = id(action)
+            self.__dependencies = set(id(d) for d in action.dependencies)
+            self.__ready_time = status.ready_time
+            self.__cancel_time = status.cancel_time
+
+        @property
+        def min_time(self):
+            return self.__cancel_time if self.__ready_time is None else self.__ready_time
+
+        @property
+        def max_time(self):
+            return self.__cancel_time
+
+        def draw(self, ax, ordinates, actions):
+            ordinate = ordinates[self.__id]
+            if self.__ready_time:
+                ax.plot([self.__ready_time, self.__cancel_time], [ordinate, ordinate], color="grey", lw=1)
+            ax.annotate(
+                "(Canceled) {}".format(self.__label),
+                xy=(self.__cancel_time, ordinate),
+                xytext=(0, 3),
+                textcoords="offset points"
+            )
+            for d in self.__dependencies:
+                ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
+
+    @classmethod
+    def __make_action(cls, action, status):
+        if status.status == ExecutionReport.ActionStatus.SUCCESSFUL:
+            return cls.SuccessfulAction(action, status)
+        elif status.status == ExecutionReport.ActionStatus.FAILED:
+            return cls.FailedAction(action, status)
+        elif status.status == ExecutionReport.ActionStatus.CANCELED:
+            return cls.CanceledAction(action, status)
+
+    def write_to_png(self, filename):
+        """
+        Write the Gantt chart as a PNG image to the specified file.
+
+        See also :meth:`get_mpl_figure` and :meth:`plot_on_mpl_axes` if you want to draw the report somewhere else.
+        """
+        figure = self.get_mpl_figure()
+        canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
+        canvas.print_figure(filename)
+
+    def get_mpl_figure(self):
+        """
+        Return a :class:`matplotlib.figure.Figure` of this Gantt chart.
+
+        See also :meth:`plot_on_mpl_axes` if you want to draw the Gantt chart on your own matplotlib figure.
+
+        See also :meth:`write_to_png` for the simplest use-case.
+        """
+        fig = matplotlib.figure.Figure()
+        ax = fig.add_subplot(1, 1, 1)
+
+        self.plot_on_mpl_axes(ax)
+
+        return fig
+
+    @staticmethod
+    def __nearest(v, values):
+        for i, value in enumerate(values):
+            if v < value:
+                break
+        if i == 0:
+            return values[0]
+        else:
+            if v - values[i - 1] <= values[i] - v:
+                return values[i - 1]
+            else:
+                return values[i]
+
+    __intervals = [
+        1, 2, 5, 10, 15, 30, 60,
+        2 * 60, 10 * 60, 30 * 60, 3600,
+        2 * 3600, 3 * 3600, 6 * 3600, 12 * 3600, 24 * 3600,
+    ]
+
+    def plot_on_mpl_axes(self, ax):
+        """
+        Plot this Gantt chart on the provided :class:`matplotlib.axes.Axes`.
+
+        See also :meth:`write_to_png` and :meth:`get_mpl_figure` for the simpler use-cases.
+        """
+        ordinates = {ident: len(self.__actions) - i for (i, ident) in enumerate(self.__actions.iterkeys())}
+
+        for action in self.__actions.itervalues():
+            action.draw(ax, ordinates, self.__actions)
+
+        ax.get_yaxis().set_ticklabels([])
+        ax.set_ylim(0.5, len(self.__actions) + 1)
+
+        min_time = min(a.min_time for a in self.__actions.itervalues()).replace(microsecond=0)
+        max_time = (
+            max(a.max_time for a in self.__actions.itervalues()).replace(microsecond=0) +
+            datetime.timedelta(seconds=1)
+        )
+        duration = int((max_time - min_time).total_seconds())
+
+        ax.set_xlabel("Local time")
+        ax.set_xlim(min_time, max_time)
+        ax.xaxis_date()
+        ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%H:%M:%S"))
+        ax.xaxis.set_major_locator(matplotlib.dates.AutoDateLocator(maxticks=4, minticks=5))
+
+        ax2 = ax.twiny()
+        ax2.set_xlabel("Relative time")
+        ax2.set_xlim(min_time, max_time)
+        ticks = range(0, duration, self.__nearest(duration // 5, self.__intervals))
+        ax2.xaxis.set_ticks([min_time + datetime.timedelta(seconds=s) for s in ticks])
+        ax2.xaxis.set_ticklabels(ticks)
+
+
+def _check_picklability(stuff):
+    # This is a way to fail fast if we see a non-picklable object
+    # because ProcessPoolExecutor freezes forever if we try to transfer
+    # a non-picklable object through its queues
+    pickle.loads(pickle.dumps(stuff))
 
 
 class WurlitzerToEvents(wurlitzer.Wurlitzer):
@@ -415,326 +792,3 @@ class _Execution(object):
         self.failed.add(action)
         self.report.get_action_status(action)._set_cancel_time(cancel_time)
         self.hooks.action_canceled(cancel_time, action)
-
-
-class Action(object):
-    """
-    The main class of ActionTree.
-    An action to be started after all its dependencies are finished.
-    Pass it to :func:`.execute`.
-
-    This is a base class for your custom actions.
-    You must define a ``def do_execute(self):`` method that performs the action.
-    Its return value is ignored.
-    If it raises and exception, it is captured and re-raised in a :exc:`CompoundException`.
-
-    """
-    # @todo Add a note about printing anything in do_execute
-    # @todo Add a note saying that outputs, return values and exceptions are captured
-    # @todo Add a note saying that output channels MUST be flushed before returning
-    # @todo Add a note saying that the class, the return value and any exceptions raised MUST be picklable
-
-    def __init__(self, label):
-        """
-        :param label: whatever you want to attach to the action.
-            `str(label)` must succeed and return a string.
-            Can be retrieved by :attr:`label`.
-        """
-        str(label)
-        self.__label = label
-        self.__dependencies = []
-
-    @property
-    def label(self):
-        """
-        The label passed to the constructor.
-        """
-        return self.__label
-
-    def add_dependency(self, dependency):
-        """
-        Add a dependency to be executed before this action.
-        Order of insertion of dependencies is not important.
-
-        :param Action dependency:
-
-        :raises DependencyCycleException: when adding the new dependency would create a cycle.
-        """
-        if self in dependency.get_possible_execution_order():
-            raise DependencyCycleException()
-        self.__dependencies.append(dependency)
-
-    @property
-    def dependencies(self):
-        """
-        Return the list of this action's dependencies.
-        """
-        return list(self.__dependencies)
-
-    def get_possible_execution_order(self, seen_actions=None):
-        """
-        @todo Document
-        """
-        if seen_actions is None:
-            seen_actions = set()
-        actions = []
-        if self not in seen_actions:
-            seen_actions.add(self)
-            for dependency in self.__dependencies:
-                actions += dependency.get_possible_execution_order(seen_actions)
-            actions.append(self)
-        return actions
-
-
-class CompoundException(Exception):
-    """
-    Exception thrown by :func:`.execute` when a dependencies raise exceptions.
-    """
-
-    def __init__(self, exceptions, execution_report):
-        super(CompoundException, self).__init__(exceptions)
-        self.__exceptions = exceptions
-        self.__execution_report = execution_report
-
-    @property
-    def exceptions(self):
-        """
-        The list of the encapsulated exceptions.
-        """
-        return self.__exceptions
-
-    @property
-    def execution_report(self):
-        """
-        The :class:`.ExecutionReport` of the failed execution.
-        """
-        return self.__execution_report
-
-
-class DependencyCycleException(Exception):
-    """
-    Exception thrown by :meth:`.Action.add_dependency` when adding the new dependency would create a cycle.
-    """
-
-    def __init__(self):
-        super(DependencyCycleException, self).__init__("Dependency cycle")
-
-
-class DependencyGraph(object):
-    """
-    @todo Document
-    """
-
-    def __init__(self, action):
-        self.__graphviz_graph = graphviz.Digraph("action", node_attr={"shape": "box"})
-        nodes = {}
-        for (i, action) in enumerate(action.get_possible_execution_order()):
-            node = str(i)
-            nodes[action] = node
-            self.__graphviz_graph.node(node, str(action.label))
-            for dependency in action.dependencies:
-                assert dependency in nodes  # Because we are iterating a possible execution order
-                self.__graphviz_graph.edge(node, nodes[dependency])
-
-    def write_to_png(self, filename):  # pragma no cover (Untestable? But small.)
-        """
-        Write the graph as a PNG image to the specified file.
-
-        See also :meth:`get_graphviz_graph` if you want to draw the graph somewhere else.
-        """
-        directory = os.path.dirname(filename)
-        filename = os.path.basename(filename)
-        filename, ext = os.path.splitext(filename)
-        g = self.get_graphviz_graph()
-        g.format = "png"
-        g.render(directory=directory, filename=filename, cleanup=True)
-
-    def get_graphviz_graph(self):
-        """
-        Return a :class:`graphviz.Digraph` of this dependency graph.
-
-        See also :meth:`write_to_png` for the simplest use-case.
-        """
-        return self.__graphviz_graph.copy()
-
-
-class GanttChart(object):  # pragma no cover (Too difficult to unit test)
-    """
-    @todo Document
-    """
-
-    def __init__(self, report):
-        # @todo Sort actions somehow to improve readability (top-left to bottom-right)
-        self.__actions = {
-            id(action): self.__make_action(action, status)
-            for (action, status) in report.get_actions_and_statuses()
-        }
-
-    # @todo Factorize Actions
-    class SuccessfulAction(object):
-        def __init__(self, action, status):
-            self.__label = str(action.label)
-            self.__id = id(action)
-            self.__dependencies = set(id(d) for d in action.dependencies)
-            self.__ready_time = status.ready_time
-            self.__start_time = status.start_time
-            self.__success_time = status.success_time
-
-        @property
-        def min_time(self):
-            return self.__ready_time
-
-        @property
-        def max_time(self):
-            return self.__success_time
-
-        def draw(self, ax, ordinates, actions):
-            ordinate = ordinates[self.__id]
-            ax.plot([self.__ready_time, self.__start_time], [ordinate, ordinate], color="blue", lw=1)
-            # @todo Use an other end-style to avoid pixels before/after min/max_time
-            ax.plot([self.__start_time, self.__success_time], [ordinate, ordinate], color="blue", lw=4)
-            # @todo Make sure the text is not outside the plot on the right
-            ax.annotate(self.__label, xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points")
-            for d in self.__dependencies:
-                ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
-
-    class FailedAction(object):
-        def __init__(self, action, status):
-            self.__label = str(action.label)
-            self.__id = id(action)
-            self.__dependencies = set(id(d) for d in action.dependencies)
-            self.__ready_time = status.ready_time
-            self.__start_time = status.start_time
-            self.__failure_time = status.failure_time
-
-        @property
-        def min_time(self):
-            return self.__ready_time
-
-        @property
-        def max_time(self):
-            return self.__failure_time
-
-        def draw(self, ax, ordinates, actions):
-            ordinate = ordinates[self.__id]
-            ax.plot([self.__ready_time, self.__start_time], [ordinate, ordinate], color="red", lw=1)
-            ax.plot([self.__start_time, self.__failure_time], [ordinate, ordinate], color="red", lw=4)
-            ax.annotate(self.__label, xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points")
-            for d in self.__dependencies:
-                ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
-
-    class CanceledAction(object):
-        def __init__(self, action, status):
-            self.__label = str(action.label)
-            self.__id = id(action)
-            self.__dependencies = set(id(d) for d in action.dependencies)
-            self.__ready_time = status.ready_time
-            self.__cancel_time = status.cancel_time
-
-        @property
-        def min_time(self):
-            return self.__cancel_time if self.__ready_time is None else self.__ready_time
-
-        @property
-        def max_time(self):
-            return self.__cancel_time
-
-        def draw(self, ax, ordinates, actions):
-            ordinate = ordinates[self.__id]
-            if self.__ready_time:
-                ax.plot([self.__ready_time, self.__cancel_time], [ordinate, ordinate], color="grey", lw=1)
-            ax.annotate(
-                "(Canceled) {}".format(self.__label),
-                xy=(self.__cancel_time, ordinate),
-                xytext=(0, 3),
-                textcoords="offset points"
-            )
-            for d in self.__dependencies:
-                ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
-
-    @classmethod
-    def __make_action(cls, action, status):
-        if status.status == ExecutionReport.ActionStatus.Successful:
-            return cls.SuccessfulAction(action, status)
-        elif status.status == ExecutionReport.ActionStatus.Failed:
-            return cls.FailedAction(action, status)
-        elif status.status == ExecutionReport.ActionStatus.Canceled:
-            return cls.CanceledAction(action, status)
-
-    def write_to_png(self, filename):
-        """
-        Write the Gantt chart as a PNG image to the specified file.
-
-        See also :meth:`get_mpl_figure` and :meth:`plot_on_mpl_axes` if you want to draw the report somewhere else.
-        """
-        figure = self.get_mpl_figure()
-        canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
-        canvas.print_figure(filename)
-
-    def get_mpl_figure(self):
-        """
-        Return a :class:`matplotlib.figure.Figure` of this Gantt chart.
-
-        See also :meth:`plot_on_mpl_axes` if you want to draw the Gantt chart on your own matplotlib figure.
-
-        See also :meth:`write_to_png` for the simplest use-case.
-        """
-        fig = matplotlib.figure.Figure()
-        ax = fig.add_subplot(1, 1, 1)
-
-        self.plot_on_mpl_axes(ax)
-
-        return fig
-
-    @staticmethod
-    def __nearest(v, values):
-        for i, value in enumerate(values):
-            if v < value:
-                break
-        if i == 0:
-            return values[0]
-        else:
-            if v - values[i - 1] <= values[i] - v:
-                return values[i - 1]
-            else:
-                return values[i]
-
-    __intervals = [
-        1, 2, 5, 10, 15, 30, 60,
-        2 * 60, 10 * 60, 30 * 60, 3600,
-        2 * 3600, 3 * 3600, 6 * 3600, 12 * 3600, 24 * 3600,
-    ]
-
-    def plot_on_mpl_axes(self, ax):
-        """
-        Plot this Gantt chart on the provided :class:`matplotlib.axes.Axes`.
-
-        See also :meth:`write_to_png` and :meth:`get_mpl_figure` for the simpler use-cases.
-        """
-        ordinates = {ident: len(self.__actions) - i for (i, ident) in enumerate(self.__actions.iterkeys())}
-
-        for action in self.__actions.itervalues():
-            action.draw(ax, ordinates, self.__actions)
-
-        ax.get_yaxis().set_ticklabels([])
-        ax.set_ylim(0.5, len(self.__actions) + 1)
-
-        min_time = min(a.min_time for a in self.__actions.itervalues()).replace(microsecond=0)
-        max_time = (
-            max(a.max_time for a in self.__actions.itervalues()).replace(microsecond=0) +
-            datetime.timedelta(seconds=1)
-        )
-        duration = int((max_time - min_time).total_seconds())
-
-        ax.set_xlabel("Local time")
-        ax.set_xlim(min_time, max_time)
-        ax.xaxis_date()
-        ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%H:%M:%S"))
-        ax.xaxis.set_major_locator(matplotlib.dates.AutoDateLocator(maxticks=4, minticks=5))
-
-        ax2 = ax.twiny()
-        ax2.set_xlabel("Relative time")
-        ax2.set_xlim(min_time, max_time)
-        ticks = range(0, duration, self.__nearest(duration // 5, self.__intervals))
-        ax2.xaxis.set_ticks([min_time + datetime.timedelta(seconds=s) for s in ticks])
-        ax2.xaxis.set_ticklabels(ticks)

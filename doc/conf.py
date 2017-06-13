@@ -15,8 +15,10 @@ extensions = []
 
 
 nitpicky = True
-# nitpick_ignore
-
+# See https://github.com/simpeg/discretize/commit/e1a9cf2352edef9ebf0fdde8a6886db58bf4e90f
+nitpick_ignore = [
+    ('py:obj', 'list'),
+]
 
 # https://github.com/bitprophet/alabaster
 # html_theme_path

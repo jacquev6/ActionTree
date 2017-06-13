@@ -16,7 +16,7 @@ class MultipleExecutionsTestCase(ActionTreeTestCase):
 
         for i in range(self.REPEAT):
             report = execute(a)
-            self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Successful)
+            self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.SUCCESSFUL)
 
         self.assertEventsEqual("a " * self.REPEAT)
 
@@ -31,8 +31,8 @@ class MultipleExecutionsTestCase(ActionTreeTestCase):
             with self.assertRaises(CompoundException) as catcher:
                 execute(a)
             report = catcher.exception.execution_report
-            self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.Canceled)
-            self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.Failed)
-            self.assertEqual(report.get_action_status(c).status, ExecutionReport.ActionStatus.Successful)
+            self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.CANCELED)
+            self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.FAILED)
+            self.assertEqual(report.get_action_status(c).status, ExecutionReport.ActionStatus.SUCCESSFUL)
 
         self.assertEventsEqual("c b " * self.REPEAT)
