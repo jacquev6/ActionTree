@@ -74,3 +74,17 @@ class TimingTestCase(ActionTreeTestCase):
                 self.assertGreater(report.get_action_status(a).cancel_time, report.get_action_status(dep).success_time)
             # a0 is canceled at the same time as a
             self.assertEqual(report.get_action_status(a0).cancel_time, report.get_action_status(a).cancel_time)
+
+    def test_leaves_have_same_ready_time(self):
+        a = self._action("a")
+        b = self._action("b")
+        c = self._action("c")
+        d = self._action("d")
+        a.add_dependency(b)
+        a.add_dependency(c)
+        a.add_dependency(d)
+
+        report = execute(a)
+
+        self.assertEqual(report.get_action_status(c).ready_time, report.get_action_status(b).ready_time)
+        self.assertEqual(report.get_action_status(d).ready_time, report.get_action_status(b).ready_time)

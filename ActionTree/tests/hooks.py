@@ -137,3 +137,33 @@ class ExecutionTestCase(ActionTreeTestCase):
                 ("successful", "a"),
             ]
         )
+
+    def test_leaves_are_ready_at_once(self):
+        hooks = TestHooks()
+        a = self._action("a")
+        b = self._action("b")
+        c = self._action("c")
+        d = self._action("d")
+        a.add_dependency(b)
+        a.add_dependency(c)
+        a.add_dependency(d)
+
+        execute(a, hooks=hooks)
+
+        self.assertEqual(
+            sorted(hooks.events[0:4]),
+            [
+                ("pending", "a"),
+                ("pending", "b"),
+                ("pending", "c"),
+                ("pending", "d"),
+            ]
+        )
+        self.assertEqual(
+            sorted(hooks.events[4:7]),
+            [
+                ("ready", "b"),
+                ("ready", "c"),
+                ("ready", "d"),
+            ]
+        )

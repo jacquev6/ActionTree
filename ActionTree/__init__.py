@@ -31,6 +31,7 @@ class Hooks(object):
         pass
 
     def action_printed(self, time, action, text):
+        # @todo Decide if we should pass bytes or unicode (in Python 3)
         pass
 
     def action_successful(self, time, action):
@@ -251,6 +252,7 @@ class _Worker(multiprocessing.Process):
             self.tasks.task_done()
 
     def execute_action(self, action_id, action):
+        # @todo Derive a class from Wurlitzer
         def handle(data):
             self.events.put(_PrintedEvent(action_id, datetime.datetime.now(), data))
         # This is a highly contrived use of Wurlitzer:
@@ -385,7 +387,10 @@ class _Execution(object):
                         self.pending.remove(action)
                         go_on = True
                     else:
-                        self.report.get_action_status(action)._set_ready_time(now)
+                        status = self.report.get_action_status(action)
+                        if status.ready_time is None:
+                            status._set_ready_time(now)
+                            self.hooks.action_ready(now, action)
                         if len(self.submitted) <= self.jobs:
                             self._submit_action(action, ready_time=now)
 
@@ -403,7 +408,6 @@ class _Execution(object):
         self.tasks.put((id(action), action))
         self.submitted.add(action)
         self.pending.remove(action)
-        self.hooks.action_ready(ready_time, action)
 
     def _mark_action_canceled(self, action, cancel_time):
         self.failed.add(action)

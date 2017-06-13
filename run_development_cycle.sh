@@ -2,7 +2,11 @@
 
 set -o errexit
 
-# pip2 install --quiet --upgrade --user matplotlib graphviz sphinx coverage mock futures
+clear
+
+git checkout docs
+
+# pip2 install --quiet --upgrade --user matplotlib graphviz sphinx coverage mock
 # pip3 install --quiet --upgrade --user matplotlib graphviz pep8
 
 coverage2 run setup.py test --quiet
