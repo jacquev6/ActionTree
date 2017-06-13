@@ -226,8 +226,8 @@ class ExecutionReport(object):
         CANCELED = "CANCELED"
         "The :attr:`status` after a failed execution where a dependency raised an exception."
 
-        def __init__(self):
-            # @todo Add __pending_time (to be consistent with hooks)
+        def __init__(self, pending_time):
+            self.__pending_time = pending_time
             self.__ready_time = None
             self.__cancel_time = None
             self.__start_time = None
@@ -276,6 +276,15 @@ class ExecutionReport(object):
             else:
                 assert self.cancel_time
                 return self.CANCELED
+
+        @property
+        def pending_time(self):
+            """
+            The time when this action was considered for execution.
+
+            :rtype: datetime.datetime
+            """
+            return self.__pending_time
 
         @property
         def ready_time(self):
@@ -353,8 +362,8 @@ class ExecutionReport(object):
             """
             return self.__output
 
-    def __init__(self, actions):
-        self.__action_statuses = {action: self.ActionStatus() for action in actions}
+    def __init__(self, actions, now):
+        self.__action_statuses = {action: self.ActionStatus(now) for action in actions}
 
     @property
     def is_success(self):
@@ -729,10 +738,11 @@ class _Execution(object):
         self.successful = set()
         self.failed = set()
         self.exceptions = []
-        self.report = ExecutionReport(self.pending)
+        self.report = None
 
     def run(self):
         now = datetime.datetime.now()
+        self.report = ExecutionReport(self.pending, now)
         for action in self.pending:
             self.hooks.action_pending(now, action)
         while self.pending or self.submitted:

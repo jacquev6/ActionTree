@@ -16,7 +16,8 @@ class TimingTestCase(ActionTreeTestCase):
 
         report = execute(a)
 
-        self.assertIsInstance(report.get_action_status(a).ready_time, datetime.datetime)
+        self.assertIsInstance(report.get_action_status(a).pending_time, datetime.datetime)
+        self.assertGreater(report.get_action_status(a).ready_time, report.get_action_status(a).pending_time)
         self.assertIsNone(report.get_action_status(a).cancel_time)
         self.assertGreater(report.get_action_status(a).start_time, report.get_action_status(a).ready_time)
         self.assertGreater(report.get_action_status(a).success_time, report.get_action_status(a).start_time)

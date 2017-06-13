@@ -299,7 +299,7 @@ The order chosen is not specified.</p>
 <dd><p>Execution report, returned by <a class="reference internal" href="#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal"><span class="pre">execute()</span></code></a>.</p>
 <dl class="class">
 <dt id="ActionTree.ExecutionReport.ActionStatus">
-<em class="property">class </em><code class="descname">ActionStatus</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descname">ActionStatus</code><span class="sig-paren">(</span><em>pending_time</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Status of a single <a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><code class="xref py py-class docutils literal"><span class="pre">Action</span></code></a>.</p>
 <dl class="attribute">
 <dt id="ActionTree.ExecutionReport.ActionStatus.SUCCESSFUL">
@@ -326,6 +326,20 @@ The order chosen is not specified.</p>
 <a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus.SUCCESSFUL" title="ActionTree.ExecutionReport.ActionStatus.SUCCESSFUL"><code class="xref py py-attr docutils literal"><span class="pre">SUCCESSFUL</span></code></a> if the action succeeded,
 <a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus.FAILED" title="ActionTree.ExecutionReport.ActionStatus.FAILED"><code class="xref py py-attr docutils literal"><span class="pre">FAILED</span></code></a> if the action failed,
 and <a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus.CANCELED" title="ActionTree.ExecutionReport.ActionStatus.CANCELED"><code class="xref py py-attr docutils literal"><span class="pre">CANCELED</span></code></a> if the action was canceled because some of its dependencies failed.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ActionTree.ExecutionReport.ActionStatus.pending_time">
+<code class="descname">pending_time</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.pending_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>The time when this action was considered for execution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)">datetime.datetime</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
