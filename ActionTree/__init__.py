@@ -507,10 +507,15 @@ class GanttChart(object):  # pragma no cover (Too difficult to unit test)
         def draw(self, ax, ordinates, actions):
             ordinate = ordinates[self.__id]
             ax.plot([self.__ready_time, self.__start_time], [ordinate, ordinate], color="blue", lw=1)
-            # @todo Use an other end-style to avoid pixels before/after min/max_time
-            ax.plot([self.__start_time, self.__success_time], [ordinate, ordinate], color="blue", lw=4)
+            ax.plot(
+                [self.__start_time, self.__success_time], [ordinate, ordinate],
+                color="blue", lw=4, solid_capstyle="butt",
+            )
             # @todo Make sure the text is not outside the plot on the right
-            ax.annotate(self.__label, xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points")
+            ax.annotate(
+                self.__label,
+                xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points",
+            )
             for d in self.__dependencies:
                 ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
 
@@ -534,8 +539,14 @@ class GanttChart(object):  # pragma no cover (Too difficult to unit test)
         def draw(self, ax, ordinates, actions):
             ordinate = ordinates[self.__id]
             ax.plot([self.__ready_time, self.__start_time], [ordinate, ordinate], color="red", lw=1)
-            ax.plot([self.__start_time, self.__failure_time], [ordinate, ordinate], color="red", lw=4)
-            ax.annotate(self.__label, xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points")
+            ax.plot(
+                [self.__start_time, self.__failure_time], [ordinate, ordinate],
+                color="red", lw=4, solid_capstyle="butt",
+            )
+            ax.annotate(
+                self.__label,
+                xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points",
+            )
             for d in self.__dependencies:
                 ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
 
@@ -560,10 +571,9 @@ class GanttChart(object):  # pragma no cover (Too difficult to unit test)
             if self.__ready_time:
                 ax.plot([self.__ready_time, self.__cancel_time], [ordinate, ordinate], color="grey", lw=1)
             ax.annotate(
-                "(Canceled) {}".format(self.__label),
-                xy=(self.__cancel_time, ordinate),
-                xytext=(0, 3),
-                textcoords="offset points"
+                self.__label,
+                xy=(self.__cancel_time, ordinate), xytext=(0, 3), textcoords="offset points",
+                color="grey",
             )
             for d in self.__dependencies:
                 ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
