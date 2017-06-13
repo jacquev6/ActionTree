@@ -4,6 +4,8 @@
 
 from __future__ import division, absolute_import, print_function
 
+import random
+
 from ActionTree import *
 from . import *
 
@@ -99,25 +101,37 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         self.assertEqual(report.get_action_status(g).status, ExecutionReport.ActionStatus.SUCCESSFUL)
 
     def test_exceptions_in_dependencies_without_keep_going(self):
-        some_dependency_was_submitted_then_canceled_at_least_once = False
-        for i in range(10):
+        c_was_canceled = False
+        c_was_executed = False
+        b_was_added_before_c = False
+        b_was_added_after_c = False
+        # This is a probabilistic test:
+        # - when c is executed before b, c cannot be canceled
+        # - when c is executed after b, c is canceled
+        # We repeat the test until we see both behaviors or we reach a limit
+        for i in xrange(100):  # pragma no cover (Test code)
             a = self._action("a")
-            d0 = self._action("0", exception=Exception())
-            a.add_dependency(d0)
-            deps = [self._action(str(i)) for i in range(10)]
-            for dep in deps:
-                a.add_dependency(dep)
+            b = self._action("b", exception=Exception())
+            c = self._action("c")
+            if random.random() < 0.5:
+                a.add_dependency(b)
+                a.add_dependency(c)
+                b_was_added_before_c = True
+            else:
+                a.add_dependency(c)
+                a.add_dependency(b)
+                b_was_added_after_c = True
 
             report = execute(a, jobs=1, keep_going=False, do_raise=False)
 
             self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.CANCELED)
-            self.assertEqual(report.get_action_status(d0).status, ExecutionReport.ActionStatus.FAILED)
-
-            some_dependency_was_submitted_then_canceled_this_time = any(
-                report.get_action_status(dep).status == ExecutionReport.ActionStatus.CANCELED
-                for dep in deps
-            )
-            some_dependency_was_submitted_then_canceled_at_least_once |= (
-                some_dependency_was_submitted_then_canceled_this_time
-            )
-        self.assertTrue(some_dependency_was_submitted_then_canceled_at_least_once)
+            self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.FAILED)
+            if report.get_action_status(c).status == ExecutionReport.ActionStatus.CANCELED:
+                c_was_canceled = True
+            else:
+                self.assertEqual(report.get_action_status(c).status, ExecutionReport.ActionStatus.SUCCESSFUL)
+                c_was_executed = True
+            if c_was_canceled and c_was_executed and b_was_added_before_c and b_was_added_after_c:
+                break
+        self.assertTrue(c_was_canceled)
+        self.assertTrue(c_was_executed)

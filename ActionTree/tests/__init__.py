@@ -42,12 +42,12 @@ class TestAction(Action):
 
     def do_execute(self):
         with open(self.__events_file, "a") as f:
-            f.write("{}\n".format(self.label.lower()))
+            f.write("{}\n".format(str(self.label).lower()))
         if self.__delay:
             time.sleep(self.__delay)
         if self.__end_event:
             with open(self.__events_file, "a") as f:
-                f.write("{}\n".format(self.label.upper()))
+                f.write("{}\n".format(str(self.label).upper()))
         if isinstance(self.__print_on_stdout, str):
             print(self.__print_on_stdout)
         elif isinstance(self.__print_on_stdout, list):
@@ -102,3 +102,26 @@ class ActionTreeTestCase(unittest.TestCase):
         with open(self.__events_file) as f:
             events = [line.strip() for line in f.readlines()]
         self.assertIn(events, expected_events)
+
+
+# class TestHooks(Hooks):
+#     def action_pending(self, time, action):
+#         print("action_pending", time, action.label)
+
+#     def action_ready(self, time, action):
+#         print("action_ready", time, action.label)
+
+#     def action_canceled(self, time, action):
+#         print("action_canceled", time, action.label)
+
+#     def action_started(self, time, action):
+#         print("action_started", time, action.label)
+
+#     def action_printed(self, time, action, text):
+#         print("action_printed", time, action.label, text)
+
+#     def action_successful(self, time, action):
+#         print("action_successful", time, action.label)
+
+#     def action_failed(self, time, action):
+#         print("action_failed", time, action.label)

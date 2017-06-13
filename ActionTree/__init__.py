@@ -39,7 +39,7 @@ def execute(action, jobs=1, keep_going=False, do_raise=True, hooks=None):
         jobs = multiprocessing.cpu_count()
     if hooks is None:
         hooks = Hooks()
-    return _Execution(jobs, keep_going, do_raise, hooks, action).run()
+    return _Execute(jobs, keep_going, do_raise, hooks).run(action)
 
 
 class Action(object):
@@ -157,6 +157,7 @@ class Hooks(object):
         """
 
     def action_successful(self, time, action):
+        # @todo Add return value
         """
         Called when an action completes without error.
 
@@ -165,6 +166,7 @@ class Hooks(object):
         """
 
     def action_failed(self, time, action):
+        # @todo Add exception
         """
         Called when an action completes with an exception.
 
@@ -643,6 +645,12 @@ def _check_picklability(stuff):
     pickle.loads(pickle.dumps(stuff))
 
 
+SUCCESSED = "SUCCESSED"
+PRINTED = "PRINTED"
+FAILED = "FAILED"
+PICKLING_EXCEPTION = "PICKLING_EXCEPTION"
+
+
 class WurlitzerToEvents(wurlitzer.Wurlitzer):
     # This is a highly contrived use of Wurlitzer:
     # We just need to *capture* standards streams, so we trick Wurlitzer,
@@ -654,7 +662,7 @@ class WurlitzerToEvents(wurlitzer.Wurlitzer):
         self.action_id = action_id
 
     def _handle_stdout(self, data):
-        self.events.put(_PrintedEvent(self.action_id, datetime.datetime.now(), self._decode(data)))
+        self.events.put((PRINTED, self.action_id, (datetime.datetime.now(), self._decode(data))))
 
     def _handle_stderr(self, data):
         self._handle_stdout(data)
@@ -671,103 +679,63 @@ class _Worker(multiprocessing.Process):
         with WurlitzerToEvents(self.events, self.action_id):
             return_value = exception = None
             try:
-                self.events.put(_StartedEvent(self.action_id, datetime.datetime.now()))
                 return_value = self.action.do_execute()
             except Exception as e:
                 exception = e
         try:
             _check_picklability((exception, return_value))
         except:
-            self.events.put(_PicklingExceptionEvent(self.action_id))
+            self.events.put((PICKLING_EXCEPTION, self.action_id, ()))
         else:
             end_time = datetime.datetime.now()
             if exception:
-                self.events.put(_FailedEvent(self.action_id, end_time, exception))
+                self.events.put((FAILED, self.action_id, (end_time, exception)))
             else:
-                self.events.put(_SuccessedEvent(self.action_id, end_time, return_value))
+                self.events.put((SUCCESSED, self.action_id, (end_time, return_value)))
 
 
-class _Event(object):
-    def __init__(self, action_id):
-        self.action_id = action_id
-
-
-class _StartedEvent(_Event):
-    def __init__(self, action_id, start_time):
-        super(_StartedEvent, self).__init__(action_id)
-        self.start_time = start_time
-
-    def apply(self, execution, action):
-        execution.report.get_action_status(action)._set_start_time(self.start_time)
-        execution.hooks.action_started(self.start_time, action)
-
-
-class _SuccessedEvent(_Event):
-    def __init__(self, action_id, success_time, return_value):
-        super(_SuccessedEvent, self).__init__(action_id)
-        self.success_time = success_time
-        self.return_value = return_value
-
-    def apply(self, execution, action):
-        execution.submitted.remove(action)
-        execution.successful.add(action)
-        execution.report.get_action_status(action)._set_success(self.success_time, self.return_value)
-        execution.hooks.action_successful(self.success_time, action)
-
-
-class _PrintedEvent(_Event):
-    def __init__(self, action_id, print_time, text):
-        super(_PrintedEvent, self).__init__(action_id)
-        self.print_time = print_time
-        self.text = text
-
-    def apply(self, execution, action):
-        execution.report.get_action_status(action)._add_output(self.text)
-        execution.hooks.action_printed(self.print_time, action, self.text)
-
-
-class _FailedEvent(_Event):
-    def __init__(self, action_id, failure_time, exception):
-        super(_FailedEvent, self).__init__(action_id)
-        self.failure_time = failure_time
-        self.exception = exception
-
-    def apply(self, execution, action):
-        execution.submitted.remove(action)
-        execution.failed.add(action)
-        execution.exceptions.append(self.exception)
-        execution.report.get_action_status(action)._set_failure(self.failure_time, self.exception)
-        execution.hooks.action_failed(self.failure_time, action)
-
-
-class _PicklingExceptionEvent(_Event):
-    def apply(self, execution, action):
-        raise pickle.PicklingError()
-
-
-class _Execution(object):
-    def __init__(self, jobs, keep_going, do_raise, hooks, action):
-        self.root_action = action
-        self.events = multiprocessing.Queue()
+class _Execute(object):
+    def __init__(self, jobs, keep_going, do_raise, hooks):
         self.jobs = jobs
         self.keep_going = keep_going
         self.do_raise = do_raise
         self.hooks = hooks
-        self.actions_by_id = {id(action): action for action in action.get_possible_execution_order()}
-        self.pending = set(self.actions_by_id.itervalues())
-        self.submitted = set()
-        self.successful = set()
-        self.failed = set()
-        self.exceptions = []
-        self.report = None
 
-    def run(self):
+    def run(self, root_action):
         now = datetime.datetime.now()
-        self.report = ExecutionReport(self.root_action, self.pending, now)
-        for action in self.pending:
+
+        # Pre-process actions
+        actions = root_action.get_possible_execution_order()
+        self.actions_by_id = {id(action): action for action in actions}
+        self.dependents = {action: set() for action in actions}
+        for action in actions:
+            for dependency in action.dependencies:
+                self.dependents[dependency].add(action)
+
+        # Misc stuff
+        self.report = ExecutionReport(root_action, actions, now)
+        for action in actions:
             self.hooks.action_pending(now, action)
-        while self.pending or self.submitted:
-            self._progress()
+        self.events = multiprocessing.Queue()
+        self.exceptions = []
+
+        # Actions by status
+        # not done
+        self.pending = set(actions)
+        self.ready = set()
+        self.running = set()
+        # done
+        self.succeeded = set()
+        self.canceled = set()
+        self.failed = set()
+        for action in actions:
+            if not action.dependencies:
+                self._prepare_action(action, now)
+
+        # Execute
+        while self.pending or self.ready or self.running:
+            self._progress(now)
+            now = datetime.datetime.now()
 
         for w in multiprocessing.active_children():
             w.join()
@@ -777,49 +745,83 @@ class _Execution(object):
         else:
             return self.report
 
-    def _progress(self):
-        now = datetime.datetime.now()
-        if self.keep_going or not self.exceptions:
-            self._submit_or_cancel(now)
+    def _cancel_action(self, action, now):
+        self.report.get_action_status(action)._set_cancel_time(now)
+        self.hooks.action_canceled(now, action)
+
+        if action in self.pending:
+            self._change_status(action, self.pending, self.canceled)
         else:
-            self._cancel(now)
-        self._wait()
+            self._change_status(action, self.ready, self.canceled)
 
-    def _submit_or_cancel(self, now):
-        go_on = True
-        while go_on:
-            go_on = False
-            for action in set(self.pending):
-                done = self.successful | self.failed
-                if all(d in done for d in action.dependencies):
-                    if any(d in self.failed for d in action.dependencies):
-                        self._mark_action_canceled(action, cancel_time=now)
-                        self.pending.remove(action)
-                        go_on = True
-                    else:
-                        status = self.report.get_action_status(action)
-                        if status.ready_time is None:
-                            status._set_ready_time(now)
-                            self.hooks.action_ready(now, action)
-                        if len(self.submitted) <= self.jobs:
-                            self._submit_action(action, ready_time=now)
+        if not self.keep_going:
+            for d in action.dependencies:
+                if d in self.pending or d in self.ready:
+                    self._cancel_action(d, now)
+        self._triage_pending_dependents(action, now)
 
-    def _cancel(self, now):
-        for action in self.pending:
-            self._mark_action_canceled(action, cancel_time=now)
-        self.pending.clear()
+    def _triage_pending_dependents(self, action, now):
+        for action in self.pending & self.dependents[action]:
+            if any(d in self.failed or d in self.canceled for d in action.dependencies):
+                self._cancel_action(action, now)
+            elif all(d in self.succeeded or d in self.failed or d in self.canceled for d in action.dependencies):
+                self._prepare_action(action, now)
 
-    def _wait(self):
-        if self.submitted:
-            event = self.events.get()
-            event.apply(self, self.actions_by_id[event.action_id])
+    def _prepare_action(self, action, now):
+        self.report.get_action_status(action)._set_ready_time(now)
+        self.hooks.action_ready(now, action)
 
-    def _submit_action(self, action, ready_time):
+        self._change_status(action, self.pending, self.ready)
+
+    def _progress(self, now):
+        while len(self.running) < self.jobs:
+            for action in self.ready:
+                self._start_action(action, now)
+                break
+            else:
+                break
+        self._handle_next_event()
+
+    def _start_action(self, action, now):
+        self.report.get_action_status(action)._set_start_time(now)
+        self.hooks.action_started(now, action)
+
+        # @todo Pass values and exceptions returned by dependencies to do_execute (as a dict)
         _Worker(id(action), action, self.events).start()
-        self.submitted.add(action)
-        self.pending.remove(action)
+        self._change_status(action, self.ready, self.running)
 
-    def _mark_action_canceled(self, action, cancel_time):
-        self.failed.add(action)
-        self.report.get_action_status(action)._set_cancel_time(cancel_time)
-        self.hooks.action_canceled(cancel_time, action)
+    def _handle_next_event(self):
+        (event_kind, action_id, event_payload) = self.events.get()
+        handlers = {
+            SUCCESSED: self._handle_successed_event,
+            PRINTED: self._handle_printed_event,
+            FAILED: self._handle_failed_event,
+            PICKLING_EXCEPTION: self._handle_pickling_exception_event,
+        }
+        handlers[event_kind](self.actions_by_id[action_id], *event_payload)
+
+    def _handle_successed_event(self, action, success_time, return_value):
+        self.report.get_action_status(action)._set_success(success_time, return_value)
+        self.hooks.action_successful(success_time, action)
+
+        self._change_status(action, self.running, self.succeeded)
+        self._triage_pending_dependents(action, success_time)
+
+    def _handle_printed_event(self, action, print_time, text):
+        self.report.get_action_status(action)._add_output(text)
+        self.hooks.action_printed(print_time, action, text)
+
+    def _handle_failed_event(self, action, failure_time, exception):
+        self.report.get_action_status(action)._set_failure(failure_time, exception)
+        self.hooks.action_failed(failure_time, action)
+
+        self._change_status(action, self.running, self.failed)
+        self.exceptions.append(exception)
+        self._triage_pending_dependents(action, failure_time)
+
+    def _handle_pickling_exception_event(self, action):
+        raise pickle.PicklingError()
+
+    def _change_status(self, action, orig, dest):
+        orig.remove(action)
+        dest.add(action)

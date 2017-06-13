@@ -67,7 +67,7 @@ class GraphTestCase(unittest.TestCase):
         )
 
     def test_diamond(self):
-        for i in range(1000):
+        for i in range(10):
             a = Action("a")
             b = Action("b")
             b.add_dependency(a)
