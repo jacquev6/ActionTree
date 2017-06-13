@@ -123,8 +123,8 @@ class ActionTreeTestCase(unittest.TestCase):
 #     def action_printed(self, time, action, text):
 #         print("action_printed", time, action.label, text)
 
-#     def action_successful(self, time, action):
-#         print("action_successful", time, action.label)
+#     def action_successful(self, time, action, return_value):
+#         print("action_successful", time, action.label, return_value)
 
-#     def action_failed(self, time, action):
-#         print("action_failed", time, action.label)
+#     def action_failed(self, time, action, exception):
+#         print("action_failed", time, action.label, exception)

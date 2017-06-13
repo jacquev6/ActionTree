@@ -34,19 +34,19 @@ class TestHooks(Hooks):
         assert isinstance(time, datetime.datetime)
         self.events.append(("printed", action.label, text))
 
-    def action_successful(self, time, action):
+    def action_successful(self, time, action, return_value):
         assert isinstance(time, datetime.datetime)
-        self.events.append(("successful", action.label))
+        self.events.append(("successful", action.label, return_value))
 
-    def action_failed(self, time, action):
+    def action_failed(self, time, action, exception):
         assert isinstance(time, datetime.datetime)
-        self.events.append(("failed", action.label))
+        self.events.append(("failed", action.label, str(exception)))
 
 
 class ExecutionTestCase(ActionTreeTestCase):
     def test_successful_action(self):
         hooks = TestHooks()
-        execute(self._action("a"), hooks=hooks)
+        execute(self._action("a", return_value="return"), hooks=hooks)
 
         self.assertEqual(
             hooks.events,
@@ -54,13 +54,13 @@ class ExecutionTestCase(ActionTreeTestCase):
                 ("pending", "a"),
                 ("ready", "a"),
                 ("started", "a"),
-                ("successful", "a"),
+                ("successful", "a", "return"),
             ]
         )
 
     def test_failed_action(self):
         hooks = TestHooks()
-        execute(self._action("a", exception=Exception()), do_raise=False, hooks=hooks)
+        execute(self._action("a", exception=Exception("foo")), do_raise=False, hooks=hooks)
 
         self.assertEqual(
             hooks.events,
@@ -68,14 +68,14 @@ class ExecutionTestCase(ActionTreeTestCase):
                 ("pending", "a"),
                 ("ready", "a"),
                 ("started", "a"),
-                ("failed", "a"),
+                ("failed", "a", "foo"),
             ]
         )
 
     def test_failed_dependency(self):
         hooks = TestHooks()
         a = self._action("a")
-        b = self._action("b", exception=Exception())
+        b = self._action("b", exception=Exception("foo"))
         a.add_dependency(b)
         execute(a, do_raise=False, hooks=hooks)
 
@@ -85,7 +85,7 @@ class ExecutionTestCase(ActionTreeTestCase):
             [
                 ("ready", "b"),
                 ("started", "b"),
-                ("failed", "b"),
+                ("failed", "b", "foo"),
                 ("canceled", "a"),
             ]
         )
@@ -101,13 +101,13 @@ class ExecutionTestCase(ActionTreeTestCase):
                 ("ready", "a"),
                 ("started", "a"),
                 ("printed", "a", "something\n"),
-                ("successful", "a"),
+                ("successful", "a", None),
             ]
         )
 
     def test_failed_action_print(self):
         hooks = TestHooks()
-        execute(self._action("a", print_on_stdout="something", exception=Exception()), do_raise=False, hooks=hooks)
+        execute(self._action("a", print_on_stdout="something", exception=Exception("foo")), do_raise=False, hooks=hooks)
 
         self.assertEqual(
             hooks.events,
@@ -116,7 +116,7 @@ class ExecutionTestCase(ActionTreeTestCase):
                 ("ready", "a"),
                 ("started", "a"),
                 ("printed", "a", "something\n"),
-                ("failed", "a"),
+                ("failed", "a", "foo"),
             ]
         )
 
@@ -134,7 +134,7 @@ class ExecutionTestCase(ActionTreeTestCase):
                 ("printed", "a", "something 1\n"),
                 ("printed", "a", "something 2\n"),
                 ("printed", "a", "something 3\n"),
-                ("successful", "a"),
+                ("successful", "a", None),
             ]
         )
 

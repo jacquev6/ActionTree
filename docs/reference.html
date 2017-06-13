@@ -253,7 +253,7 @@ The order chosen is not specified.</p>
 
 <dl class="method">
 <dt id="ActionTree.Hooks.action_successful">
-<code class="descname">action_successful</code><span class="sig-paren">(</span><em>time</em>, <em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_successful" title="Permalink to this definition">¶</a></dt>
+<code class="descname">action_successful</code><span class="sig-paren">(</span><em>time</em>, <em>action</em>, <em>return_value</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_successful" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when an action completes without error.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -262,6 +262,7 @@ The order chosen is not specified.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)"><em>datetime.datetime</em></a>) – the time at which the action completed.</li>
 <li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
+<li><strong>return_value</strong> – the value returned by the action.</li>
 </ul>
 </td>
 </tr>
@@ -271,7 +272,7 @@ The order chosen is not specified.</p>
 
 <dl class="method">
 <dt id="ActionTree.Hooks.action_failed">
-<code class="descname">action_failed</code><span class="sig-paren">(</span><em>time</em>, <em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_failed" title="Permalink to this definition">¶</a></dt>
+<code class="descname">action_failed</code><span class="sig-paren">(</span><em>time</em>, <em>action</em>, <em>exception</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_failed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when an action completes with an exception.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -280,6 +281,7 @@ The order chosen is not specified.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)"><em>datetime.datetime</em></a>) – the time at which the action completed.</li>
 <li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
+<li><strong>exception</strong> – the exception raised by the action</li>
 </ul>
 </td>
 </tr>

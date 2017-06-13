@@ -170,22 +170,22 @@ class Hooks(object):
         :param str text: the text printed.
         """
 
-    def action_successful(self, time, action):
-        # @todo Add return value
+    def action_successful(self, time, action, return_value):
         """
         Called when an action completes without error.
 
         :param datetime.datetime time: the time at which the action completed.
         :param Action action: the action.
+        :param return_value: the value returned by the action.
         """
 
-    def action_failed(self, time, action):
-        # @todo Add exception
+    def action_failed(self, time, action, exception):
         """
         Called when an action completes with an exception.
 
         :param datetime.datetime time: the time at which the action completed.
         :param Action action: the action.
+        :param exception: the exception raised by the action
         """
 
 
@@ -812,7 +812,7 @@ class _Execute(object):
 
     def _handle_successed_event(self, action, success_time, return_value):
         self.report.get_action_status(action)._set_success(success_time, return_value)
-        self.hooks.action_successful(success_time, action)
+        self.hooks.action_successful(success_time, action, return_value)
 
         self._change_status(action, self.running, self.done)
         self._triage_pending_dependents(action, False, success_time)
@@ -823,7 +823,7 @@ class _Execute(object):
 
     def _handle_failed_event(self, action, failure_time, exception):
         self.report.get_action_status(action)._set_failure(failure_time, exception)
-        self.hooks.action_failed(failure_time, action)
+        self.hooks.action_failed(failure_time, action, exception)
 
         self._change_status(action, self.running, self.done)
         self.exceptions.append(exception)
