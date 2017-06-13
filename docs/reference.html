@@ -199,7 +199,8 @@ If it raises and exception, it is captured and re-raised in a <a class="referenc
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>label</strong> – whatever you want to attach to the action.
-Can be retrieved by <a class="reference internal" href="#ActionTree.Action.label" title="ActionTree.Action.label"><code class="xref py py-attr docutils literal"><span class="pre">label</span></code></a> and <a class="reference internal" href="#ActionTree.Action.get_preview" title="ActionTree.Action.get_preview"><code class="xref py py-meth docutils literal"><span class="pre">get_preview()</span></code></a>.</td>
+<cite>str(label)</cite> must succeed and return a string.
+Can be retrieved by <a class="reference internal" href="#ActionTree.Action.label" title="ActionTree.Action.label"><code class="xref py py-attr docutils literal"><span class="pre">label</span></code></a>.</td>
 </tr>
 </tbody>
 </table>
@@ -230,18 +231,6 @@ Order of insertion of dependencies is not important.</p>
 <dt id="ActionTree.Action.dependencies">
 <code class="descname">dependencies</code><a class="headerlink" href="#ActionTree.Action.dependencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the list of this action’s dependencies.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="ActionTree.Action.get_all_dependencies">
-<code class="descname">get_all_dependencies</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Action.get_all_dependencies" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the set of this action’s recursive dependencies, including itself.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="ActionTree.Action.get_preview">
-<code class="descname">get_preview</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Action.get_preview" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the labels of this action and its dependencies, in an order that could be the execution order.</p>
 </dd></dl>
 
 <dl class="method">

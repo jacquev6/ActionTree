@@ -97,13 +97,10 @@ True
 Preview
 -------
 
-If you just want to know what *would* be done, you can use :meth:`.Action.get_preview`:
+If you just want to know what *would* be done, you can use :meth:`.Action.get_possible_execution_order`:
 
->>> concat.get_preview()
-['create ...', 'create ...', 'create ...', 'concat']
+>>> [a.label for a in concat.get_possible_execution_order()]
+['create first', 'create second', 'create third', 'concat']
 
 As said earlier, you have no guaranty about the order of the first three actions,
-so :meth:`~.Action.get_preview` returns *one* possible order.
-
-The values returned by :meth:`~.Action.get_preview` are the labels passed in the constructor of :class:`.Action`,
-so they can be anything you want, not just strings.
+so :meth:`~.Action.get_possible_execution_order` returns *one* possible order.

@@ -329,7 +329,7 @@ class _Execution(object):
         self.keep_going = keep_going
         self.do_raise = do_raise
         self.hooks = hooks
-        self.actions_by_id = {id(action): action for action in action.get_all_dependencies()}
+        self.actions_by_id = {id(action): action for action in action.get_possible_execution_order()}
         self.pending = set(self.actions_by_id.itervalues())
         self.submitted = set()
         self.successful = set()
@@ -420,10 +420,12 @@ class Action(object):
     def __init__(self, label):
         """
         :param label: whatever you want to attach to the action.
-            Can be retrieved by :attr:`label` and :meth:`get_preview`.
+            `str(label)` must succeed and return a string.
+            Can be retrieved by :attr:`label`.
         """
+        str(label)
         self.__label = label
-        self.__dependencies = set()
+        self.__dependencies = []
 
     @property
     def label(self):
@@ -441,9 +443,9 @@ class Action(object):
 
         :raises DependencyCycleException: when adding the new dependency would create a cycle.
         """
-        if self in dependency.get_all_dependencies():
+        if self in dependency.get_possible_execution_order():
             raise DependencyCycleException()
-        self.__dependencies.add(dependency)
+        self.__dependencies.append(dependency)
 
     @property
     def dependencies(self):
@@ -451,23 +453,6 @@ class Action(object):
         Return the list of this action's dependencies.
         """
         return list(self.__dependencies)
-
-    # @todo Remove? (get_possible_execution_order does it already)
-    def get_all_dependencies(self):
-        """
-        Return the set of this action's recursive dependencies, including itself.
-        """
-        dependencies = set([self])
-        for dependency in self.__dependencies:
-            dependencies |= dependency.get_all_dependencies()
-        return dependencies
-
-    # @todo Remove?
-    def get_preview(self):
-        """
-        Return the labels of this action and its dependencies, in an order that could be the execution order.
-        """
-        return [action.__label for action in self.get_possible_execution_order()]
 
     def get_possible_execution_order(self, seen_actions=None):
         """

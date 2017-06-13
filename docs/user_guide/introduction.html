@@ -123,15 +123,13 @@ but you are sure that they are all finished before the <code class="docutils lit
 </div>
 <div class="section" id="preview">
 <h2>Preview<a class="headerlink" href="#preview" title="Permalink to this headline">¶</a></h2>
-<p>If you just want to know what <em>would</em> be done, you can use <a class="reference internal" href="../reference.html#ActionTree.Action.get_preview" title="ActionTree.Action.get_preview"><code class="xref py py-meth docutils literal"><span class="pre">Action.get_preview()</span></code></a>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">concat</span><span class="o">.</span><span class="n">get_preview</span><span class="p">()</span>
-<span class="go">[&#39;create ...&#39;, &#39;create ...&#39;, &#39;create ...&#39;, &#39;concat&#39;]</span>
+<p>If you just want to know what <em>would</em> be done, you can use <a class="reference internal" href="../reference.html#ActionTree.Action.get_possible_execution_order" title="ActionTree.Action.get_possible_execution_order"><code class="xref py py-meth docutils literal"><span class="pre">Action.get_possible_execution_order()</span></code></a>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="n">label</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">concat</span><span class="o">.</span><span class="n">get_possible_execution_order</span><span class="p">()]</span>
+<span class="go">[&#39;create first&#39;, &#39;create second&#39;, &#39;create third&#39;, &#39;concat&#39;]</span>
 </pre></div>
 </div>
 <p>As said earlier, you have no guaranty about the order of the first three actions,
-so <a class="reference internal" href="../reference.html#ActionTree.Action.get_preview" title="ActionTree.Action.get_preview"><code class="xref py py-meth docutils literal"><span class="pre">get_preview()</span></code></a> returns <em>one</em> possible order.</p>
-<p>The values returned by <a class="reference internal" href="../reference.html#ActionTree.Action.get_preview" title="ActionTree.Action.get_preview"><code class="xref py py-meth docutils literal"><span class="pre">get_preview()</span></code></a> are the labels passed in the constructor of <a class="reference internal" href="../reference.html#ActionTree.Action" title="ActionTree.Action"><code class="xref py py-class docutils literal"><span class="pre">Action</span></code></a>,
-so they can be anything you want, not just strings.</p>
+so <a class="reference internal" href="../reference.html#ActionTree.Action.get_possible_execution_order" title="ActionTree.Action.get_possible_execution_order"><code class="xref py py-meth docutils literal"><span class="pre">get_possible_execution_order()</span></code></a> returns <em>one</em> possible order.</p>
 </div>
 </div>
 
