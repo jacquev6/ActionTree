@@ -11,16 +11,6 @@ git checkout docs
 # pip3 install --quiet --upgrade --user matplotlib graphviz pep8
 
 
-(
-  echo "[run]"
-  echo "branch = True"
-  echo "include = ActionTree/*"
-  echo "concurrency = multiprocessing"
-  echo "[report]"
-  echo "exclude_lines ="
-  echo "  Not unittested: ..."
-) > .coveragerc
-
 coverage2 erase
 
 coverage2 run setup.py test --quiet
@@ -34,16 +24,14 @@ echo
 echo "See Python 2 unit tests coverage details in $(pwd)/build/py2_unittest_coverage/index.html"
 echo
 
-rm .coveragerc
 
+mv .coveragerc .coveragerc.bak
 
-(
-  echo "[run]"
+( echo "[run]"
   echo "concurrency = multiprocessing"
   echo "[report]"
   echo "exclude_lines ="
-  echo "  Not in user guide"
-) > .coveragerc
+  echo "  Not in user guide") > .coveragerc
 
 coverage2 erase
 
@@ -59,7 +47,7 @@ echo
 echo "See Python 2 doc tests coverage details in $(pwd)/build/py2_doctest_coverage/index.html"
 echo
 
-rm .coveragerc
+mv .coveragerc.bak .coveragerc
 
 
 python3 setup.py test --quiet
