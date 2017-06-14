@@ -104,9 +104,7 @@ The <code class="docutils literal"><span class="pre">dependency_statuses</span><
 <li><strong>label</strong> – whatever you want to attach to the action.
 <code class="docutils literal"><span class="pre">str(label)</span></code> must succeed and return a string.
 Can be retrieved by <a class="reference internal" href="#ActionTree.Action.label" title="ActionTree.Action.label"><code class="xref py py-attr docutils literal"><span class="pre">label</span></code></a>.</li>
-<li><strong>weak_dependencies</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – it <code class="docutils literal"><span class="pre">True</span></code>, then the action will execute even if some of its dependencies failed.
-Note that if you want this behavior for only a subset of the dependencies,
-you can group them in a <a class="reference internal" href="#ActionTree.stock.NullAction" title="ActionTree.stock.NullAction"><code class="xref py py-class docutils literal"><span class="pre">stock.NullAction</span></code></a>.</li>
+<li><strong>weak_dependencies</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – it <code class="docutils literal"><span class="pre">True</span></code>, then the action will execute even if some of its dependencies failed.</li>
 </ul>
 </td>
 </tr>

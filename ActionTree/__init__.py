@@ -74,8 +74,6 @@ class Action(object):
             Can be retrieved by :attr:`label`.
         :param bool weak_dependencies:
             it ``True``, then the action will execute even if some of its dependencies failed.
-            Note that if you want this behavior for only a subset of the dependencies,
-            you can group them in a :class:`.stock.NullAction`.
         """
         str(label)
         self.__label = label
