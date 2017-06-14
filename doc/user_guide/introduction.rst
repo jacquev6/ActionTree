@@ -4,7 +4,7 @@ Introduction
 Actions and dependencies
 ------------------------
 
-In :mod:`.ActionTree`, you create a dependency graph of actions to be executed and then call the :func:`.execute` function on its root.
+In `ActionTree`, you create a dependency graph of actions to be executed and then call the :func:`.execute` function on its root.
 
 For example, let's say you want to generate three files, and then concatenate them into a fourth file.
 
@@ -14,11 +14,7 @@ First, import :mod:`.ActionTree`
 
 >>> from ActionTree import Action, execute
 
-.. END SECTION introduction_actions.py
-
 Then create your specialized :class:`.Action` classes:
-
-.. BEGIN SECTION introduction_actions.py
 
 >>> class CreateFile(Action):
 ...   def __init__(self, name):
@@ -100,3 +96,36 @@ If you just want to know what *would* be done, you can use :meth:`.Action.get_po
 
 As said earlier, you have no guaranty about the order of the first three actions,
 so :meth:`~.Action.get_possible_execution_order` returns *one* possible order.
+
+Stock actions
+-------------
+
+ActionTree ships with some :mod:`~.ActionTree.stock` actions for common tasks,
+including running subprocesses and basic operations on files and directories.
+
+Say you want to compile :ref:`two C++ files <source_files>` and link them:
+
+.. BEGIN SECTION stock_link.py
+
+>>> from ActionTree import execute
+>>> from ActionTree.stock import CreateDirectory, CallSubprocess
+
+>>> make_build_dir = CreateDirectory("_build")
+
+>>> compile_a = CallSubprocess(["g++", "-c", "a.cpp", "-o", "_build/a.o"])
+>>> compile_a.add_dependency(make_build_dir)
+
+>>> compile_b = CallSubprocess(["g++", "-c", "b.cpp", "-o", "_build/b.o"])
+>>> compile_b.add_dependency(make_build_dir)
+
+>>> link = CallSubprocess(["g++", "-o", "_build/test", "_build/a.o", "_build/b.o"])
+>>> link.add_dependency(compile_a)
+>>> link.add_dependency(compile_b)
+
+.. END SECTION stock_link.py
+
+>>> link_report = execute(link)
+
+If you're really looking to compile stuff using `ActionTree`,
+you may want to have a look at `devlpr <https://github.com/jacquev6/devlpr>`__.
+It's the reason why I wrote `ActionTree` in the first place.

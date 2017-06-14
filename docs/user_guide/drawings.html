@@ -27,7 +27,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Outputs and side-effects" href="outputs.html" />
-    <link rel="prev" title="Stock actions" href="stock.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -45,21 +45,6 @@
             
   <div class="section" id="drawings">
 <h1>Drawings<a class="headerlink" href="#drawings" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="dependency-graph">
-<h2>Dependency graph<a class="headerlink" href="#dependency-graph" title="Permalink to this headline">¶</a></h2>
-<p>You can draw a dependency graph with <a class="reference internal" href="../reference.html#ActionTree.DependencyGraph" title="ActionTree.DependencyGraph"><code class="xref py py-class docutils literal"><span class="pre">DependencyGraph</span></code></a>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="k">import</span> <span class="n">DependencyGraph</span>
-</pre></div>
-</div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">graph</span> <span class="o">=</span> <span class="n">DependencyGraph</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">graph</span><span class="o">.</span><span class="n">write_to_png</span><span class="p">(</span><span class="s2">&quot;link_dependency_graph.png&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<div class="figure align-center" id="id1">
-<img alt="../_images/link_dependency_graph.png" src="../_images/link_dependency_graph.png" />
-<p class="caption"><span class="caption-text"><code class="docutils literal"><span class="pre">link_dependency_graph.png</span></code></span></p>
-</div>
-</div>
 <div class="section" id="gantt-chart">
 <h2>Gantt chart<a class="headerlink" href="#gantt-chart" title="Permalink to this headline">¶</a></h2>
 <p>You can draw a Gantt chart of the execution with <a class="reference internal" href="../reference.html#ActionTree.GanttChart" title="ActionTree.GanttChart"><code class="xref py py-class docutils literal"><span class="pre">GanttChart</span></code></a>:</p>
@@ -70,11 +55,17 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="n">chart</span><span class="o">.</span><span class="n">write_to_png</span><span class="p">(</span><span class="s2">&quot;link_gantt_chart.png&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="figure align-center" id="id2">
+<div class="figure align-center" id="id1">
 <img alt="../_images/link_gantt_chart.png" src="../_images/link_gantt_chart.png" />
 <p class="caption"><span class="caption-text"><code class="docutils literal"><span class="pre">link_gantt_chart.png</span></code></span></p>
 </div>
-<p>And if some action fails, you get:</p>
+<p>Each action is represented by an horizontal line.
+The left part, optional, is thin. It represents the time the action was ready to execute (all dependencies were done)
+but waiting for a resource (typically a CPU core to execute on).
+The right part is thicker and represents the actual execution of the action.
+<a class="reference internal" href="resources.html#resources"><span class="std std-ref">Resources</span></a> and <a class="reference internal" href="timing.html#timing"><span class="std std-ref">timing</span></a> are explained in detail later in this user guide.</p>
+<p>Actions are linked to their dependencies using thin doted lines.</p>
+<p>Actions that failed are in red, and actions that were canceled due to a failure in their dependencies are in grey:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">compile_unexisting</span> <span class="o">=</span> <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;unexisting.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/unexisting.o&quot;</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">compile_unexisting</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">make_build_dir</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">link</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">compile_unexisting</span><span class="p">)</span>
@@ -87,9 +78,24 @@
 <span class="gp">&gt;&gt;&gt; </span><span class="n">chart</span><span class="o">.</span><span class="n">write_to_png</span><span class="p">(</span><span class="s2">&quot;failed_link_gantt_chart.png&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="figure align-center" id="id3">
+<div class="figure align-center" id="id2">
 <img alt="../_images/failed_link_gantt_chart.png" src="../_images/failed_link_gantt_chart.png" />
 <p class="caption"><span class="caption-text"><code class="docutils literal"><span class="pre">failed_link_gantt_chart.png</span></code></span></p>
+</div>
+</div>
+<div class="section" id="dependency-graph">
+<h2>Dependency graph<a class="headerlink" href="#dependency-graph" title="Permalink to this headline">¶</a></h2>
+<p>You can draw a dependency graph with <a class="reference internal" href="../reference.html#ActionTree.DependencyGraph" title="ActionTree.DependencyGraph"><code class="xref py py-class docutils literal"><span class="pre">DependencyGraph</span></code></a>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="k">import</span> <span class="n">DependencyGraph</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">graph</span> <span class="o">=</span> <span class="n">DependencyGraph</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">graph</span><span class="o">.</span><span class="n">write_to_png</span><span class="p">(</span><span class="s2">&quot;link_dependency_graph.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="figure align-center" id="id3">
+<img alt="../_images/link_dependency_graph.png" src="../_images/link_dependency_graph.png" />
+<p class="caption"><span class="caption-text"><code class="docutils literal"><span class="pre">link_dependency_graph.png</span></code></span></p>
 </div>
 </div>
 </div>
@@ -135,16 +141,16 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../user_guide.html">User guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="stock.html">Stock actions</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Drawings</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#dependency-graph">Dependency graph</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#gantt-chart">Gantt chart</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#dependency-graph">Dependency graph</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="outputs.html">Outputs and side-effects</a></li>
 <li class="toctree-l2"><a class="reference internal" href="timing.html">Timing information</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hooks.html">Hooks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="resources.html">Resources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source_files.html">Source files of examples</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference.html">Reference</a></li>

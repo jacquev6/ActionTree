@@ -83,7 +83,10 @@ for input_file in glob.glob("user_guide/*.rst"):
                 out_f = None
                 output_file = None
             if out_f:
-                out_f.write(line[4:])
+                if any(line.startswith(prefix) for prefix in ["    ", "... ", ">>> "]):
+                    out_f.write(line[4:])
+                elif line.strip() == "":
+                    out_f.write("\n")
             if line.startswith(".. BEGIN SECTION "):
                 assert output_file is None
                 output_file = line[17:].rstrip()

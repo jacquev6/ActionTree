@@ -9,13 +9,13 @@ Return values, exceptions and printed output
 Return values, exceptions and printed output are captured and returned by :func:`.execute` in the :class:`.ExecutionReport`.
 
 .. @todoc Demonstrate return values and captured output
-
-.. @todoc Demonstrate timing information (and link to demo of Gantt chart)
+.. @todoc Add a note about keep_going
+.. @todoc Add a note about the execution report in the CompoundException
 
 Other side effects
 ------------------
 
-:mod:`.ActionTree` makes no attempt to handle any other side effect.
+`ActionTree` makes no attempt to handle any other side effect.
 
 Each action is executed in its own process, so it should be safe to modify process-wide data
 like the current working directory or environment variables.

@@ -52,7 +52,7 @@ coverage2 run setup.py build_sphinx --builder=doctest
 mv doc/user_guide/artifacts/.coverage.* .
 coverage2 combine
 
-coverage2 report --include="ActionTree/*"
+coverage2 report --include="ActionTree/*" | grep -v "^ActionTree.*100%$"
 
 coverage2 html --include="ActionTree/*" --directory=build/py2_doctest_coverage
 echo

@@ -104,7 +104,7 @@ class Action(object):
 
         :raises DependencyCycleException: when adding the new dependency would create a cycle.
         """
-        if self in dependency.get_possible_execution_order():  # Not in user guide
+        if self in dependency.get_possible_execution_order():  # Not in user guide: implementation detail
             raise DependencyCycleException()
         self.__dependencies.append(dependency)
 
@@ -255,7 +255,7 @@ class Hooks(object):
         """
 
 
-class DependencyCycleException(Exception):  # Not in user guide
+class DependencyCycleException(Exception):  # Not in user guide: implementation detail
     """
     Exception thrown by :meth:`.Action.add_dependency` when adding the new dependency would create a cycle.
     """
@@ -639,7 +639,7 @@ class GanttChart(object):  # Not unittested: too difficult
 
         def draw(self, ax, ordinates, actions):
             ordinate = ordinates[self.__id]
-            if self.__ready_time:  # Not in user guide
+            if self.__ready_time:  # Not in user guide: implementation detail
                 ax.plot([self.__ready_time, self.__cancel_time], [ordinate, ordinate], color="grey", lw=1)
             ax.annotate(
                 self.__label,
@@ -684,13 +684,13 @@ class GanttChart(object):  # Not unittested: too difficult
         return fig
 
     @staticmethod
-    def __nearest(v, values):
+    def __nearest(v, values):  # Not in user guide: implementation detail
         for i, value in enumerate(values):
             if v < value:
                 break
         if i == 0:
             return values[0]
-        else:  # Not in user guide
+        else:
             if v - values[i - 1] <= values[i] - v:
                 return values[i - 1]
             else:
@@ -807,7 +807,7 @@ class _Execute(object):
 
         if action in self.pending:
             self._change_status(action, self.pending, self.done)
-        else:
+        else:  # Not in user guide: implementation detail
             self._change_status(action, self.ready, self.done)
 
         if not self.keep_going:
@@ -830,6 +830,10 @@ class _Execute(object):
         self._change_status(action, self.pending, self.ready)
 
     def _progress(self, now):
+        # @todo Should we tweak the scheduling?
+        # We could prioritize the actions that use many resources,
+        # hoping that this would avoid idle CPU cores at the end of the execution.
+        # Scheduling is a hard problem, we may just want to keep the current, random, behavior.
         for action in set(self.ready):
             if self._allocate_resources(action):
                 self._start_action(action, now)
@@ -842,7 +846,7 @@ class _Execute(object):
                 # Allow actions requiring more than available to run when they are alone requiring this resource
                 continue
             availability = resource._availability(self.jobs)
-            if availability is UNLIMITED:
+            if availability is UNLIMITED:  # Not in user guide: implementation detail
                 # Don't check usage of unlimited resources
                 continue
             if used + quantity > availability:
@@ -872,7 +876,7 @@ class _Execute(object):
                 exception = e
         try:
             self._check_picklability((exception, return_value))
-        except:  # Not in user guide
+        except:  # Not in user guide: mandatory picklability is more an issue than a feature
             self.events.put((PICKLING_EXCEPTION, action_id, ()))
         else:
             end_time = datetime.datetime.now()
@@ -918,7 +922,7 @@ class _Execute(object):
         self._triage_pending_dependents(action, True, failure_time)
         self._deallocate_resources(action)
 
-    def _handle_pickling_exception_event(self, action):  # Not in user guide
+    def _handle_pickling_exception_event(self, action):  # Not in user guide: mandatory picklability
         raise pickle.PicklingError()
 
     def _change_status(self, action, orig, dest):

@@ -1,3 +1,5 @@
+.. _timing:
+
 Timing information
 ==================
 

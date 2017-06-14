@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Reference" href="../reference.html" />
+    <link rel="next" title="Source files of examples" href="source_files.html" />
     <link rel="prev" title="Hooks" href="hooks.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -45,6 +45,70 @@
             
   <div class="section" id="resources">
 <span id="id1"></span><h1>Resources<a class="headerlink" href="#resources" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="more-cpu-cores">
+<h2>More CPU cores<a class="headerlink" href="#more-cpu-cores" title="Permalink to this headline">¶</a></h2>
+<p>By default, <cite>ActionTree</cite> considers that all actions execute on a single core.
+Thus, by default, the <code class="docutils literal"><span class="pre">jobs</span></code> parameter of <a class="reference internal" href="../reference.html#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal"><span class="pre">execute()</span></code></a> controls how many actions can be executed in parallel.</p>
+<p>You can tell <cite>ActionTree</cite> that your <a class="reference internal" href="../reference.html#ActionTree.Action" title="ActionTree.Action"><code class="xref py py-class docutils literal"><span class="pre">Action</span></code></a> uses more cores with <a class="reference internal" href="../reference.html#ActionTree.Action.require_resource" title="ActionTree.Action.require_resource"><code class="xref py py-meth docutils literal"><span class="pre">require_resource()</span></code></a> and <a class="reference internal" href="../reference.html#ActionTree.CPU_CORE" title="ActionTree.CPU_CORE"><code class="xref py py-obj docutils literal"><span class="pre">CPU_CORE</span></code></a>:</p>
+<p>(Here are the <a class="reference internal" href="source_files.html#source-files"><span class="std std-ref">source files</span></a> used below.)</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="k">import</span> <span class="n">CPU_CORE</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">compile_others</span> <span class="o">=</span> <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;make&quot;</span><span class="p">,</span> <span class="s2">&quot;-j&quot;</span><span class="p">,</span> <span class="s2">&quot;4&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/c.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/d.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/e.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/f.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/g.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/h.o&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compile_others</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">make_build_dir</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compile_others</span><span class="o">.</span><span class="n">require_resource</span><span class="p">(</span><span class="n">CPU_CORE</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">link_with_others</span> <span class="o">=</span> <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/test&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/a.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/b.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/c.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/d.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/e.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/f.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/g.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/h.o&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">link_with_others</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">compile_a</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">link_with_others</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">compile_b</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">link_with_others</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">compile_others</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">GanttChart</span><span class="p">(</span><span class="n">execute</span><span class="p">(</span><span class="n">link_with_others</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span><span class="o">.</span><span class="n">write_to_png</span><span class="p">(</span><span class="s2">&quot;link_with_others_gantt_chart.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="figure align-center" id="id2">
+<img alt="../_images/link_with_others_gantt_chart.png" src="../_images/link_with_others_gantt_chart.png" />
+<p class="caption"><span class="caption-text"><code class="docutils literal"><span class="pre">link_with_others_gantt_chart.png</span></code></span></p>
+</div>
+<p>As we expected, you can observe that the call to <code class="docutils literal"><span class="pre">make</span></code> was not executed at the same time as the individual calls to <code class="docutils literal"><span class="pre">g++</span> <span class="pre">-c</span></code>.</p>
+</div>
+<div class="section" id="arbitrary-resources">
+<h2>Arbitrary resources<a class="headerlink" href="#arbitrary-resources" title="Permalink to this headline">¶</a></h2>
+<p>The same mechanism can be used with any instance of the <a class="reference internal" href="../reference.html#ActionTree.Resource" title="ActionTree.Resource"><code class="xref py py-class docutils literal"><span class="pre">Resource</span></code></a> class.
+If you want that no more than two actions of some kind execute at the same time,
+while allowing other actions to run, just create a resource:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="k">import</span> <span class="n">Resource</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree.stock</span> <span class="k">import</span> <span class="n">Sleep</span><span class="p">,</span> <span class="n">NullAction</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">semaphore</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dependencies</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
+<span class="gp">... </span>  <span class="n">d</span> <span class="o">=</span> <span class="n">Sleep</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="gp">... </span>  <span class="n">d</span><span class="o">.</span><span class="n">require_resource</span><span class="p">(</span><span class="n">semaphore</span><span class="p">)</span>
+<span class="gp">... </span>  <span class="n">dependencies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+<span class="gp">... </span>  <span class="n">d</span> <span class="o">=</span> <span class="n">Sleep</span><span class="p">(</span><span class="mf">0.4</span><span class="p">)</span>
+<span class="gp">... </span>  <span class="n">dependencies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">arbitrary_resource</span> <span class="o">=</span> <span class="n">NullAction</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">dependencies</span><span class="p">:</span>
+<span class="gp">... </span>  <span class="n">arbitrary_resource</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">GanttChart</span><span class="p">(</span><span class="n">execute</span><span class="p">(</span><span class="n">arbitrary_resource</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="mi">5</span><span class="p">))</span><span class="o">.</span><span class="n">write_to_png</span><span class="p">(</span><span class="s2">&quot;arbitrary_resource_gantt_chart.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="figure align-center" id="id3">
+<img alt="../_images/arbitrary_resource_gantt_chart.png" src="../_images/arbitrary_resource_gantt_chart.png" />
+<p class="caption"><span class="caption-text"><code class="docutils literal"><span class="pre">arbitrary_resource_gantt_chart.png</span></code></span></p>
+</div>
+<p>As expected again, there was never more than two <code class="docutils literal"><span class="pre">sleep</span> <span class="pre">0.3</span></code> actions running at the same time,
+but <code class="docutils literal"><span class="pre">sleep</span> <span class="pre">0.4</span></code> actions were free to execute.</p>
+<p><a class="reference internal" href="../reference.html#ActionTree.Resource" title="ActionTree.Resource"><code class="xref py py-class docutils literal"><span class="pre">Resource</span></code></a>’s <code class="docutils literal"><span class="pre">availability</span></code> parameter and <a class="reference internal" href="../reference.html#ActionTree.Action.require_resource" title="ActionTree.Action.require_resource"><code class="xref py py-meth docutils literal"><span class="pre">require_resource()</span></code></a>’s <code class="docutils literal"><span class="pre">quantity</span></code> parameter
+allow a flexible specification of which actions should not execute at the same time.</p>
+</div>
 </div>
 
 
@@ -88,12 +152,16 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="../user_guide.html">User guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="introduction.html">Introduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="stock.html">Stock actions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="drawings.html">Drawings</a></li>
 <li class="toctree-l2"><a class="reference internal" href="outputs.html">Outputs and side-effects</a></li>
 <li class="toctree-l2"><a class="reference internal" href="timing.html">Timing information</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hooks.html">Hooks</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Resources</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Resources</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#more-cpu-cores">More CPU cores</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#arbitrary-resources">Arbitrary resources</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="source_files.html">Source files of examples</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference.html">Reference</a></li>

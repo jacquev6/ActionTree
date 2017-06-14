@@ -26,7 +26,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Stock actions" href="stock.html" />
+    <link rel="next" title="Drawings" href="drawings.html" />
     <link rel="prev" title="User guide" href="../user_guide.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
@@ -47,7 +47,7 @@
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="actions-and-dependencies">
 <h2>Actions and dependencies<a class="headerlink" href="#actions-and-dependencies" title="Permalink to this headline">¶</a></h2>
-<p>In <a class="reference internal" href="../reference.html#module-ActionTree" title="ActionTree"><code class="xref py py-mod docutils literal"><span class="pre">ActionTree</span></code></a>, you create a dependency graph of actions to be executed and then call the <a class="reference internal" href="../reference.html#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal"><span class="pre">execute()</span></code></a> function on its root.</p>
+<p>In <cite>ActionTree</cite>, you create a dependency graph of actions to be executed and then call the <a class="reference internal" href="../reference.html#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal"><span class="pre">execute()</span></code></a> function on its root.</p>
 <p>For example, let’s say you want to generate three files, and then concatenate them into a fourth file.</p>
 <p>First, import <a class="reference internal" href="../reference.html#module-ActionTree" title="ActionTree"><code class="xref py py-mod docutils literal"><span class="pre">ActionTree</span></code></a></p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="k">import</span> <span class="n">Action</span><span class="p">,</span> <span class="n">execute</span>
@@ -127,6 +127,38 @@ If your system has several CPUs, the <code class="docutils literal"><span class=
 <p>As said earlier, you have no guaranty about the order of the first three actions,
 so <a class="reference internal" href="../reference.html#ActionTree.Action.get_possible_execution_order" title="ActionTree.Action.get_possible_execution_order"><code class="xref py py-meth docutils literal"><span class="pre">get_possible_execution_order()</span></code></a> returns <em>one</em> possible order.</p>
 </div>
+<div class="section" id="stock-actions">
+<h2>Stock actions<a class="headerlink" href="#stock-actions" title="Permalink to this headline">¶</a></h2>
+<p>ActionTree ships with some <a class="reference internal" href="../reference.html#module-ActionTree.stock" title="ActionTree.stock"><code class="xref py py-mod docutils literal"><span class="pre">stock</span></code></a> actions for common tasks,
+including running subprocesses and basic operations on files and directories.</p>
+<p>Say you want to compile <a class="reference internal" href="source_files.html#source-files"><span class="std std-ref">two C++ files</span></a> and link them:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="k">import</span> <span class="n">execute</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree.stock</span> <span class="k">import</span> <span class="n">CreateDirectory</span><span class="p">,</span> <span class="n">CallSubprocess</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">make_build_dir</span> <span class="o">=</span> <span class="n">CreateDirectory</span><span class="p">(</span><span class="s2">&quot;_build&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">compile_a</span> <span class="o">=</span> <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;a.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/a.o&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compile_a</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">make_build_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">compile_b</span> <span class="o">=</span> <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-c&quot;</span><span class="p">,</span> <span class="s2">&quot;b.cpp&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/b.o&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">compile_b</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">make_build_dir</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">link</span> <span class="o">=</span> <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;g++&quot;</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/test&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/a.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/b.o&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">link</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">compile_a</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">link</span><span class="o">.</span><span class="n">add_dependency</span><span class="p">(</span><span class="n">compile_b</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">link_report</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you’re really looking to compile stuff using <cite>ActionTree</cite>,
+you may want to have a look at <a class="reference external" href="https://github.com/jacquev6/devlpr">devlpr</a>.
+It’s the reason why I wrote <cite>ActionTree</cite> in the first place.</p>
+</div>
 </div>
 
 
@@ -172,14 +204,15 @@ so <a class="reference internal" href="../reference.html#ActionTree.Action.get_p
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Introduction</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#actions-and-dependencies">Actions and dependencies</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#preview">Preview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stock-actions">Stock actions</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="stock.html">Stock actions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="drawings.html">Drawings</a></li>
 <li class="toctree-l2"><a class="reference internal" href="outputs.html">Outputs and side-effects</a></li>
 <li class="toctree-l2"><a class="reference internal" href="timing.html">Timing information</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hooks.html">Hooks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="resources.html">Resources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source_files.html">Source files of examples</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference.html">Reference</a></li>

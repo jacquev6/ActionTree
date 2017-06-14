@@ -3,27 +3,12 @@ Drawings
 
 .. testsetup::
 
-    from ActionTree import *
-    from ActionTree.stock import *
+    from ActionTree import execute
+    from ActionTree.stock import CreateDirectory, CallSubprocess
 
     from stock_link import *
 
     link_report = execute(link)
-
-Dependency graph
-----------------
-
-You can draw a dependency graph with :class:`.DependencyGraph`:
-
->>> from ActionTree import DependencyGraph
-
->>> graph = DependencyGraph(link)
->>> graph.write_to_png("link_dependency_graph.png")
-
-.. figure:: artifacts/link_dependency_graph.png
-    :align: center
-
-    ``link_dependency_graph.png``
 
 Gantt chart
 -----------
@@ -40,7 +25,15 @@ You can draw a Gantt chart of the execution with :class:`.GanttChart`:
 
     ``link_gantt_chart.png``
 
-And if some action fails, you get:
+Each action is represented by an horizontal line.
+The left part, optional, is thin. It represents the time the action was ready to execute (all dependencies were done)
+but waiting for a resource (typically a CPU core to execute on).
+The right part is thicker and represents the actual execution of the action.
+:ref:`Resources <resources>` and :ref:`timing <timing>` are explained in detail later in this user guide.
+
+Actions are linked to their dependencies using thin doted lines.
+
+Actions that failed are in red, and actions that were canceled due to a failure in their dependencies are in grey:
 
 >>> compile_unexisting = CallSubprocess(["g++", "-c", "unexisting.cpp", "-o", "_build/unexisting.o"])
 >>> compile_unexisting.add_dependency(make_build_dir)
@@ -56,3 +49,18 @@ False
     :align: center
 
     ``failed_link_gantt_chart.png``
+
+Dependency graph
+----------------
+
+You can draw a dependency graph with :class:`.DependencyGraph`:
+
+>>> from ActionTree import DependencyGraph
+
+>>> graph = DependencyGraph(link)
+>>> graph.write_to_png("link_dependency_graph.png")
+
+.. figure:: artifacts/link_dependency_graph.png
+    :align: center
+
+    ``link_dependency_graph.png``

@@ -19,7 +19,7 @@ import time
 from . import Action
 
 
-class NullAction(Action):  # Not in user guide
+class NullAction(Action):
     """
     A stock action that does nothing.
     Useful as a placeholder for several dependencies.
@@ -139,7 +139,7 @@ class TouchFile(Action):  # Not in user guide
         os.utime(self.__name, None)  # Actually change its time
 
 
-class Sleep(Action):  # Not in user guide
+class Sleep(Action):
     """
     A stock action that sleeps for a certain duration.
 

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Outputs and side-effects &#8212; ActionTree 0.8.0 documentation</title>
+    <title>Source files of examples &#8212; ActionTree 0.8.0 documentation</title>
     
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -26,8 +26,8 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Timing information" href="timing.html" />
-    <link rel="prev" title="Drawings" href="drawings.html" />
+    <link rel="next" title="Reference" href="../reference.html" />
+    <link rel="prev" title="Resources" href="resources.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -43,17 +43,44 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="outputs-and-side-effects">
-<span id="outputs"></span><h1>Outputs and side-effects<a class="headerlink" href="#outputs-and-side-effects" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="return-values-exceptions-and-printed-output">
-<h2>Return values, exceptions and printed output<a class="headerlink" href="#return-values-exceptions-and-printed-output" title="Permalink to this headline">¶</a></h2>
-<p>Return values, exceptions and printed output are captured and returned by <a class="reference internal" href="../reference.html#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal"><span class="pre">execute()</span></code></a> in the <a class="reference internal" href="../reference.html#ActionTree.ExecutionReport" title="ActionTree.ExecutionReport"><code class="xref py py-class docutils literal"><span class="pre">ExecutionReport</span></code></a>.</p>
+  <div class="section" id="source-files-of-examples">
+<span id="source-files"></span><h1>Source files of examples<a class="headerlink" href="#source-files-of-examples" title="Permalink to this headline">¶</a></h1>
+<p><code class="docutils literal"><span class="pre">a.cpp</span></code>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{}</span>
+</pre></div>
 </div>
-<div class="section" id="other-side-effects">
-<h2>Other side effects<a class="headerlink" href="#other-side-effects" title="Permalink to this headline">¶</a></h2>
-<p><cite>ActionTree</cite> makes no attempt to handle any other side effect.</p>
-<p>Each action is executed in its own process, so it should be safe to modify process-wide data
-like the current working directory or environment variables.</p>
+<p><code class="docutils literal"><span class="pre">b.cpp</span></code>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">b</span><span class="p">()</span> <span class="p">{}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">c.cpp</span></code>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">c</span><span class="p">()</span> <span class="p">{}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">d.cpp</span></code>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">d</span><span class="p">()</span> <span class="p">{}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">e.cpp</span></code>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">e</span><span class="p">()</span> <span class="p">{}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">f.cpp</span></code>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">f</span><span class="p">()</span> <span class="p">{}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">g.cpp</span></code>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">g</span><span class="p">()</span> <span class="p">{}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">h.cpp</span></code>:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">h</span><span class="p">()</span> <span class="p">{}</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">Makefile</span></code>:</p>
+<div class="highlight-makefile"><div class="highlight"><pre><span></span><span class="nf">_build/%.o</span><span class="o">:</span> %.<span class="n">cpp</span>
+    g++ -c $^ -o <span class="nv">$@</span>
+</pre></div>
 </div>
 </div>
 
@@ -99,15 +126,11 @@ like the current working directory or environment variables.</p>
 <li class="toctree-l1 current"><a class="reference internal" href="../user_guide.html">User guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="drawings.html">Drawings</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Outputs and side-effects</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#return-values-exceptions-and-printed-output">Return values, exceptions and printed output</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#other-side-effects">Other side effects</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="outputs.html">Outputs and side-effects</a></li>
 <li class="toctree-l2"><a class="reference internal" href="timing.html">Timing information</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hooks.html">Hooks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="resources.html">Resources</a></li>
-<li class="toctree-l2"><a class="reference internal" href="source_files.html">Source files of examples</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Source files of examples</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../reference.html">Reference</a></li>
@@ -136,7 +159,7 @@ like the current working directory or environment variables.</p>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
       |
-      <a href="../_sources/user_guide/outputs.rst.txt"
+      <a href="../_sources/user_guide/source_files.rst.txt"
           rel="nofollow">Page source</a>
     </div>
 
