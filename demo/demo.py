@@ -53,7 +53,7 @@ class DemoHooks(Hooks):
                     lines_to_display = self.lines
                     padding = num_lines - len(self.lines)
                 for line in lines_to_display:
-                    print(">", line)
+                    print(line)
                 for i in range(padding):
                     print()
 
@@ -89,13 +89,14 @@ class DemoHooks(Hooks):
         self.set(action, time, STARTED)
 
     def action_printed(self, time, action, text):
-        self.action_statuses[self.action_indexes[action]].lines += [line.rstrip() for line in text.splitlines()]
+        self.action_statuses[self.action_indexes[action]].lines += ["> {}".format(line.rstrip()) for line in text.splitlines()]
         self.display()
 
-    def action_successful(self, time, action):
+    def action_successful(self, time, action, return_value):
         self.set(action, time, SUCCESSFUL)
 
-    def action_failed(self, time, action):
+    def action_failed(self, time, action, exception):
+        self.action_statuses[self.action_indexes[action]].lines += ["Exception: {}".format(exception)]
         self.set(action, time, FAILED)
 
 
@@ -106,7 +107,7 @@ class DemoAction(Action):
         self.iterations = iterations
         self.exception = exception
 
-    def do_execute(self):
+    def do_execute(self, dependency_statuses):
         print(self.label, "iteration 0 /", self.iterations)
         for i in range(self.iterations):
             time.sleep(self.interval)
