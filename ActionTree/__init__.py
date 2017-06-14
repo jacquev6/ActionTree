@@ -17,19 +17,17 @@ import matplotlib.backends.backend_agg
 import wurlitzer
 
 
-# @todo Add a notion of Resource, available in N instances.
-# Actions won't start until they can use P instances of the resource.
-# Manage jobs as a special CpuCore resource.
-
 def execute(action, jobs=None, keep_going=False, do_raise=True, hooks=None):
     """
     Recursively execute an :class:`.Action`'s dependencies then the action.
 
     :param Action action: the action to execute.
-    :param jobs: number of actions to execute in parallel.
+    :param jobs: number of CPU cores to use in parallel.
         Pass ``None`` (the default value) to let ActionTree choose.
         Pass :attr:`UNLIMITED` to execute an unlimited number of actions in parallel
         (make sure your system has the necessary resources).
+        Note: CPU cores are managed like any other :class:`Resource`, and this parameter sets the availability
+        of :obj:`CPU_CORE` for this execution.
     :type jobs: int or None or UNLIMITED
     :param bool keep_going: if ``True``, then execution does not stop on first failure,
         but executes as many dependencies as possible.
@@ -49,7 +47,7 @@ def execute(action, jobs=None, keep_going=False, do_raise=True, hooks=None):
 
 
 UNLIMITED = object()
-"""The availability of infinite resources."""
+"""The availability of an infinite :class:`Resource`."""
 
 
 class Action(object):
@@ -79,6 +77,7 @@ class Action(object):
         self.__label = label
         self.__weak_dependencies = weak_dependencies
         self.__dependencies = []
+        self.__resources = {CPU_CORE: 1}
 
     @property
     def label(self):
@@ -116,6 +115,27 @@ class Action(object):
         """
         return list(self.__dependencies)
 
+    def require_resource(self, resource, quantity=1):
+        """
+        Set the quantity of a certain :class:`.Resource` required to run this action.
+
+        Note that an action that requires more than a resource's availability *will* be executed anyway.
+        It will just not be executed in parallel with any other action that requires the same resource.
+
+        :param Resource resource:
+        :param int quantity:
+        """
+        self.__resources[resource] = quantity
+
+    @property
+    def resources_required(self):
+        """
+        The list of this action's required resources and quantities required.
+
+        :rtype: list(tuple(Resource, int))
+        """
+        return list(self.__resources.iteritems())
+
     def get_possible_execution_order(self, seen_actions=None):
         """
         Return the list of all this action's dependencies (recursively),
@@ -132,6 +152,42 @@ class Action(object):
                 actions += dependency.get_possible_execution_order(seen_actions)
             actions.append(self)
         return actions
+
+
+class Resource(object):
+    """
+    A resource that an :class:`Action` can require for its execution.
+    You can use resources to protect stuff that must not be used by more than N actions at the same time,
+    à la `semaphore <https://en.wikipedia.org/wiki/Semaphore_(programming)>`_.
+    Like semaphorees, with an availability of 1,
+    they become `mutexes <https://en.wikipedia.org/wiki/Lock_(computer_science)>`_.
+
+    :ref:`resources` Describes how to use this class.
+    """
+
+    def __init__(self, availability):
+        """
+        :param availability: the number of instances available for this resource
+        :type availability: int or UNLIMITED
+        """
+        self.__availability = availability
+
+    def _availability(self, jobs):
+        return self.__availability
+
+
+class CpuCoreResource(Resource):
+    def _availability(self, jobs):
+        return jobs
+
+
+CPU_CORE = CpuCoreResource(0)
+"""
+A special :class:`.Resource` representing a processing unit.
+You can pass it to :meth:`.Action.require_resource` if your action will execute on more than one core.
+
+:type: Resource
+"""
 
 
 class Hooks(object):
@@ -721,6 +777,7 @@ class _Execute(object):
             self.hooks.action_pending(now, action)
         self.events = multiprocessing.Queue()
         self.exceptions = []
+        self.resources_used = {}
 
         # Actions by status
         self.pending = set(actions)
@@ -773,13 +830,26 @@ class _Execute(object):
         self._change_status(action, self.pending, self.ready)
 
     def _progress(self, now):
-        while self.jobs is UNLIMITED or len(self.running) < self.jobs:
-            for action in self.ready:
+        for action in set(self.ready):
+            if self._allocate_resources(action):
                 self._start_action(action, now)
-                break
-            else:
-                break
         self._handle_next_event()
+
+    def _allocate_resources(self, action):
+        for (resource, quantity) in action.resources_required:
+            used = self.resources_used.setdefault(resource, 0)
+            if used == 0:
+                # Allow actions requiring more than available to run when they are alone requiring this resource
+                continue
+            availability = resource._availability(self.jobs)
+            if availability is UNLIMITED:
+                # Don't check usage of unlimited resources
+                continue
+            if used + quantity > availability:
+                return False
+        for (resource, quantity) in action.resources_required:
+            self.resources_used[resource] += quantity
+        return True
 
     def _start_action(self, action, now):
         self.report.get_action_status(action)._set_start_time(now)
@@ -833,6 +903,7 @@ class _Execute(object):
 
         self._change_status(action, self.running, self.done)
         self._triage_pending_dependents(action, False, success_time)
+        self._deallocate_resources(action)
 
     def _handle_printed_event(self, action, print_time, text):
         self.report.get_action_status(action)._add_output(text)
@@ -845,6 +916,7 @@ class _Execute(object):
         self._change_status(action, self.running, self.done)
         self.exceptions.append(exception)
         self._triage_pending_dependents(action, True, failure_time)
+        self._deallocate_resources(action)
 
     def _handle_pickling_exception_event(self, action):  # Not in user guide
         raise pickle.PicklingError()
@@ -852,3 +924,7 @@ class _Execute(object):
     def _change_status(self, action, orig, dest):
         orig.remove(action)
         dest.add(action)
+
+    def _deallocate_resources(self, action):
+        for (resource, quantity) in action.resources_required:
+            self.resources_used[resource] = max(0, self.resources_used[resource] - quantity)

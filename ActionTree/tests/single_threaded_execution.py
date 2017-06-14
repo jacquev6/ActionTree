@@ -135,3 +135,11 @@ class ExecutionTestCase(ActionTreeTestCase):
             ["e", "d", "b", "c", "a"],
             ["d", "e", "c", "b", "a"],
         ])
+
+    def test_limited_resource_doesnt_block_execution(self):
+        a = self._action("a")
+        a.require_resource(CPU_CORE, 10)
+
+        report = execute(a, jobs=1)
+
+        self.assertTrue(report.is_success)

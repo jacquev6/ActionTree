@@ -92,3 +92,62 @@ class TimingTestCase(ActionTreeTestCase):
         report = execute(a, jobs=UNLIMITED)
         for dep in deps[1:]:
             self.assertEqual(report.get_action_status(dep).start_time, report.get_action_status(deps[0]).start_time)
+
+    def test_many_dependencies_with_one_jobs(self):
+        MANY = 20
+        a = self._action("a")
+        deps = [self._action(i) for i in range(MANY)]
+        for dep in deps:
+            a.add_dependency(dep)
+
+        report = execute(a, jobs=1)
+
+        # No two actions have started at the same time
+        start_times = set(report.get_action_status(dep).start_time for dep in deps)
+        self.assertEqual(len(start_times), MANY)
+
+    def test_many_dependencies_with_limited_jobs(self):
+        MANY = 20
+        a = self._action("a")
+        deps = [self._action(i) for i in range(MANY)]
+        for dep in deps:
+            a.add_dependency(dep)
+
+        report = execute(a, jobs=3)
+
+        # Only the first three actions have started at the same time
+        start_times = set(report.get_action_status(dep).start_time for dep in deps)
+        self.assertEqual(len(start_times), MANY - 2)
+
+    def test_scarce_resource_with_many_jobs(self):
+        r = Resource(1)
+        a = self._action("a")
+        b = self._action("b")
+        b.require_resource(r, 1)
+        c = self._action("c")
+        c.require_resource(r, 1)
+        a.add_dependency(b)
+        a.add_dependency(c)
+
+        report = execute(a, jobs=6)
+
+        # @todo Start next action at the same timestamp
+        self.assertTrue(
+            report.get_action_status(b).start_time > report.get_action_status(c).success_time or
+            report.get_action_status(c).start_time > report.get_action_status(b).success_time
+        )
+
+    def test_abundant_resource_with_many_jobs(self):
+        r = Resource(2)
+        a = self._action("a")
+        b = self._action("b")
+        b.require_resource(r, 1)
+        c = self._action("c")
+        c.require_resource(r, 1)
+        a.add_dependency(b)
+        a.add_dependency(c)
+
+        report = execute(a, jobs=6)
+
+        self.assertEqual(report.get_action_status(c).ready_time, report.get_action_status(b).ready_time)
+        self.assertEqual(report.get_action_status(c).start_time, report.get_action_status(b).start_time)
