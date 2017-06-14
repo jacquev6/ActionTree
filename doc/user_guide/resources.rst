@@ -20,10 +20,10 @@ Resources
 More CPU cores
 --------------
 
-By default, `ActionTree` considers that all actions execute on a single core.
+By default, *ActionTree* considers that all actions execute on a single core.
 Thus, by default, the ``cpu_cores`` parameter of :func:`.execute` controls how many actions can be executed in parallel.
 
-You can tell `ActionTree` that your :class:`.Action` uses more cores with :meth:`~.Action.require_resource` and :obj:`.CPU_CORE`:
+You can tell *ActionTree* that your :class:`.Action` uses more cores with :meth:`~.Action.require_resource` and :obj:`.CPU_CORE`:
 
 (Here are the :ref:`source files <source_files>` used below.)
 

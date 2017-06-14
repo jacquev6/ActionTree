@@ -365,7 +365,7 @@ class ExecutionReport(object):
         def ready_time(self):
             """
             The time when this action was ready to execute.
-            (`None` if it was canceled before being ready).
+            (``None`` if it was canceled before being ready).
 
             :rtype: datetime.datetime or None
             """
@@ -375,7 +375,7 @@ class ExecutionReport(object):
         def cancel_time(self):
             """
             The time when this action was canceled.
-            (`None` if it was started).
+            (``None`` if it was started).
 
             :rtype: datetime.datetime or None
             """
@@ -385,7 +385,7 @@ class ExecutionReport(object):
         def start_time(self):
             """
             The time at the beginning of the execution of this action.
-            (`None` if it was never started).
+            (``None`` if it was never started).
 
             :rtype: datetime.datetime or None
             """
@@ -395,7 +395,7 @@ class ExecutionReport(object):
         def success_time(self):
             """
             The time at the successful end of the execution of this action.
-            (`None` if it was never started or if it failed).
+            (``None`` if it was never started or if it failed).
 
             :rtype: datetime.datetime or None
             """
@@ -405,7 +405,7 @@ class ExecutionReport(object):
         def return_value(self):
             """
             The value returned by this action
-            (`None` if it failed or was never started).
+            (``None`` if it failed or was never started).
             """
             return self.__return_value
 
@@ -413,7 +413,7 @@ class ExecutionReport(object):
         def failure_time(self):
             """
             The time at the successful end of the execution of this action.
-            (`None` if it was never started or if it succeeded).
+            (``None`` if it was never started or if it succeeded).
 
             :rtype: datetime.datetime or None
             """
@@ -423,7 +423,7 @@ class ExecutionReport(object):
         def exception(self):
             """
             The exception raised by this action
-            (`None` if it succeeded or was never started).
+            (``None`` if it succeeded or was never started).
             """
             return self.__exception
 

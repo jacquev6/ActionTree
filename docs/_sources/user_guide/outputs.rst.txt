@@ -15,7 +15,7 @@ Return values, exceptions and printed output are captured and returned by :func:
 Other side effects
 ------------------
 
-`ActionTree` makes no attempt to handle any other side effect.
+*ActionTree* makes no attempt to handle any other side effect.
 
 Each action is executed in its own process, so it should be safe to modify process-wide data
 like the current working directory or environment variables.

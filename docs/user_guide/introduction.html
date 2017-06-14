@@ -47,7 +47,7 @@
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="actions-and-dependencies">
 <h2>Actions and dependencies<a class="headerlink" href="#actions-and-dependencies" title="Permalink to this headline">¶</a></h2>
-<p>In <cite>ActionTree</cite>, you create a dependency graph of actions to be executed and then call the <a class="reference internal" href="../reference.html#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal"><span class="pre">execute()</span></code></a> function on its root.</p>
+<p>In <em>ActionTree</em>, you create a dependency graph of actions to be executed and then call the <a class="reference internal" href="../reference.html#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal"><span class="pre">execute()</span></code></a> function on its root.</p>
 <p>For example, let’s say you want to generate three files, and then concatenate them into a fourth file.</p>
 <p>First, import <a class="reference internal" href="../reference.html#module-ActionTree" title="ActionTree"><code class="xref py py-mod docutils literal"><span class="pre">ActionTree</span></code></a></p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="k">import</span> <span class="n">Action</span><span class="p">,</span> <span class="n">execute</span>
@@ -155,9 +155,9 @@ including running subprocesses and basic operations on files and directories.</p
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">link_report</span> <span class="o">=</span> <span class="n">execute</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>If you’re really looking to compile stuff using <cite>ActionTree</cite>,
+<p>If you’re really looking to compile stuff using <em>ActionTree</em>,
 you may want to have a look at <a class="reference external" href="https://github.com/jacquev6/devlpr">devlpr</a>.
-It’s the reason why I wrote <cite>ActionTree</cite> in the first place.</p>
+It’s the reason why I wrote <em>ActionTree</em> in the first place.</p>
 </div>
 </div>
 

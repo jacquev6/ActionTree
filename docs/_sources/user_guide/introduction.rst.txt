@@ -4,7 +4,7 @@ Introduction
 Actions and dependencies
 ------------------------
 
-In `ActionTree`, you create a dependency graph of actions to be executed and then call the :func:`.execute` function on its root.
+In *ActionTree*, you create a dependency graph of actions to be executed and then call the :func:`.execute` function on its root.
 
 For example, let's say you want to generate three files, and then concatenate them into a fourth file.
 
@@ -126,6 +126,6 @@ Say you want to compile :ref:`two C++ files <source_files>` and link them:
 
 >>> link_report = execute(link)
 
-If you're really looking to compile stuff using `ActionTree`,
+If you're really looking to compile stuff using *ActionTree*,
 you may want to have a look at `devlpr <https://github.com/jacquev6/devlpr>`__.
-It's the reason why I wrote `ActionTree` in the first place.
+It's the reason why I wrote *ActionTree* in the first place.
