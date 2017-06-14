@@ -85,8 +85,8 @@
 </pre></div>
 </div>
 <p>And <a class="reference internal" href="../reference.html#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal"><span class="pre">execute()</span></code></a> it:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">execute</span><span class="p">(</span><span class="n">concat</span><span class="p">)</span>
-<span class="go">&lt;ActionTree.ExecutionReport object at 0x...&gt;</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">execute</span><span class="p">(</span><span class="n">concat</span><span class="p">)</span><span class="o">.</span><span class="n">is_success</span>
+<span class="go">True</span>
 </pre></div>
 </div>
 <p>The actions have been executed successfully:</p>
@@ -114,12 +114,8 @@
 </pre></div>
 </div>
 <p>You have no guaranty about the order of execution of the <code class="docutils literal"><span class="pre">CreateFile</span></code> actions,
-but you are sure that they are all finished before the <code class="docutils literal"><span class="pre">ConcatFiles</span></code> action starts.</p>
-<p>You can execute them in parallel, keeping the same guaranties:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">execute</span><span class="p">(</span><span class="n">concat</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">is_success</span>
-<span class="go">True</span>
-</pre></div>
-</div>
+but you are sure that they are all finished before the <code class="docutils literal"><span class="pre">ConcatFiles</span></code> action starts.
+If your system has several CPUs, the <code class="docutils literal"><span class="pre">CreateFile</span></code> actions have been executed concurrently.</p>
 </div>
 <div class="section" id="preview">
 <h2>Preview<a class="headerlink" href="#preview" title="Permalink to this headline">¶</a></h2>

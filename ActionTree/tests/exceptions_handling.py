@@ -15,7 +15,7 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         a = self._action("a", exception=Exception("foobar"))
 
         with self.assertRaises(CompoundException) as catcher:
-            execute(a, jobs=1)
+            execute(a)
         report = catcher.exception.execution_report
 
         self.assertEqual(len(catcher.exception.exceptions), 1)
@@ -27,7 +27,7 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
     def test_simple_failure_without_raise(self):
         a = self._action("a", exception=Exception("foobar"))
 
-        report = execute(a, jobs=1, do_raise=False)
+        report = execute(a, do_raise=False)
 
         self.assertFalse(report.is_success)
         self.assertEqual(report.get_action_status(a).status, FAILED)
@@ -39,7 +39,7 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         a.add_dependency(b)
 
         with self.assertRaises(CompoundException) as catcher:
-            execute(a, jobs=1)
+            execute(a)
         report = catcher.exception.execution_report
 
         self.assertEqual(len(catcher.exception.exceptions), 1)
@@ -55,7 +55,7 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         a.add_dependency(b)
 
         with self.assertRaises(CompoundException) as catcher:
-            execute(a, jobs=1)
+            execute(a)
         report = catcher.exception.execution_report
 
         self.assertFalse(report.is_success)

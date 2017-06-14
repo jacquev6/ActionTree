@@ -48,7 +48,7 @@
 <span id="core"></span><h2>Core<a class="headerlink" href="#module-ActionTree" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="ActionTree.execute">
-<code class="descclassname">ActionTree.</code><code class="descname">execute</code><span class="sig-paren">(</span><em>action</em>, <em>jobs=1</em>, <em>keep_going=False</em>, <em>do_raise=True</em>, <em>hooks=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.execute" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">ActionTree.</code><code class="descname">execute</code><span class="sig-paren">(</span><em>action</em>, <em>jobs=None</em>, <em>keep_going=False</em>, <em>do_raise=True</em>, <em>hooks=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.execute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Recursively execute an <a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><code class="xref py py-class docutils literal"><span class="pre">Action</span></code></a>’s dependencies then the action.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -56,7 +56,10 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action to execute.</li>
-<li><strong>jobs</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) – number of actions to execute in parallel. Pass <code class="docutils literal"><span class="pre">None</span></code> to let ActionTree choose.</li>
+<li><strong>jobs</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a><em> or </em><a class="reference internal" href="#ActionTree.UNLIMITED" title="ActionTree.UNLIMITED"><em>UNLIMITED</em></a>) – number of actions to execute in parallel.
+Pass <code class="docutils literal"><span class="pre">None</span></code> (the default value) to let ActionTree choose.
+Pass <a class="reference internal" href="#ActionTree.UNLIMITED" title="ActionTree.UNLIMITED"><code class="xref py py-attr docutils literal"><span class="pre">UNLIMITED</span></code></a> to execute an unlimited number of actions in parallel
+(make sure your system has the necessary resources).</li>
 <li><strong>keep_going</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – if <code class="docutils literal"><span class="pre">True</span></code>, then execution does not stop on first failure,
 but executes as many dependencies as possible.</li>
 <li><strong>do_raise</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – if <code class="docutils literal"><span class="pre">False</span></code>, then exceptions are not re-raised as <a class="reference internal" href="#ActionTree.CompoundException" title="ActionTree.CompoundException"><code class="xref py py-exc docutils literal"><span class="pre">CompoundException</span></code></a>
@@ -73,6 +76,12 @@ but only included in the <a class="reference internal" href="#ActionTree.Executi
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="data">
+<dt id="ActionTree.UNLIMITED">
+<code class="descclassname">ActionTree.</code><code class="descname">UNLIMITED</code><em class="property"> = &lt;object object&gt;</em><a class="headerlink" href="#ActionTree.UNLIMITED" title="Permalink to this definition">¶</a></dt>
+<dd><p>The availability of infinite resources.</p>
 </dd></dl>
 
 <dl class="class">

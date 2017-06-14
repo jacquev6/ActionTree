@@ -59,8 +59,8 @@ Create an actions dependency graph:
 
 And :func:`.execute` it:
 
->>> execute(concat)
-<ActionTree.ExecutionReport object at 0x...>
+>>> execute(concat).is_success
+True
 
 The actions have been executed successfully:
 
@@ -88,11 +88,7 @@ This is third
 
 You have no guaranty about the order of execution of the ``CreateFile`` actions,
 but you are sure that they are all finished before the ``ConcatFiles`` action starts.
-
-You can execute them in parallel, keeping the same guaranties:
-
->>> execute(concat, jobs=3).is_success
-True
+If your system has several CPUs, the ``CreateFile`` actions have been executed concurrently.
 
 Preview
 -------

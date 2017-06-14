@@ -59,7 +59,7 @@ class ExecutionTestCase(ActionTreeTestCase):
         y = self._action("y", print_on_stdout=[("y", 0.1)] * MANY)
         a.add_dependency(x)
         a.add_dependency(y)
-        report = execute(a, jobs=2)
+        report = execute(a)
 
         self.assertEqual(report.get_action_status(x).output, "x\n" * MANY)
         self.assertEqual(report.get_action_status(y).output, "y\n" * MANY)

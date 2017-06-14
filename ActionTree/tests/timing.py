@@ -81,3 +81,14 @@ class TimingTestCase(ActionTreeTestCase):
 
         self.assertEqual(report.get_action_status(c).ready_time, report.get_action_status(b).ready_time)
         self.assertEqual(report.get_action_status(d).ready_time, report.get_action_status(b).ready_time)
+
+    def test_many_dependencies_with_unlimited_jobs(self):
+        MANY = 20
+        a = self._action("a")
+        deps = [self._action(i) for i in range(MANY)]
+        for dep in deps:
+            a.add_dependency(dep)
+
+        report = execute(a, jobs=UNLIMITED)
+        for dep in deps[1:]:
+            self.assertEqual(report.get_action_status(dep).start_time, report.get_action_status(deps[0]).start_time)

@@ -21,14 +21,16 @@ import wurlitzer
 # Actions won't start until they can use P instances of the resource.
 # Manage jobs as a special CpuCore resource.
 
-# @todo Make None the default value for jobs
-def execute(action, jobs=1, keep_going=False, do_raise=True, hooks=None):
+def execute(action, jobs=None, keep_going=False, do_raise=True, hooks=None):
     """
     Recursively execute an :class:`.Action`'s dependencies then the action.
 
     :param Action action: the action to execute.
-    :param jobs: number of actions to execute in parallel. Pass ``None`` to let ActionTree choose.
-    :type jobs: int or None
+    :param jobs: number of actions to execute in parallel.
+        Pass ``None`` (the default value) to let ActionTree choose.
+        Pass :attr:`UNLIMITED` to execute an unlimited number of actions in parallel
+        (make sure your system has the necessary resources).
+    :type jobs: int or None or UNLIMITED
     :param bool keep_going: if ``True``, then execution does not stop on first failure,
         but executes as many dependencies as possible.
     :param bool do_raise: if ``False``, then exceptions are not re-raised as :exc:`CompoundException`
@@ -44,6 +46,10 @@ def execute(action, jobs=1, keep_going=False, do_raise=True, hooks=None):
     if hooks is None:
         hooks = Hooks()
     return _Execute(jobs, keep_going, do_raise, hooks).run(action)
+
+
+UNLIMITED = object()
+"""The availability of infinite resources."""
 
 
 class Action(object):
@@ -769,7 +775,7 @@ class _Execute(object):
         self._change_status(action, self.pending, self.ready)
 
     def _progress(self, now):
-        while len(self.running) < self.jobs:
+        while self.jobs is UNLIMITED or len(self.running) < self.jobs:
             for action in self.ready:
                 self._start_action(action, now)
                 break
