@@ -17,6 +17,10 @@ import matplotlib.backends.backend_agg
 import wurlitzer
 
 
+# @todo Add a notion of Resource, available in N instances.
+# Actions won't start until they can use P instances of the resource.
+# Manage jobs as a special CpuCore resource.
+
 # @todo Make None the default value for jobs
 def execute(action, jobs=1, keep_going=False, do_raise=True, hooks=None):
     """
