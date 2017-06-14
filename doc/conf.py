@@ -52,10 +52,10 @@ extensions.append("sphinx.ext.doctest")
 # doctest_path
 doctest_global_setup = """
 import os
+
 os.chdir("doc/user_guide/artifacts")
 """
 doctest_global_cleanup = """
-import os
 os.chdir("../../..")
 """
 # doctest_test_doctest_blocks

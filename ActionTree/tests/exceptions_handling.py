@@ -122,7 +122,7 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         # - when c is executed before b, c cannot be canceled
         # - when c is executed after b, c is canceled
         # We repeat the test until we see both behaviors or we reach a limit
-        for i in xrange(100):  # pragma no cover (Test code)
+        for i in xrange(100):  # Not unittested: test code
             a = self._action("a")
             b = self._action("b", exception=Exception())
             c = self._action("c")

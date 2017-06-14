@@ -19,7 +19,7 @@ import time
 from . import Action
 
 
-class NullAction(Action):
+class NullAction(Action):  # Not in user guide
     """
     A stock action that does nothing.
     Useful as a placeholder for several dependencies.
@@ -53,7 +53,7 @@ class CallSubprocess(Action):
         # See http://bugs.python.org/issue1692335
         try:
             subprocess.check_call(self.__args, **self.__kwds)
-        except subprocess.CalledProcessError as e:
+        except subprocess.CalledProcessError as e:  # Not in user guide
             raise CalledProcessError(e.returncode, e.cmd, e.output)
 
 
@@ -78,12 +78,12 @@ class CreateDirectory(Action):
     def do_execute(self, dependency_statuses):
         try:
             os.makedirs(self.__name)
-        except OSError as e:
+        except OSError as e:  # Not in user guide
             if e.errno != errno.EEXIST or not os.path.isdir(self.__name):
                 raise
 
 
-class DeleteFile(Action):
+class DeleteFile(Action):  # Not in user guide
     """
     A stock action that deletes a file.
     No error will be raise if the file doesn't exist.
@@ -102,7 +102,7 @@ class DeleteFile(Action):
                 raise
 
 
-class CopyFile(Action):
+class CopyFile(Action):  # Not in user guide
     """
     A stock action that copies a file. Arguments are passed to :func:`shutil.copy`.
 
@@ -118,7 +118,7 @@ class CopyFile(Action):
         shutil.copy(self.__src, self.__dst)
 
 
-class TouchFile(Action):
+class TouchFile(Action):  # Not in user guide
     """
     A stock action that touches a file.
     If the file already exists, its modification time will be modified.
@@ -139,7 +139,7 @@ class TouchFile(Action):
         os.utime(self.__name, None)  # Actually change its time
 
 
-class Sleep(Action):
+class Sleep(Action):  # Not in user guide
     """
     A stock action that sleeps for a certain duration.
 

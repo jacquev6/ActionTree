@@ -17,6 +17,7 @@ import matplotlib.backends.backend_agg
 import wurlitzer
 
 
+# @todo Make None the default value for jobs
 def execute(action, jobs=1, keep_going=False, do_raise=True, hooks=None):
     """
     Recursively execute an :class:`.Action`'s dependencies then the action.
@@ -97,7 +98,7 @@ class Action(object):
 
         :raises DependencyCycleException: when adding the new dependency would create a cycle.
         """
-        if self in dependency.get_possible_execution_order():
+        if self in dependency.get_possible_execution_order():  # Not in user guide
             raise DependencyCycleException()
         self.__dependencies.append(dependency)
 
@@ -191,7 +192,7 @@ class Hooks(object):
         """
 
 
-class DependencyCycleException(Exception):
+class DependencyCycleException(Exception):  # Not in user guide
     """
     Exception thrown by :meth:`.Action.add_dependency` when adding the new dependency would create a cycle.
     """
@@ -431,7 +432,7 @@ class DependencyGraph(object):
                 assert dependency in nodes  # Because we are iterating a possible execution order
                 self.__graphviz_graph.edge(node, nodes[dependency])
 
-    def write_to_png(self, filename):  # pragma no cover (Untestable? But small.)
+    def write_to_png(self, filename):  # Not unittested: too difficult
         """
         Write the graph as a PNG image to the specified file.
 
@@ -453,7 +454,7 @@ class DependencyGraph(object):
         return self.__graphviz_graph.copy()
 
 
-class GanttChart(object):  # pragma no cover (Too difficult to unit test)
+class GanttChart(object):  # Not unittested: too difficult
     """
     A visual representation of the timing of an execution.
     """
@@ -568,7 +569,7 @@ class GanttChart(object):  # pragma no cover (Too difficult to unit test)
 
         def draw(self, ax, ordinates, actions):
             ordinate = ordinates[self.__id]
-            if self.__ready_time:
+            if self.__ready_time:  # Not in user guide
                 ax.plot([self.__ready_time, self.__cancel_time], [ordinate, ordinate], color="grey", lw=1)
             ax.annotate(
                 self.__label,
@@ -619,7 +620,7 @@ class GanttChart(object):  # pragma no cover (Too difficult to unit test)
                 break
         if i == 0:
             return values[0]
-        else:
+        else:  # Not in user guide
             if v - values[i - 1] <= values[i] - v:
                 return values[i - 1]
             else:
@@ -692,33 +693,6 @@ class WurlitzerToEvents(wurlitzer.Wurlitzer):
 
     def _handle_stderr(self, data):
         self._handle_stdout(data)
-
-
-class _Worker(multiprocessing.Process):
-    def __init__(self, action_id, action, events, dependency_statuses):
-        multiprocessing.Process.__init__(self)
-        self.action_id = action_id
-        self.action = action
-        self.events = events
-        self.dependency_statuses = dependency_statuses
-
-    def run(self):
-        with WurlitzerToEvents(self.events, self.action_id):
-            return_value = exception = None
-            try:
-                return_value = self.action.do_execute(self.dependency_statuses)
-            except Exception as e:
-                exception = e
-        try:
-            _check_picklability((exception, return_value))
-        except:
-            self.events.put((PICKLING_EXCEPTION, self.action_id, ()))
-        else:
-            end_time = datetime.datetime.now()
-            if exception:
-                self.events.put((FAILED, self.action_id, (end_time, exception)))
-            else:
-                self.events.put((SUCCESSED, self.action_id, (end_time, return_value)))
 
 
 class _Execute(object):
@@ -810,8 +784,30 @@ class _Execute(object):
         self.hooks.action_started(now, action)
 
         dependency_statuses = {d: self.report.get_action_status(d) for d in action.dependencies}
-        _Worker(id(action), action, self.events, dependency_statuses).start()
+        p = multiprocessing.Process(
+            target=self._run_action,
+            kwargs=dict(action=action, action_id=id(action), dependency_statuses=dependency_statuses)
+        )
+        p.start()
         self._change_status(action, self.ready, self.running)
+
+    def _run_action(self, action, action_id, dependency_statuses):
+        with WurlitzerToEvents(self.events, action_id):
+            return_value = exception = None
+            try:
+                return_value = action.do_execute(dependency_statuses)
+            except Exception as e:
+                exception = e
+        try:
+            _check_picklability((exception, return_value))
+        except:  # Not in user guide
+            self.events.put((PICKLING_EXCEPTION, action_id, ()))
+        else:
+            end_time = datetime.datetime.now()
+            if exception:
+                self.events.put((FAILED, action_id, (end_time, exception)))
+            else:
+                self.events.put((SUCCESSED, action_id, (end_time, return_value)))
 
     def _handle_next_event(self):
         (event_kind, action_id, event_payload) = self.events.get()
@@ -842,7 +838,7 @@ class _Execute(object):
         self.exceptions.append(exception)
         self._triage_pending_dependents(action, True, failure_time)
 
-    def _handle_pickling_exception_event(self, action):
+    def _handle_pickling_exception_event(self, action):  # Not in user guide
         raise pickle.PicklingError()
 
     def _change_status(self, action, orig, dest):
