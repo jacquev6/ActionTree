@@ -12,7 +12,7 @@ class ExecutionTestCase(ActionTreeTestCase):
     def test_simple_execution(self):
         a = self._action("a", return_value=42)
 
-        report = execute(a, jobs=1)
+        report = execute(a, cpu_cores=1)
 
         self.assertTrue(report.is_success)
         self.assertEqual(report.get_action_status(a).status, SUCCESSFUL)
@@ -32,7 +32,7 @@ class ExecutionTestCase(ActionTreeTestCase):
         a.add_dependency(c)
         a.add_dependency(d)
 
-        execute(a, jobs=1)
+        execute(a, cpu_cores=1)
 
         self.assertEventsEqual("bcd a")
 
@@ -61,7 +61,7 @@ class ExecutionTestCase(ActionTreeTestCase):
         d.add_dependency(e)
         e.add_dependency(f)
 
-        execute(a, jobs=1)
+        execute(a, cpu_cores=1)
 
         self.assertEventsEqual("f e d c b a")
 
@@ -81,7 +81,7 @@ class ExecutionTestCase(ActionTreeTestCase):
         b.add_dependency(d)
         c.add_dependency(d)
 
-        execute(a, jobs=1)
+        execute(a, cpu_cores=1)
 
         self.assertEventsEqual("d bc a")
 
@@ -99,7 +99,7 @@ class ExecutionTestCase(ActionTreeTestCase):
         a.add_dependency(d)
         b.add_dependency(d)
 
-        execute(a, jobs=1)
+        execute(a, cpu_cores=1)
 
         self.assertEventsEqual("d b a")
 
@@ -120,7 +120,7 @@ class ExecutionTestCase(ActionTreeTestCase):
         b.add_dependency(d)
         c.add_dependency(e)
 
-        execute(a, jobs=1)
+        execute(a, cpu_cores=1)
 
         self.assertEventsIn([
             # Leaves first
@@ -140,6 +140,6 @@ class ExecutionTestCase(ActionTreeTestCase):
         a = self._action("a")
         a.require_resource(CPU_CORE, 10)
 
-        report = execute(a, jobs=1)
+        report = execute(a, cpu_cores=1)
 
         self.assertTrue(report.is_success)

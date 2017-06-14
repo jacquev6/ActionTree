@@ -17,18 +17,18 @@ import matplotlib.backends.backend_agg
 import wurlitzer
 
 
-def execute(action, jobs=None, keep_going=False, do_raise=True, hooks=None):
+def execute(action, cpu_cores=None, keep_going=False, do_raise=True, hooks=None):
     """
     Recursively execute an :class:`.Action`'s dependencies then the action.
 
     :param Action action: the action to execute.
-    :param jobs: number of CPU cores to use in parallel.
+    :param cpu_cores: number of CPU cores to use in parallel.
         Pass ``None`` (the default value) to let ActionTree choose.
         Pass :attr:`UNLIMITED` to execute an unlimited number of actions in parallel
         (make sure your system has the necessary resources).
         Note: CPU cores are managed like any other :class:`Resource`, and this parameter sets the availability
         of :obj:`CPU_CORE` for this execution.
-    :type jobs: int or None or UNLIMITED
+    :type cpu_cores: int or None or UNLIMITED
     :param bool keep_going: if ``True``, then execution does not stop on first failure,
         but executes as many dependencies as possible.
     :param bool do_raise: if ``False``, then exceptions are not re-raised as :exc:`CompoundException`
@@ -39,11 +39,11 @@ def execute(action, jobs=None, keep_going=False, do_raise=True, hooks=None):
 
     :rtype: ExecutionReport
     """
-    if jobs is None:
-        jobs = multiprocessing.cpu_count()
+    if cpu_cores is None:
+        cpu_cores = multiprocessing.cpu_count()
     if hooks is None:
         hooks = Hooks()
-    return _Execute(jobs, keep_going, do_raise, hooks).run(action)
+    return _Execute(cpu_cores, keep_going, do_raise, hooks).run(action)
 
 
 UNLIMITED = object()
@@ -172,13 +172,13 @@ class Resource(object):
         """
         self.__availability = availability
 
-    def _availability(self, jobs):
+    def _availability(self, cpu_cores):
         return self.__availability
 
 
 class CpuCoreResource(Resource):
-    def _availability(self, jobs):
-        return jobs
+    def _availability(self, cpu_cores):
+        return cpu_cores
 
 
 CPU_CORE = CpuCoreResource(0)
@@ -753,8 +753,8 @@ class WurlitzerToEvents(wurlitzer.Wurlitzer):
 
 
 class _Execute(object):
-    def __init__(self, jobs, keep_going, do_raise, hooks):
-        self.jobs = jobs
+    def __init__(self, cpu_cores, keep_going, do_raise, hooks):
+        self.cpu_cores = cpu_cores
         self.keep_going = keep_going
         self.do_raise = do_raise
         self.hooks = hooks
@@ -845,7 +845,7 @@ class _Execute(object):
             if used == 0:
                 # Allow actions requiring more than available to run when they are alone requiring this resource
                 continue
-            availability = resource._availability(self.jobs)
+            availability = resource._availability(self.cpu_cores)
             if availability is UNLIMITED:  # Not in user guide: implementation detail
                 # Don't check usage of unlimited resources
                 continue

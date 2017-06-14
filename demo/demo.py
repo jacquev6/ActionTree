@@ -131,4 +131,4 @@ z = DemoAction("z", 1., 5)
 z.add_dependency(a)
 z.add_dependency(b)
 
-execute(z, jobs=4, hooks=DemoHooks(z), do_raise=False, keep_going=True)
+execute(z, cpu_cores=4, hooks=DemoHooks(z), do_raise=False, keep_going=True)

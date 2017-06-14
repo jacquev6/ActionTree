@@ -21,7 +21,7 @@ More CPU cores
 --------------
 
 By default, `ActionTree` considers that all actions execute on a single core.
-Thus, by default, the ``jobs`` parameter of :func:`.execute` controls how many actions can be executed in parallel.
+Thus, by default, the ``cpu_cores`` parameter of :func:`.execute` controls how many actions can be executed in parallel.
 
 You can tell `ActionTree` that your :class:`.Action` uses more cores with :meth:`~.Action.require_resource` and :obj:`.CPU_CORE`:
 
@@ -38,7 +38,7 @@ You can tell `ActionTree` that your :class:`.Action` uses more cores with :meth:
 >>> link_with_others.add_dependency(compile_b)
 >>> link_with_others.add_dependency(compile_others)
 
->>> GanttChart(execute(link_with_others, jobs=4)).write_to_png("link_with_others_gantt_chart.png")
+>>> GanttChart(execute(link_with_others, cpu_cores=4)).write_to_png("link_with_others_gantt_chart.png")
 
 .. figure:: artifacts/link_with_others_gantt_chart.png
     :align: center
@@ -70,7 +70,7 @@ while allowing other actions to run, just create a resource:
 >>> for d in dependencies:
 ...   arbitrary_resource.add_dependency(d)
 
->>> GanttChart(execute(arbitrary_resource, jobs=5)).write_to_png("arbitrary_resource_gantt_chart.png")
+>>> GanttChart(execute(arbitrary_resource, cpu_cores=5)).write_to_png("arbitrary_resource_gantt_chart.png")
 
 .. figure:: artifacts/arbitrary_resource_gantt_chart.png
     :align: center

@@ -72,7 +72,7 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         a.add_dependency(d)
 
         with self.assertRaises(CompoundException) as catcher:
-            execute(a, jobs=1, keep_going=True)
+            execute(a, cpu_cores=1, keep_going=True)
         report = catcher.exception.execution_report
 
         self.assertEqual(len(catcher.exception.exceptions), 2)
@@ -99,7 +99,7 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         f.add_dependency(g)
 
         with self.assertRaises(CompoundException) as catcher:
-            execute(a, jobs=1, keep_going=True)
+            execute(a, cpu_cores=1, keep_going=True)
         report = catcher.exception.execution_report
 
         self.assertEqual(len(catcher.exception.exceptions), 1)
@@ -135,7 +135,7 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
                 a.add_dependency(b)
                 b_was_added_after_c = True
 
-            report = execute(a, jobs=1, keep_going=False, do_raise=False)
+            report = execute(a, cpu_cores=1, keep_going=False, do_raise=False)
 
             self.assertEqual(report.get_action_status(a).status, CANCELED)
             self.assertEqual(report.get_action_status(b).status, FAILED)

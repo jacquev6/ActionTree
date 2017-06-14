@@ -30,6 +30,6 @@ class GanttChartTestCase(ActionTreeTestCase):
         c.add_dependency(a)
         c.add_dependency(b)
 
-        chart = GanttChart(execute(c, jobs=2))
+        chart = GanttChart(execute(c, cpu_cores=2))
         ax = unittest.mock.Mock()
         chart.plot_on_mpl_axes(ax)

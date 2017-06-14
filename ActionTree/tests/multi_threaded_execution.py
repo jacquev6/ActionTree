@@ -23,11 +23,11 @@ class MultiThreadedExecutionTestCase(ActionTreeTestCase):
         a.add_dependency(c)
         a.add_dependency(d)
 
-        execute(a, jobs=3)
+        execute(a, cpu_cores=3)
 
         self.assertEventsEqual("bcd BCD a")
 
-    def test_many_dependencies_with_default_jobs(self):
+    def test_many_dependencies_with_default_cpu_cores(self):
         #     a
         #    /|\
         #   / | \
@@ -41,7 +41,7 @@ class MultiThreadedExecutionTestCase(ActionTreeTestCase):
         a.add_dependency(c)
         a.add_dependency(d)
 
-        execute(a, jobs=None)
+        execute(a, cpu_cores=None)
 
         self.assertEventsEqual("bcd BCD a")
 
@@ -70,7 +70,7 @@ class MultiThreadedExecutionTestCase(ActionTreeTestCase):
         d.add_dependency(e)
         e.add_dependency(f)
 
-        execute(a, jobs=3)
+        execute(a, cpu_cores=3)
 
         self.assertEventsEqual("f F e E d D c C b B a")
 
@@ -90,7 +90,7 @@ class MultiThreadedExecutionTestCase(ActionTreeTestCase):
         b.add_dependency(d)
         c.add_dependency(d)
 
-        execute(a, jobs=3)
+        execute(a, cpu_cores=3)
 
         self.assertEventsEqual("d D bc BC a")
 
@@ -108,7 +108,7 @@ class MultiThreadedExecutionTestCase(ActionTreeTestCase):
         a.add_dependency(d)
         b.add_dependency(d)
 
-        execute(a, jobs=3)
+        execute(a, cpu_cores=3)
 
         self.assertEventsEqual("d D b B a")
 
@@ -129,6 +129,6 @@ class MultiThreadedExecutionTestCase(ActionTreeTestCase):
         b.add_dependency(d)
         c.add_dependency(e)
 
-        execute(a, jobs=3)
+        execute(a, cpu_cores=3)
 
         self.assertEventsEqual("de DEbc BC a")
