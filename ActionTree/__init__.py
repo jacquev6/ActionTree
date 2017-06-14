@@ -39,7 +39,6 @@ def execute(action, jobs=1, keep_going=False, do_raise=True, hooks=None):
 
     :rtype: ExecutionReport
     """
-    _check_picklability(action)
     if jobs is None:
         jobs = multiprocessing.cpu_count()
     if hooks is None:
@@ -242,13 +241,6 @@ class ExecutionReport(object):
         Status of a single :class:`.Action`.
         """
 
-        SUCCESSFUL = "SUCCESSFUL"
-        "The :attr:`status` after a successful execution."
-        FAILED = "FAILED"
-        "The :attr:`status` after a failed execution where this action raised an exception."
-        CANCELED = "CANCELED"
-        "The :attr:`status` after a failed execution where a dependency raised an exception."
-
         def __init__(self, pending_time):
             self.__pending_time = pending_time
             self.__ready_time = None
@@ -292,13 +284,13 @@ class ExecutionReport(object):
             """
             if self.start_time:
                 if self.success_time:
-                    return self.SUCCESSFUL
+                    return SUCCESSFUL
                 else:
                     assert self.failure_time
-                    return self.FAILED
+                    return FAILED
             else:
                 assert self.cancel_time
-                return self.CANCELED
+                return CANCELED
 
         @property
         def pending_time(self):
@@ -397,7 +389,7 @@ class ExecutionReport(object):
         :rtype: bool
         """
         return all(
-            action_status.status == self.ActionStatus.SUCCESSFUL
+            action_status.status == SUCCESSFUL
             for action_status in self.__action_statuses.itervalues()
         )
 
@@ -418,6 +410,20 @@ class ExecutionReport(object):
         :rtype: list(tuple(Action, ActionStatus))
         """
         return self.__action_statuses.items()
+
+
+SUCCESSFUL = "SUCCESSFUL"
+"The :attr:`.ActionStatus.status` after a successful execution."
+
+FAILED = "FAILED"
+"The :attr:`.ActionStatus.status` after a failed execution where this action raised an exception."
+
+CANCELED = "CANCELED"
+"The :attr:`.ActionStatus.status` after a failed execution where a dependency raised an exception."
+
+PRINTED = "PRINTED"
+
+PICKLING_EXCEPTION = "PICKLING_EXCEPTION"
 
 
 class DependencyGraph(object):
@@ -585,11 +591,11 @@ class GanttChart(object):  # Not unittested: too difficult
 
     @classmethod
     def __make_action(cls, action, status):
-        if status.status == ExecutionReport.ActionStatus.SUCCESSFUL:
+        if status.status == SUCCESSFUL:
             return cls.SuccessfulAction(action, status)
-        elif status.status == ExecutionReport.ActionStatus.FAILED:
+        elif status.status == FAILED:
             return cls.FailedAction(action, status)
-        elif status.status == ExecutionReport.ActionStatus.CANCELED:
+        elif status.status == CANCELED:
             return cls.CanceledAction(action, status)
 
     def write_to_png(self, filename):
@@ -669,19 +675,6 @@ class GanttChart(object):  # Not unittested: too difficult
         ax2.xaxis.set_ticklabels(ticks)
 
 
-def _check_picklability(stuff):
-    # This is a way to fail fast if we see a non-picklable object
-    # because ProcessPoolExecutor freezes forever if we try to transfer
-    # a non-picklable object through its queues
-    pickle.loads(pickle.dumps(stuff))
-
-
-SUCCESSED = "SUCCESSED"
-PRINTED = "PRINTED"
-FAILED = "FAILED"
-PICKLING_EXCEPTION = "PICKLING_EXCEPTION"
-
-
 class WurlitzerToEvents(wurlitzer.Wurlitzer):
     # This is a highly contrived use of Wurlitzer:
     # We just need to *capture* standards streams, so we trick Wurlitzer,
@@ -710,6 +703,7 @@ class _Execute(object):
         now = datetime.datetime.now()
 
         # Pre-process actions
+        self._check_picklability(root_action)
         actions = root_action.get_possible_execution_order()
         self.actions_by_id = {id(action): action for action in actions}
         self.dependents = {action: set() for action in actions}
@@ -803,7 +797,7 @@ class _Execute(object):
             except Exception as e:
                 exception = e
         try:
-            _check_picklability((exception, return_value))
+            self._check_picklability((exception, return_value))
         except:  # Not in user guide
             self.events.put((PICKLING_EXCEPTION, action_id, ()))
         else:
@@ -811,19 +805,25 @@ class _Execute(object):
             if exception:
                 self.events.put((FAILED, action_id, (end_time, exception)))
             else:
-                self.events.put((SUCCESSED, action_id, (end_time, return_value)))
+                self.events.put((SUCCESSFUL, action_id, (end_time, return_value)))
+
+    def _check_picklability(self, stuff):
+        # This is a way to fail fast if we see a non-picklable object
+        # because ProcessPoolExecutor freezes forever if we try to transfer
+        # a non-picklable object through its queues
+        pickle.loads(pickle.dumps(stuff))
 
     def _handle_next_event(self):
         (event_kind, action_id, event_payload) = self.events.get()
         handlers = {
-            SUCCESSED: self._handle_successed_event,
+            SUCCESSFUL: self._handle_successful_event,
             PRINTED: self._handle_printed_event,
             FAILED: self._handle_failed_event,
             PICKLING_EXCEPTION: self._handle_pickling_exception_event,
         }
         handlers[event_kind](self.actions_by_id[action_id], *event_payload)
 
-    def _handle_successed_event(self, action, success_time, return_value):
+    def _handle_successful_event(self, action, success_time, return_value):
         self.report.get_action_status(action)._set_success(success_time, return_value)
         self.hooks.action_successful(success_time, action, return_value)
 

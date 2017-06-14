@@ -15,7 +15,7 @@ class ExecutionTestCase(ActionTreeTestCase):
         report = execute(a)
 
         self.assertTrue(report.is_success)
-        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.SUCCESSFUL)
+        self.assertEqual(report.get_action_status(a).status, SUCCESSFUL)
         self.assertEqual(report.get_action_status(a).return_value, 42)
 
     def test_many_dependencies(self):

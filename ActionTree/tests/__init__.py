@@ -43,7 +43,7 @@ class TestAction(Action):
 
     def do_execute(self, dependency_statuses):
         for d in self.dependencies:
-            assert self.weak_dependencies or dependency_statuses[d].status == ExecutionReport.ActionStatus.SUCCESSFUL
+            assert self.weak_dependencies or dependency_statuses[d].status == SUCCESSFUL
         with open(self.__events_file, "a") as f:
             f.write("{}\n".format(str(self.label).lower()))
         if self.__delay:

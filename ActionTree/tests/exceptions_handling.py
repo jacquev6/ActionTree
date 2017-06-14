@@ -22,7 +22,7 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         self.assertEqual(catcher.exception.exceptions[0].args, ("foobar",))
 
         self.assertFalse(report.is_success)
-        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.FAILED)
+        self.assertEqual(report.get_action_status(a).status, FAILED)
 
     def test_simple_failure_without_raise(self):
         a = self._action("a", exception=Exception("foobar"))
@@ -30,7 +30,7 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         report = execute(a, jobs=1, do_raise=False)
 
         self.assertFalse(report.is_success)
-        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.FAILED)
+        self.assertEqual(report.get_action_status(a).status, FAILED)
         self.assertEqual(report.get_action_status(a).exception.args, ("foobar",))
 
     def test_exception_in_dependency(self):
@@ -46,8 +46,8 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         self.assertEqual(catcher.exception.exceptions[0].args, ("foobar",))
 
         self.assertFalse(report.is_success)
-        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.CANCELED)
-        self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.FAILED)
+        self.assertEqual(report.get_action_status(a).status, CANCELED)
+        self.assertEqual(report.get_action_status(b).status, FAILED)
 
     def test_exceptions_in_dependency_with_weak_dependencies(self):
         a = self._action("a", weak_dependencies=True)
@@ -59,8 +59,8 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         report = catcher.exception.execution_report
 
         self.assertFalse(report.is_success)
-        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.SUCCESSFUL)
-        self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.FAILED)
+        self.assertEqual(report.get_action_status(a).status, SUCCESSFUL)
+        self.assertEqual(report.get_action_status(b).status, FAILED)
 
     def test_exceptions_in_dependencies_with_keep_going(self):
         a = self._action("a")
@@ -78,10 +78,10 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         self.assertEqual(len(catcher.exception.exceptions), 2)
         self.assertEqual(sorted(ex.args for ex in catcher.exception.exceptions), [("eb",), ("ec",)])
 
-        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.CANCELED)
-        self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.FAILED)
-        self.assertEqual(report.get_action_status(c).status, ExecutionReport.ActionStatus.FAILED)
-        self.assertEqual(report.get_action_status(d).status, ExecutionReport.ActionStatus.SUCCESSFUL)
+        self.assertEqual(report.get_action_status(a).status, CANCELED)
+        self.assertEqual(report.get_action_status(b).status, FAILED)
+        self.assertEqual(report.get_action_status(c).status, FAILED)
+        self.assertEqual(report.get_action_status(d).status, SUCCESSFUL)
 
     def test_exceptions_in_long_branch_dependencies_with_keep_going(self):
         a = self._action("a")
@@ -105,13 +105,13 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         self.assertEqual(len(catcher.exception.exceptions), 1)
         self.assertEqual(catcher.exception.exceptions[0].args, ("foobar",))
 
-        self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.CANCELED)
-        self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.SUCCESSFUL)
-        self.assertEqual(report.get_action_status(c).status, ExecutionReport.ActionStatus.SUCCESSFUL)
-        self.assertEqual(report.get_action_status(d).status, ExecutionReport.ActionStatus.CANCELED)
-        self.assertEqual(report.get_action_status(e).status, ExecutionReport.ActionStatus.FAILED)
-        self.assertEqual(report.get_action_status(f).status, ExecutionReport.ActionStatus.SUCCESSFUL)
-        self.assertEqual(report.get_action_status(g).status, ExecutionReport.ActionStatus.SUCCESSFUL)
+        self.assertEqual(report.get_action_status(a).status, CANCELED)
+        self.assertEqual(report.get_action_status(b).status, SUCCESSFUL)
+        self.assertEqual(report.get_action_status(c).status, SUCCESSFUL)
+        self.assertEqual(report.get_action_status(d).status, CANCELED)
+        self.assertEqual(report.get_action_status(e).status, FAILED)
+        self.assertEqual(report.get_action_status(f).status, SUCCESSFUL)
+        self.assertEqual(report.get_action_status(g).status, SUCCESSFUL)
 
     def test_exceptions_in_dependencies_without_keep_going(self):
         c_was_canceled = False
@@ -137,12 +137,12 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
 
             report = execute(a, jobs=1, keep_going=False, do_raise=False)
 
-            self.assertEqual(report.get_action_status(a).status, ExecutionReport.ActionStatus.CANCELED)
-            self.assertEqual(report.get_action_status(b).status, ExecutionReport.ActionStatus.FAILED)
-            if report.get_action_status(c).status == ExecutionReport.ActionStatus.CANCELED:
+            self.assertEqual(report.get_action_status(a).status, CANCELED)
+            self.assertEqual(report.get_action_status(b).status, FAILED)
+            if report.get_action_status(c).status == CANCELED:
                 c_was_canceled = True
             else:
-                self.assertEqual(report.get_action_status(c).status, ExecutionReport.ActionStatus.SUCCESSFUL)
+                self.assertEqual(report.get_action_status(c).status, SUCCESSFUL)
                 c_was_executed = True
             if c_was_canceled and c_was_executed and b_was_added_before_c and b_was_added_after_c:
                 break
