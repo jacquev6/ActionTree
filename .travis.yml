@@ -9,7 +9,7 @@ addons:
     packages:
     - graphviz
 install:
-- pip install --upgrade pip setuptools
+- pip install --upgrade pip setuptools coverage
 - pip install --upgrade sphinx coveralls
 - pip install --upgrade graphviz matplotlib
 - if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ];
@@ -17,7 +17,7 @@ install:
     pip install --upgrade mock;
   fi
 script:
-- coverage run setup.py test
+- coverage run --rcfile=.coveragerc.py2_unittest setup.py test
 - coverage combine
 - if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ];
   then

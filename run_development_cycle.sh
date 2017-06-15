@@ -11,46 +11,7 @@ git checkout docs
 # pip3 install --quiet --upgrade --user matplotlib graphviz pep8
 
 
-coverage2 erase
-
-coverage2 run setup.py --quiet test
-
-coverage2 combine
-
-coverage2 report --show-missing | grep -v "^ActionTree.*100%$"
-
-coverage2 html --directory=build/py2_unittest_coverage
-echo
-echo "See Python 2 unit tests coverage details in $(pwd)/build/py2_unittest_coverage/index.html"
-echo
-
-
-mv .coveragerc .coveragerc.bak
-
-( echo "[run]"
-  echo "concurrency = multiprocessing"
-  echo "[report]"
-  echo "exclude_lines ="
-  echo "  Not in user guide") > .coveragerc
-
-coverage2 erase
-
-coverage2 run setup.py build_sphinx --builder=doctest
-
-mv doc/user_guide/artifacts/.coverage.* .
-coverage2 combine
-
-coverage2 report --include="ActionTree/*" | grep -v "^ActionTree.*100%$"
-
-coverage2 html --include="ActionTree/*" --directory=build/py2_doctest_coverage
-echo
-echo "See Python 2 doc tests coverage details in $(pwd)/build/py2_doctest_coverage/index.html"
-echo
-
-mv .coveragerc.bak .coveragerc
-
-
-python3 setup.py --quiet test
+./develop.py test
 
 
 pep8 --max-line-length=120 ActionTree setup.py doc/conf.py

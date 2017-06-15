@@ -13,7 +13,7 @@ import unittest
 
 try:
     import unittest.mock
-except ImportError:
+except ImportError:  # Not unittested: test code for Python 2
     import mock
     unittest.mock = mock
 

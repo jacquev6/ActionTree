@@ -51,12 +51,17 @@ add_class_names = False
 extensions.append("sphinx.ext.doctest")
 # doctest_path
 doctest_global_setup = """
+import glob
 import os
+import shutil
 
 os.chdir("doc/user_guide/artifacts")
 """
 doctest_global_cleanup = """
 os.chdir("../../..")
+
+for f in glob.glob("doc/user_guide/artifacts/.coverage.*"):
+    shutil.move(f, ".")
 """
 # doctest_test_doctest_blocks
 

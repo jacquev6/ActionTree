@@ -5,3 +5,5 @@
 /.coverage
 /.coverage.*
 /.eggs/
+/action.png
+/report.png
