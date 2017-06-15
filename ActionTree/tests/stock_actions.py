@@ -76,10 +76,14 @@ class CallSubprocessTestCase(PatchingTestCase):
     def setUp(self):
         self.check_call = self.patch("subprocess.check_call")
 
-    def test_label(self):
+    def test_default_label(self):
         self.assertEqual(CallSubprocess(["xxx", "yyy"]).label, "xxx yyy")
 
-        self.check_call.assert_not_called()
+    def test_label(self):
+        self.assertEqual(CallSubprocess(["xxx", "yyy"], label="foo").label, "foo")
+
+    def test_coping_dependencies(self):
+        self.assertTrue(CallSubprocess(["xxx", "yyy"], coping_dependencies=True).coping_dependencies)
 
     def test_pickle(self):
         self.assertIsInstance(pickle.dumps(CallSubprocess(["xxx", "yyy"])), bytes)
@@ -96,7 +100,7 @@ class CallSubprocessTestCase(PatchingTestCase):
         self.check_call.assert_called_once_with(["xxx", "yyy"])
 
     def test_call_with_kwds(self):
-        CallSubprocess(["xxx", "yyy"], foo="bar").do_execute({})
+        CallSubprocess(["xxx", "yyy"], kwargs=dict(foo="bar")).do_execute({})
 
         self.check_call.assert_called_once_with(["xxx", "yyy"], foo="bar")
 

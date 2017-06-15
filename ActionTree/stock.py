@@ -19,13 +19,19 @@ import time
 from . import Action
 
 
+DEFAULT = object()
+
+
 class NullAction(Action):
     """
     A stock action that does nothing.
     Useful as a placeholder for several dependencies.
     """
-    def __init__(self, weak_dependencies=False):
-        Action.__init__(self, None, weak_dependencies=weak_dependencies)
+    def __init__(self, label=None, *args, **kwds):
+        """
+        @todoc
+        """
+        Action.__init__(self, label, *args, **kwds)
 
     def do_execute(self, dependency_statuses):
         pass
@@ -35,24 +41,25 @@ class CallSubprocess(Action):
     """
     A stock action that calls a subprocess.
 
-    Arguments are forwarded exactly to :func:`subprocess.check_call`.
-
     Note: if the process fails,
     :func:`~subprocess.check_call` raises a :exc:`subprocess.CalledProcessError`,
     which `cannot be pickled <http://bugs.python.org/issue1692335>`__ in Python 2.
     So, in that case, this action catches the original exception and
     raises a :exc:`CalledProcessError`.
     """
-    def __init__(self, args, **kwds):
-        Action.__init__(self, " ".join(args))
-        self.__args = args
-        self.__kwds = kwds
+    def __init__(self, command, kwargs={}, label=DEFAULT, *args, **kwds):
+        """
+        @todoc
+        """
+        Action.__init__(self, " ".join(command) if label is DEFAULT else label, *args, **kwds)
+        self.__command = command
+        self.__kwargs = kwargs
 
     def do_execute(self, dependency_statuses):
         # subprocess.CalledProcessError can't be pickled in Python2
         # See http://bugs.python.org/issue1692335
         try:
-            subprocess.check_call(self.__args, **self.__kwds)
+            subprocess.check_call(self.__command, **self.__kwargs)
         except subprocess.CalledProcessError as e:  # Not in user guide
             raise CalledProcessError(e.returncode, e.cmd, e.output)
 
@@ -71,8 +78,11 @@ class CreateDirectory(Action):
 
     :param str name: the directory to create, passed to :func:`os.makedirs`.
     """
-    def __init__(self, name):
-        Action.__init__(self, "mkdir {}".format(name))
+    def __init__(self, name, label=DEFAULT, *args, **kwds):
+        """
+        @todoc
+        """
+        Action.__init__(self, "mkdir {}".format(name) if label is DEFAULT else label, *args, **kwds)
         self.__name = name
 
     def do_execute(self, dependency_statuses):
@@ -90,8 +100,11 @@ class DeleteFile(Action):  # Not in user guide
 
     :param str name: the name of the file to delete, passed to :func:`os.unlink`.
     """
-    def __init__(self, name):
-        Action.__init__(self, "rm {}".format(name))
+    def __init__(self, name, label=DEFAULT, *args, **kwds):
+        """
+        @todoc
+        """
+        Action.__init__(self, "rm {}".format(name) if label is DEFAULT else label, *args, **kwds)
         self.__name = name
 
     def do_execute(self, dependency_statuses):
@@ -109,8 +122,11 @@ class CopyFile(Action):  # Not in user guide
     :param str src: the file to copy
     :param str dst: the destination
     """
-    def __init__(self, src, dst):
-        Action.__init__(self, "cp {} {}".format(src, dst))
+    def __init__(self, src, dst, label=DEFAULT, *args, **kwds):
+        """
+        @todoc
+        """
+        Action.__init__(self, "cp {} {}".format(src, dst) if label is DEFAULT else label, *args, **kwds)
         self.__src = src
         self.__dst = dst
 
@@ -130,8 +146,11 @@ class TouchFile(Action):  # Not in user guide
     :param str name: the name of the file to touch. Passed to :func:`open` and/or :func:`os.utime`.
     """
 
-    def __init__(self, name):
-        Action.__init__(self, "touch {}".format(name))
+    def __init__(self, name, label=DEFAULT, *args, **kwds):
+        """
+        @todoc
+        """
+        Action.__init__(self, "touch {}".format(name) if label is DEFAULT else label, *args, **kwds)
         self.__name = name
 
     def do_execute(self, dependency_statuses):
@@ -145,8 +164,11 @@ class Sleep(Action):
 
     :param float secs: seconds to sleep, passed to :func:`time.sleep`.
     """
-    def __init__(self, secs):
-        Action.__init__(self, "sleep {}".format(secs))
+    def __init__(self, secs, label=DEFAULT, *args, **kwds):
+        """
+        @todoc
+        """
+        Action.__init__(self, "sleep {}".format(secs) if label is DEFAULT else label, *args, **kwds)
         self.__secs = secs
 
     def do_execute(self, dependency_statuses):

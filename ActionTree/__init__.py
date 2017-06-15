@@ -78,19 +78,26 @@ class Action(object):
     Actions, return values and exceptions raised must be picklable.
     """
 
-    def __init__(self, label, weak_dependencies=False):
+    def __init__(self, label, dependencies=[], resources_required={}, coping_dependencies=False):
         """
-        :param label: whatever you want to attach to the action.
+        :param label:
+            whatever you want to attach to the action.
             ``str(label)`` must succeed and return a string.
             Can be retrieved by :attr:`label`.
-        :param bool weak_dependencies:
+        :param list(Action) dependencies:
+            see :meth:`~.Action.add_dependency`
+        :param resources_required:
+            see :meth:`~.Action.require_resource`
+        :type resources_required: dict(Resource, int)
+        :param bool coping_dependencies:
             it ``True``, then the action will execute even if some of its dependencies failed.
         """
         str(label)
         self.__label = label
-        self.__weak_dependencies = weak_dependencies
-        self.__dependencies = []
-        self.__resources = {CPU_CORE: 1}
+        self.__dependencies = list(dependencies)
+        self.__resources_required = {CPU_CORE: 1}
+        self.__resources_required.update(resources_required)
+        self.__coping_dependencies = coping_dependencies
 
     @property
     def label(self):
@@ -98,15 +105,6 @@ class Action(object):
         The label passed to the constructor.
         """
         return self.__label
-
-    @property
-    def weak_dependencies(self):
-        """
-        ``True`` if the action will execute even if some of its dependencies failed.
-
-        :rtype: bool
-        """
-        return self.__weak_dependencies
 
     def add_dependency(self, dependency):
         """
@@ -138,7 +136,7 @@ class Action(object):
         :param Resource resource:
         :param int quantity:
         """
-        self.__resources[resource] = quantity
+        self.__resources_required[resource] = quantity
 
     @property
     def resources_required(self):
@@ -147,7 +145,16 @@ class Action(object):
 
         :rtype: list(tuple(Resource, int))
         """
-        return list(self.__resources.iteritems())
+        return list(self.__resources_required.iteritems())
+
+    @property
+    def coping_dependencies(self):
+        """
+        ``True`` if the action will execute even if some of its dependencies failed.
+
+        :rtype: bool
+        """
+        return self.__coping_dependencies
 
     def get_possible_execution_order(self, seen_actions=None):
         """
@@ -814,7 +821,7 @@ class _Execute(object):
 
     def _triage_pending_dependents(self, action, failed, now):
         for dependent in self.pending & self.dependents[action]:
-            if failed and not dependent.weak_dependencies:
+            if failed and not dependent.coping_dependencies:
                 self._cancel_action(dependent, now)
             elif all(d in self.done for d in dependent.dependencies):
                 self._prepare_action(dependent, now)
