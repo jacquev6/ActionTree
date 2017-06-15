@@ -4,17 +4,30 @@
 
 from __future__ import division, absolute_import, print_function
 
+import ctypes
 import datetime
 import multiprocessing
 import os.path
 import pickle
+import sys
+import threading
 
 import graphviz
 import matplotlib
 import matplotlib.dates
 import matplotlib.figure
 import matplotlib.backends.backend_agg
-import wurlitzer
+
+
+libc = ctypes.CDLL(None)
+try:
+    stdout = ctypes.c_void_p.in_dll(libc, "stdout")
+except ValueError:
+    stdout = ctypes.c_void_p.in_dll(libc, "__stdoutp")
+try:
+    stderr = ctypes.c_void_p.in_dll(libc, "stderr")
+except ValueError:
+    stderr = ctypes.c_void_p.in_dll(libc, "__stderrp")
 
 
 def execute(action, cpu_cores=None, keep_going=False, do_raise=True, hooks=None):
@@ -735,23 +748,6 @@ class GanttChart(object):  # Not unittested: too difficult
         ax2.xaxis.set_ticklabels(ticks)
 
 
-class WurlitzerToEvents(wurlitzer.Wurlitzer):
-    # This is a highly contrived use of Wurlitzer:
-    # We just need to *capture* standards streams, so we trick Wurlitzer,
-    # passing True instead of writeable file-like objects, and we redefine
-    # _handle_xxx methods to intercept what it would write
-    def __init__(self, events, action_id):
-        super(WurlitzerToEvents, self).__init__(stdout=True, stderr=True)
-        self.events = events
-        self.action_id = action_id
-
-    def _handle_stdout(self, data):
-        self.events.put((PRINTED, self.action_id, (datetime.datetime.now(), self._decode(data))))
-
-    def _handle_stderr(self, data):
-        self._handle_stdout(data)
-
-
 class _Execute(object):
     def __init__(self, cpu_cores, keep_going, do_raise, hooks):
         self.cpu_cores = cpu_cores
@@ -868,12 +864,30 @@ class _Execute(object):
         self._change_status(action, self.ready, self.running)
 
     def _run_action(self, action, action_id, dependency_statuses):
-        with WurlitzerToEvents(self.events, action_id):
-            return_value = exception = None
-            try:
-                return_value = action.do_execute(dependency_statuses)
-            except Exception as e:
-                exception = e
+        return_value = exception = None
+        (pipe_r, pipe_w) = os.pipe()
+        sys.stdout.flush()
+        libc.fflush(stdout)
+        os.dup2(pipe_w, 1)
+        sys.stderr.flush()
+        libc.fflush(stderr)
+        os.dup2(pipe_w, 2)
+        os.close(pipe_w)
+        thread = threading.Thread(target=self._read_to_events, kwargs=dict(action_id=action_id, pipe_r=pipe_r))
+        thread.daemon = True
+        thread.start()
+        try:
+            return_value = action.do_execute(dependency_statuses)
+        except Exception as e:
+            exception = e
+        sys.stdout.flush()
+        libc.fflush(stdout)
+        os.close(1)
+        sys.stderr.flush()
+        libc.fflush(stderr)
+        os.close(2)
+        thread.join()
+        os.close(pipe_r)
         try:
             self._check_picklability((exception, return_value))
         except:  # Not in user guide: mandatory picklability is more an issue than a feature
@@ -884,6 +898,13 @@ class _Execute(object):
                 self.events.put((FAILED, action_id, (end_time, exception)))
             else:
                 self.events.put((SUCCESSFUL, action_id, (end_time, return_value)))
+
+    def _read_to_events(self, action_id, pipe_r):
+        while True:
+            data = os.read(pipe_r, 1024)
+            if len(data) == 0:
+                break
+            self.events.put((PRINTED, action_id, (datetime.datetime.now(), data)))
 
     def _check_picklability(self, stuff):
         # This is a way to fail fast if we see a non-picklable object
@@ -909,7 +930,9 @@ class _Execute(object):
         self._triage_pending_dependents(action, False, success_time)
         self._deallocate_resources(action)
 
-    def _handle_printed_event(self, action, print_time, text):
+    def _handle_printed_event(self, action, print_time, data):
+        text = data.decode("utf8")  # @todo DO NOT decode.
+        # We have no way to know the encoding used. Give bytes back to client and let them decode.
         self.report.get_action_status(action)._add_output(text)
         self.hooks.action_printed(print_time, action, text)
 

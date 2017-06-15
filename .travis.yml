@@ -11,7 +11,7 @@ addons:
 install:
 - pip install --upgrade pip setuptools
 - pip install --upgrade sphinx coveralls
-- pip install --upgrade graphviz matplotlib wurlitzer
+- pip install --upgrade graphviz matplotlib
 - if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ];
   then
     pip install --upgrade mock;

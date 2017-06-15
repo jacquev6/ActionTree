@@ -13,7 +13,7 @@ git checkout docs
 
 coverage2 erase
 
-coverage2 run setup.py test --quiet
+coverage2 run setup.py --quiet test
 
 coverage2 combine
 
@@ -50,7 +50,7 @@ echo
 mv .coveragerc.bak .coveragerc
 
 
-python3 setup.py test --quiet
+python3 setup.py --quiet test
 
 
 pep8 --max-line-length=120 ActionTree setup.py doc/conf.py
