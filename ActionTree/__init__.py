@@ -567,7 +567,13 @@ class GanttChart(object):  # Not unittested: too difficult
             self.__ordinates[id(action)] = len(self.__actions) - ordinate
             for d in sorted(
                 action.dependencies,
-                key=lambda d: report.get_action_status(d).success_time or report.get_action_status(d).failure_time
+                key=(
+                    lambda d: report.get_action_status(d).success_time or
+                    report.get_action_status(d).failure_time or
+                    report.get_action_status(d).cancel_time or
+                    report.get_action_status(d).ready_time or
+                    report.get_action_status(d).pending_time
+                )
             ):
                 if len(dependents[d]) == 1:
                     ordinate = compute(d, ordinate - 1)
