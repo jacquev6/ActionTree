@@ -22,11 +22,11 @@ import matplotlib.backends.backend_agg
 libc = ctypes.CDLL(None)
 try:
     stdout = ctypes.c_void_p.in_dll(libc, "stdout")
-except ValueError:
+except ValueError:  # Not unittested: specific to macOS
     stdout = ctypes.c_void_p.in_dll(libc, "__stdoutp")
 try:
     stderr = ctypes.c_void_p.in_dll(libc, "stderr")
-except ValueError:
+except ValueError:  # Not unittested: specific to macOS
     stderr = ctypes.c_void_p.in_dll(libc, "__stderrp")
 
 
