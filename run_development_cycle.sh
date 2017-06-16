@@ -7,14 +7,13 @@ clear
 git checkout docs
 
 
-# pip2 install --quiet --upgrade --user matplotlib graphviz sphinx coverage mock
-# pip3 install --quiet --upgrade --user matplotlib graphviz pep8
+# ./develop.py dependencies
 
 
 ./develop.py test
 
 
-pep8 --max-line-length=120 ActionTree setup.py doc/conf.py
+pep8 --max-line-length=120 ActionTree *.py doc/conf.py
 
 
 python setup.py build_sphinx

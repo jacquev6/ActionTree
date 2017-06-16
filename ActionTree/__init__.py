@@ -12,11 +12,10 @@ import pickle
 import sys
 import threading
 
+# We import matplotlib in the functions that need it because
+# upgrading it while using it leads to segfault. And we upgrade
+# it via devlpr, that uses ActionTree.
 import graphviz
-import matplotlib
-import matplotlib.dates
-import matplotlib.figure
-import matplotlib.backends.backend_agg
 
 
 libc = ctypes.CDLL(None)
@@ -81,6 +80,8 @@ class Action(object):
     def __init__(self, label, dependencies=[], resources_required={}, coping_dependencies=False):
         """
         :param label:
+            @todo Insist on label being a str or None.
+            Add a note saying how it's used in GanttChart and DependencyGraph.
             whatever you want to attach to the action.
             ``str(label)`` must succeed and return a string.
             Can be retrieved by :attr:`label`.
@@ -517,6 +518,7 @@ class DependencyGraph(object):
         for (i, action) in enumerate(action.get_possible_execution_order()):
             node = str(i)
             nodes[action] = node
+            # @todo Add a dot node when label is None
             self.__graphviz_graph.node(node, str(action.label))
             for dependency in action.dependencies:
                 assert dependency in nodes  # Because we are iterating a possible execution order
@@ -609,6 +611,7 @@ class GanttChart(object):  # Not unittested: too difficult
                 color="blue", lw=4, solid_capstyle="butt",
             )
             # @todo Make sure the text is not outside the plot on the right
+            # @todo Don't display label when it's None
             ax.annotate(
                 self.__label,
                 xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points",
@@ -690,6 +693,8 @@ class GanttChart(object):  # Not unittested: too difficult
 
         See also :meth:`get_mpl_figure` and :meth:`plot_on_mpl_axes` if you want to draw the report somewhere else.
         """
+        import matplotlib.backends.backend_agg
+
         figure = self.get_mpl_figure()
         canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
         canvas.print_figure(filename)
@@ -702,6 +707,8 @@ class GanttChart(object):  # Not unittested: too difficult
 
         See also :meth:`write_to_png` for the simplest use-case.
         """
+        import matplotlib.figure
+
         fig = matplotlib.figure.Figure()
         ax = fig.add_subplot(1, 1, 1)
 
@@ -734,6 +741,8 @@ class GanttChart(object):  # Not unittested: too difficult
 
         See also :meth:`write_to_png` and :meth:`get_mpl_figure` for the simpler use-cases.
         """
+        import matplotlib.dates
+
         for action in self.__actions.itervalues():
             action.draw(ax, self.__ordinates, self.__actions)
 
