@@ -96,7 +96,7 @@ class DemoHooks(Hooks):
         self.set(action, time, SUCCESSFUL)
 
     def action_failed(self, time, action, exception):
-        self.action_statuses[self.action_indexes[action]].lines += ["Exception: {}".format(exception)]
+        self.action_statuses[self.action_indexes[action]].lines += ["Exception: {}".format(repr(exception))]
         self.set(action, time, FAILED)
 
 
