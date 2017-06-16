@@ -24,6 +24,32 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         self.assertFalse(report.is_success)
         self.assertEqual(report.get_action_status(a).status, FAILED)
 
+    def test_exit(self):
+        a = self._action("a", exception=SystemExit())
+
+        with self.assertRaises(CompoundException) as catcher:
+            execute(a)
+        report = catcher.exception.execution_report
+
+        self.assertEqual(len(catcher.exception.exceptions), 1)
+        self.assertEqual(catcher.exception.exceptions[0].__class__, SystemExit)
+
+        self.assertFalse(report.is_success)
+        self.assertEqual(report.get_action_status(a).status, FAILED)
+
+    def test_keyboard_interrupt(self):
+        a = self._action("a", exception=KeyboardInterrupt())
+
+        with self.assertRaises(CompoundException) as catcher:
+            execute(a)
+        report = catcher.exception.execution_report
+
+        self.assertEqual(len(catcher.exception.exceptions), 1)
+        self.assertEqual(catcher.exception.exceptions[0].__class__, KeyboardInterrupt)
+
+        self.assertFalse(report.is_success)
+        self.assertEqual(report.get_action_status(a).status, FAILED)
+
     def test_simple_failure_without_raise(self):
         a = self._action("a", exception=Exception("foobar"))
 

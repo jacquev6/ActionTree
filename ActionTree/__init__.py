@@ -900,7 +900,7 @@ class _Execute(object):
         thread.start()
         try:
             return_value = action.do_execute(dependency_statuses)
-        except Exception as e:
+        except BaseException as e:
             exception = e
         sys.stdout.flush()
         libc.fflush(stdout)
