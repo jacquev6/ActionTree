@@ -9,6 +9,7 @@ import datetime
 import multiprocessing
 import os.path
 import pickle
+import signal
 import sys
 import threading
 
@@ -806,6 +807,21 @@ class _Execute(object):
             if not action.dependencies:
                 self._prepare_action(action, now)
 
+        self.interrupted = False
+        default_handler = signal.getsignal(signal.SIGINT)
+        pid = os.getpid()
+
+        def handler(sig, stackframe):
+            if os.getpid() == pid:
+                signal.signal(signal.SIGINT, default_handler)
+                # @todo Is this thread safe? Where are signal handler run?
+                self.interrupted = True
+                self.keep_going = False
+            else:
+                default_handler(sig, stackframe)
+
+        signal.signal(signal.SIGINT, handler)
+
         # Execute
         while self.pending or self.ready or self.running:
             self._progress(now)
@@ -813,6 +829,8 @@ class _Execute(object):
 
         for w in multiprocessing.active_children():
             w.join()
+
+        signal.signal(signal.SIGINT, default_handler)
 
         if self.do_raise and self.exceptions:  # Not doctested: @todoc
             raise CompoundException(self.exceptions, self.report)
@@ -848,13 +866,14 @@ class _Execute(object):
         self._change_status(action, self.pending, self.ready)
 
     def _progress(self, now):
-        # @todo Should we tweak the scheduling?
-        # We could prioritize the actions that use many resources,
-        # hoping that this would avoid idle CPU cores at the end of the execution.
-        # Scheduling is a hard problem, we may just want to keep the current, random, behavior.
-        for action in set(self.ready):
-            if self._allocate_resources(action):
-                self._start_action(action, now)
+        if not self.interrupted:
+            # @todo Should we tweak the scheduling?
+            # We could prioritize the actions that use many resources,
+            # hoping that this would avoid idle CPU cores at the end of the execution.
+            # Scheduling is a hard problem, we may just want to keep the current, random, behavior.
+            for action in set(self.ready):
+                if self._allocate_resources(action):
+                    self._start_action(action, now)
         self._handle_next_event()
 
     def _allocate_resources(self, action):
