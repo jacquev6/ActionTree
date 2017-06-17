@@ -75,8 +75,8 @@ class ExceptionsHandlingTestCase(ActionTreeTestCase):
         self.assertEqual(report.get_action_status(a).status, CANCELED)
         self.assertEqual(report.get_action_status(b).status, FAILED)
 
-    def test_exceptions_in_dependency_with_coping_dependencies(self):
-        a = self._action("a", coping_dependencies=True)
+    def test_exceptions_in_dependency_with_accept_failed_dependencies(self):
+        a = self._action("a", accept_failed_dependencies=True)
         b = self._action("b", exception=Exception("foobar"))
         a.add_dependency(b)
 

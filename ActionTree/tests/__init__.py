@@ -28,9 +28,9 @@ class TestAction(Action):
         exception, return_value, delay,
         events_file, end_event,
         print_on_stdout, print_on_stderr, puts_on_stdout, echo_on_stdout,
-        coping_dependencies,
+        accept_failed_dependencies,
     ):
-        super(TestAction, self).__init__(label=label, coping_dependencies=coping_dependencies)
+        super(TestAction, self).__init__(label=label, accept_failed_dependencies=accept_failed_dependencies)
         self.__exception = exception
         self.__return_value = return_value
         self.__delay = delay
@@ -43,7 +43,7 @@ class TestAction(Action):
 
     def do_execute(self, dependency_statuses):
         for d in self.dependencies:
-            assert self.coping_dependencies or dependency_statuses[d].status == SUCCESSFUL
+            assert self.accept_failed_dependencies or dependency_statuses[d].status == SUCCESSFUL
         with open(self.__events_file, "a") as f:
             f.write("{}\n".format(str(self.label).lower()))
         if self.__delay:
@@ -85,7 +85,7 @@ class ActionTreeTestCase(unittest.TestCase):
         exception=None, return_value=None, delay=None,
         end_event=False,
         print_on_stdout=None, print_on_stderr=None, puts_on_stdout=None, echo_on_stdout=None,
-        coping_dependencies=False,
+        accept_failed_dependencies=False,
         *args, **kwds
     ):
         return TestAction(
@@ -93,7 +93,7 @@ class ActionTreeTestCase(unittest.TestCase):
             exception, return_value, delay,
             self.__events_file, end_event,
             print_on_stdout, print_on_stderr, puts_on_stdout, echo_on_stdout,
-            coping_dependencies,
+            accept_failed_dependencies,
             *args, **kwds
         )
 

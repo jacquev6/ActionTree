@@ -77,7 +77,7 @@ class Action(object):
     Actions, return values and exceptions raised must be picklable.
     """
 
-    def __init__(self, label, dependencies=[], resources_required={}, coping_dependencies=False):
+    def __init__(self, label, dependencies=[], resources_required={}, accept_failed_dependencies=False):
         """
         :param label:
             @todo Insist on label being a str or None.
@@ -90,7 +90,7 @@ class Action(object):
         :param resources_required:
             see :meth:`~.Action.require_resource`
         :type resources_required: dict(Resource, int)
-        :param bool coping_dependencies:
+        :param bool accept_failed_dependencies:
             it ``True``, then the action will execute even if some of its dependencies failed.
         """
         str(label)
@@ -98,7 +98,7 @@ class Action(object):
         self.__dependencies = list(dependencies)
         self.__resources_required = {CPU_CORE: 1}
         self.__resources_required.update(resources_required)
-        self.__coping_dependencies = coping_dependencies
+        self.__accept_failed_dependencies = accept_failed_dependencies
 
     @property
     def label(self):
@@ -149,13 +149,13 @@ class Action(object):
         return list(self.__resources_required.iteritems())
 
     @property
-    def coping_dependencies(self):
+    def accept_failed_dependencies(self):
         """
         ``True`` if the action will execute even if some of its dependencies failed.
 
         :rtype: bool
         """
-        return self.__coping_dependencies
+        return self.__accept_failed_dependencies
 
     def get_possible_execution_order(self, seen_actions=None):
         """
@@ -840,7 +840,7 @@ class _Execute(object):
 
     def _triage_pending_dependents(self, action, failed, now):
         for dependent in self.pending & self.dependents[action]:
-            if failed and not dependent.coping_dependencies:
+            if failed and not dependent.accept_failed_dependencies:
                 self._cancel_action(dependent, now)
             elif all(d in self.done for d in dependent.dependencies):
                 self._prepare_action(dependent, now)

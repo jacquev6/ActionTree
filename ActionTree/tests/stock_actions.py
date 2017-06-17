@@ -82,8 +82,8 @@ class CallSubprocessTestCase(PatchingTestCase):
     def test_label(self):
         self.assertEqual(CallSubprocess(["xxx", "yyy"], label="foo").label, "foo")
 
-    def test_coping_dependencies(self):
-        self.assertTrue(CallSubprocess(["xxx", "yyy"], coping_dependencies=True).coping_dependencies)
+    def test_accept_failed_dependencies(self):
+        self.assertTrue(CallSubprocess(["xxx", "yyy"], accept_failed_dependencies=True).accept_failed_dependencies)
 
     def test_pickle(self):
         self.assertIsInstance(pickle.dumps(CallSubprocess(["xxx", "yyy"])), bytes)
