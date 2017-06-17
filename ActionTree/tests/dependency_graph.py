@@ -148,7 +148,7 @@ class GraphTestCase(unittest.TestCase):
                 """\
                 digraph action {
                 \tnode [shape=box]
-                \t0 [label=None]
+                \t0 [shape=point]
                 }"""
             )
         )
@@ -164,8 +164,8 @@ class GraphTestCase(unittest.TestCase):
                 """\
                 digraph action {
                 \tnode [shape=box]
-                \t0 [label=None]
-                \t1 [label=None]
+                \t0 [shape=point]
+                \t1 [shape=point]
                 \t\t1 -> 0
                 }"""
             )

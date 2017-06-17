@@ -518,8 +518,10 @@ class DependencyGraph(object):
         for (i, action) in enumerate(action.get_possible_execution_order()):
             node = str(i)
             nodes[action] = node
-            # @todo Add a dot node when label is None
-            self.__graphviz_graph.node(node, str(action.label))
+            if action.label is None:
+                self.__graphviz_graph.node(node, shape="point")
+            else:
+                self.__graphviz_graph.node(node, str(action.label))
             for dependency in action.dependencies:
                 assert dependency in nodes  # Because we are iterating a possible execution order
                 self.__graphviz_graph.edge(node, nodes[dependency])
@@ -588,7 +590,7 @@ class GanttChart(object):  # Not unittested: too difficult
 
     class SuccessfulAction(object):
         def __init__(self, action, status):
-            self.__label = str(action.label)
+            self.__label = action.label
             self.__id = id(action)
             self.__dependencies = set(id(d) for d in action.dependencies)
             self.__ready_time = status.ready_time
@@ -611,17 +613,17 @@ class GanttChart(object):  # Not unittested: too difficult
                 color="blue", lw=4, solid_capstyle="butt",
             )
             # @todo Make sure the text is not outside the plot on the right
-            # @todo Don't display label when it's None
-            ax.annotate(
-                self.__label,
-                xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points",
-            )
+            if self.__label is not None:
+                ax.annotate(
+                    str(self.__label),
+                    xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points",
+                )
             for d in self.__dependencies:
                 ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
 
     class FailedAction(object):
         def __init__(self, action, status):
-            self.__label = str(action.label)
+            self.__label = action.label
             self.__id = id(action)
             self.__dependencies = set(id(d) for d in action.dependencies)
             self.__ready_time = status.ready_time
@@ -643,16 +645,17 @@ class GanttChart(object):  # Not unittested: too difficult
                 [self.__start_time, self.__failure_time], [ordinate, ordinate],
                 color="red", lw=4, solid_capstyle="butt",
             )
-            ax.annotate(
-                self.__label,
-                xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points",
-            )
+            if self.__label is not None:
+                ax.annotate(
+                    str(self.__label),
+                    xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points",
+                )
             for d in self.__dependencies:
                 ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
 
     class CanceledAction(object):
         def __init__(self, action, status):
-            self.__label = str(action.label)
+            self.__label = action.label
             self.__id = id(action)
             self.__dependencies = set(id(d) for d in action.dependencies)
             self.__ready_time = status.ready_time
@@ -670,11 +673,12 @@ class GanttChart(object):  # Not unittested: too difficult
             ordinate = ordinates[self.__id]
             if self.__ready_time:  # Not in user guide: implementation detail
                 ax.plot([self.__ready_time, self.__cancel_time], [ordinate, ordinate], color="grey", lw=1)
-            ax.annotate(
-                self.__label,
-                xy=(self.__cancel_time, ordinate), xytext=(0, 3), textcoords="offset points",
-                color="grey",
-            )
+            if self.__label is not None:
+                ax.annotate(
+                    str(self.__label),
+                    xy=(self.__cancel_time, ordinate), xytext=(0, 3), textcoords="offset points",
+                    color="grey",
+                )
             for d in self.__dependencies:
                 ax.plot([actions[d].max_time, self.min_time], [ordinates[d], ordinate], "k:", lw=1)
 
