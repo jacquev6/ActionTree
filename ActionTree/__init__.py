@@ -28,7 +28,9 @@ try:
 except ValueError:  # Not unittested: Not doctested: specific to macOS
     stderr = ctypes.c_void_p.in_dll(libc, "__stderrp")
 
+
 # @todo Evaluate https://pypi.python.org/pypi/PyContracts
+
 
 def execute(action, cpu_cores=None, keep_going=False, do_raise=True, hooks=None):
     """

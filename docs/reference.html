@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Reference &#8212; ActionTree 0.9.0 documentation</title>
+    <title>Reference &#8212; ActionTree 0.10.0 documentation</title>
     
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.9.0',
+        VERSION:     '0.10.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -705,6 +705,22 @@ No error will be raise if the file doesn’t exist.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the name of the file to delete, passed to <a class="reference external" href="https://docs.python.org/2/library/os.html#os.unlink" title="(in Python v2.7)"><code class="xref py py-func docutils literal"><span class="pre">os.unlink()</span></code></a>.</td>
+</tr>
+</tbody>
+</table>
+<p>&#64;todoc</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="ActionTree.stock.DeleteDirectory">
+<em class="property">class </em><code class="descclassname">ActionTree.stock.</code><code class="descname">DeleteDirectory</code><span class="sig-paren">(</span><em>name</em>, <em>label=&lt;object object&gt;</em>, <em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.DeleteDirectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>A stock action that deletes a directory (recursively).
+No error will be raise if the directory doesn’t exist.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the name of the directory to delete, passed to <a class="reference external" href="https://docs.python.org/2/library/shutil.html#shutil.rmtree" title="(in Python v2.7)"><code class="xref py py-func docutils literal"><span class="pre">shutil.rmtree()</span></code></a>.</td>
 </tr>
 </tbody>
 </table>

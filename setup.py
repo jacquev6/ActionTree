@@ -9,7 +9,7 @@ import setuptools
 import sys
 
 
-version = "0.9.0"
+version = "0.10.0"
 
 
 def py2_only(*dependencies):
