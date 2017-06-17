@@ -21,7 +21,7 @@ python_library(
     py2="2.7",
     py3="3.5",
     status=BETA,
-    classifier=[
+    classifiers=[
         "Intended Audience :: Developers",
         "Topic :: Software Development",
     ],

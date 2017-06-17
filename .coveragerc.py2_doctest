@@ -2,4 +2,4 @@
 concurrency = multiprocessing
 [report]
 exclude_lines =
-  Not in user guide
+  Not doctested: ...
