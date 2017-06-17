@@ -28,6 +28,7 @@ try:
 except ValueError:  # Not unittested: Not doctested: specific to macOS
     stderr = ctypes.c_void_p.in_dll(libc, "__stderrp")
 
+# @todo Evaluate https://pypi.python.org/pypi/PyContracts
 
 def execute(action, cpu_cores=None, keep_going=False, do_raise=True, hooks=None):
     """
@@ -173,6 +174,11 @@ class Action(object):
                 actions += dependency.get_possible_execution_order(seen_actions)
             actions.append(self)
         return actions
+
+
+# @todo Add a notion of ActionSet
+# ActionSet.add_dependency would add the dep to its leaves
+# Action.add_dependency would accept an ActionSet
 
 
 class Resource(object):

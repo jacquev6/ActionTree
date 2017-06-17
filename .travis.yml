@@ -17,7 +17,16 @@ install:
     pip install --upgrade mock;
   fi
 script:
-- coverage run --rcfile=.coveragerc.py2_unittest setup.py test
+- export COVERAGE_FILE=/tmp/.coverage
+- "echo '[run]' > /tmp/.coveragerc"
+- "echo 'branch = True' >> /tmp/.coveragerc"
+- "echo 'include = $(pwd)/ActionTree/*' >> /tmp/.coveragerc"
+- "echo 'concurrency = multiprocessing' >> /tmp/.coveragerc"
+- "echo '[report]' >> /tmp/.coveragerc"
+- "echo 'exclude_lines =' >> /tmp/.coveragerc"
+- "echo '  Not unittested: ...' >> /tmp/.coveragerc"
+- cat /tmp/.coveragerc
+- coverage run --rcfile=/tmp/.coveragerc setup.py test
 - coverage combine
 - if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ];
   then
