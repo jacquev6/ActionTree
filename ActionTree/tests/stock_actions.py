@@ -152,6 +152,39 @@ class DeleteFileTestCase(PatchingTestCase):
         self.unlink.assert_called_once_with("xxx")
 
 
+class DeleteDirectoryTestCase(PatchingTestCase):
+    def setUp(self):
+        self.rmtree = self.patch("shutil.rmtree")
+
+    def test_label(self):
+        self.assertEqual(DeleteDirectory("xxx").label, "rm -r xxx")
+
+        self.rmtree.assert_not_called()
+
+    def test_pickle(self):
+        self.assertIsInstance(pickle.dumps(DeleteDirectory("xxx")), bytes)
+
+    def test_success(self):
+        DeleteDirectory("xxx").do_execute({})
+
+        self.rmtree.assert_called_once_with("xxx")
+
+    def test_directory_does_not_exist(self):
+        self.rmtree.side_effect = OSError(errno.ENOENT, "No such file or directory")
+
+        DeleteDirectory("xxx").do_execute({})
+
+        self.rmtree.assert_called_once_with("xxx")
+
+    def test_other_failure(self):
+        self.rmtree.side_effect = OSError(-1, "Foobar")
+
+        with self.assertRaises(OSError):
+            DeleteDirectory("xxx").do_execute({})
+
+        self.rmtree.assert_called_once_with("xxx")
+
+
 class CopyFileTestCase(PatchingTestCase):
     def setUp(self):
         self.copy = self.patch("shutil.copy")

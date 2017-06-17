@@ -115,6 +115,28 @@ class DeleteFile(Action):  # Not doctested: could be
                 raise
 
 
+class DeleteDirectory(Action):  # Not doctested: could be
+    """
+    A stock action that deletes a directory (recursively).
+    No error will be raise if the directory doesn't exist.
+
+    :param str name: the name of the directory to delete, passed to :func:`shutil.rmtree`.
+    """
+    def __init__(self, name, label=DEFAULT, *args, **kwds):
+        """
+        @todoc
+        """
+        Action.__init__(self, "rm -r {}".format(name) if label is DEFAULT else label, *args, **kwds)
+        self.__name = name
+
+    def do_execute(self, dependency_statuses):
+        try:
+            shutil.rmtree(self.__name)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
+
+
 class CopyFile(Action):  # Not doctested: could be
     """
     A stock action that copies a file. Arguments are passed to :func:`shutil.copy`.
