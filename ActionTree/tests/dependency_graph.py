@@ -111,20 +111,6 @@ class GraphTestCase(unittest.TestCase):
                 ]
             )
 
-    def test_typed_label(self):
-        a = Action(("a", "curious", "label", 42))
-
-        self.assertEqual(
-            DependencyGraph(a).get_graphviz_graph().source,
-            textwrap.dedent(
-                """\
-                digraph action {
-                \tnode [shape=box]
-                \t0 [label="('a', 'curious', 'label', 42)"]
-                }"""
-            )
-        )
-
     def test_weird_string_label(self):
         a = Action("spaces and; semi=columns")
 

@@ -10,16 +10,6 @@ from ActionTree import *
 
 
 class PreviewTestCase(unittest.TestCase):
-    def test_dependencies_and_labels_are_not_only_equal_but_same(self):
-        bLabel = ("b",)
-        a = Action("a")
-        b = Action(bLabel)
-        a.add_dependency(b)
-
-        (otherB,) = a.dependencies
-        self.assertIs(otherB, b)
-        self.assertIs(otherB.label, bLabel)
-
     def test_simple_preview(self):
         a = Action("a")
         self.assertEqual(a.get_possible_execution_order(), [a])

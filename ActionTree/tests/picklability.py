@@ -6,11 +6,8 @@ from __future__ import division, absolute_import, print_function
 
 import pickle
 import unittest
-import sys
-import tempfile
 
 from ActionTree import *
-from . import *
 
 
 class Unpicklable(object):
@@ -19,6 +16,12 @@ class Unpicklable(object):
 
 
 unpicklable = Unpicklable()
+
+
+class UnpicklableAction(Action):
+    def __init__(self, *args, **kwds):
+        super(UnpicklableAction, self).__init__(*args, **kwds)
+        self.attribute = unpicklable
 
 
 class UnpicklableReturnValue(Action):
@@ -31,10 +34,10 @@ class UnpicklableException(Action):
         raise Exception(unpicklable)
 
 
-class PicklabilityTestCase(ActionTreeTestCase):
+class PicklabilityTestCase(unittest.TestCase):
     def test_action(self):
         with self.assertRaises(pickle.PicklingError):
-            execute(self._action(unpicklable))
+            execute(UnpicklableAction("x"))
 
     def test_return_value(self):
         with self.assertRaises(pickle.PicklingError):

@@ -112,13 +112,13 @@ Say you want to compile :ref:`two C++ files <source_files>` and link them:
 
 >>> make_build_dir = CreateDirectory("_build")
 
->>> compile_a = CallSubprocess(["g++", "-c", "a.cpp", "-o", "_build/a.o"])
+>>> compile_a = CallSubprocess(["g++", "-c", "a.cpp", "-o", "_build/a.o"], label="g++ -c a.cpp")
 >>> compile_a.add_dependency(make_build_dir)
 
->>> compile_b = CallSubprocess(["g++", "-c", "b.cpp", "-o", "_build/b.o"])
+>>> compile_b = CallSubprocess(["g++", "-c", "b.cpp", "-o", "_build/b.o"], label="g++ -c b.cpp")
 >>> compile_b.add_dependency(make_build_dir)
 
->>> link = CallSubprocess(["g++", "-o", "_build/test", "_build/a.o", "_build/b.o"])
+>>> link = CallSubprocess(["g++", "-o", "_build/test", "_build/a.o", "_build/b.o"], label="g++ -o test")
 >>> link.add_dependency(compile_a)
 >>> link.add_dependency(compile_b)
 

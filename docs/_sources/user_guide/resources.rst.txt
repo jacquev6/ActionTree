@@ -3,8 +3,6 @@
 Resources
 =========
 
-.. @todo Add labels to stock Actions (in ActionTree.stock, AND in the doc)
-
 .. testsetup::
 
     import shutil
@@ -29,11 +27,11 @@ You can tell *ActionTree* that your :class:`.Action` uses more cores with :meth:
 
 >>> from ActionTree import CPU_CORE
 
->>> compile_others = CallSubprocess(["make", "-j", "4", "_build/c.o", "_build/d.o", "_build/e.o", "_build/f.o", "_build/g.o", "_build/h.o"])
+>>> compile_others = CallSubprocess(["make", "-j", "4", "_build/c.o", "_build/d.o", "_build/e.o", "_build/f.o", "_build/g.o", "_build/h.o"], label="make -j 4")
 >>> compile_others.add_dependency(make_build_dir)
 >>> compile_others.require_resource(CPU_CORE, 4)
 
->>> link_with_others = CallSubprocess(["g++", "-o", "_build/test", "_build/a.o", "_build/b.o", "_build/c.o", "_build/d.o", "_build/e.o", "_build/f.o", "_build/g.o", "_build/h.o"])
+>>> link_with_others = CallSubprocess(["g++", "-o", "_build/test", "_build/a.o", "_build/b.o", "_build/c.o", "_build/d.o", "_build/e.o", "_build/f.o", "_build/g.o", "_build/h.o"], label="g++ -o test")
 >>> link_with_others.add_dependency(compile_a)
 >>> link_with_others.add_dependency(compile_b)
 >>> link_with_others.add_dependency(compile_others)
@@ -60,22 +58,20 @@ while allowing other actions to run, just create a resource:
 >>> semaphore = Resource(2)
 >>> dependencies = []
 >>> for i in range(6):
-...   d = Sleep(0.3)
+...   d = Sleep(0.3, label="limited")
 ...   d.require_resource(semaphore)
 ...   dependencies.append(d)
 >>> for i in range(5):
-...   d = Sleep(0.4)
+...   d = Sleep(0.4, label="free")
 ...   dependencies.append(d)
->>> arbitrary_resource = NullAction()
->>> for d in dependencies:
-...   arbitrary_resource.add_dependency(d)
+>>> with_resource = NullAction(dependencies=dependencies)
 
->>> GanttChart(execute(arbitrary_resource, cpu_cores=5)).write_to_png("arbitrary_resource_gantt_chart.png")
+>>> GanttChart(execute(with_resource, cpu_cores=5)).write_to_png("with_resource_gantt_chart.png")
 
-.. figure:: artifacts/arbitrary_resource_gantt_chart.png
+.. figure:: artifacts/with_resource_gantt_chart.png
     :align: center
 
-    ``arbitrary_resource_gantt_chart.png``
+    ``with_resource_gantt_chart.png``
 
 As expected again, there was never more than two ``sleep 0.3`` actions running at the same time,
 but ``sleep 0.4`` actions were free to execute.

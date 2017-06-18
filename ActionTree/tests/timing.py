@@ -85,7 +85,7 @@ class TimingTestCase(ActionTreeTestCase):
     def test_many_dependencies_with_unlimited_cpu_cores(self):
         MANY = 20
         a = self._action("a")
-        deps = [self._action(i) for i in range(MANY)]
+        deps = [self._action(str(i)) for i in range(MANY)]
         for dep in deps:
             a.add_dependency(dep)
 
@@ -96,7 +96,7 @@ class TimingTestCase(ActionTreeTestCase):
     def test_many_dependencies_with_one_cpu_cores(self):
         MANY = 20
         a = self._action("a")
-        deps = [self._action(i) for i in range(MANY)]
+        deps = [self._action(str(i)) for i in range(MANY)]
         for dep in deps:
             a.add_dependency(dep)
 
@@ -109,7 +109,7 @@ class TimingTestCase(ActionTreeTestCase):
     def test_many_dependencies_with_limited_cpu_cores(self):
         MANY = 20
         a = self._action("a")
-        deps = [self._action(i) for i in range(MANY)]
+        deps = [self._action(str(i)) for i in range(MANY)]
         for dep in deps:
             a.add_dependency(dep)
 

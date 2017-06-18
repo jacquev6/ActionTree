@@ -103,14 +103,11 @@ The <code class="docutils literal"><span class="pre">dependency_statuses</span><
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>label</strong> – &#64;todo Insist on label being a str or None.
-Add a note saying how it’s used in GanttChart and DependencyGraph.
-whatever you want to attach to the action.
-<code class="docutils literal"><span class="pre">str(label)</span></code> must succeed and return a string.
-Can be retrieved by <a class="reference internal" href="#ActionTree.Action.label" title="ActionTree.Action.label"><code class="xref py py-attr docutils literal"><span class="pre">label</span></code></a>.</li>
+<li><strong>label</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a><em> or </em><a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) – A string used to represent the action in <a class="reference internal" href="#ActionTree.GanttChart" title="ActionTree.GanttChart"><code class="xref py py-class docutils literal"><span class="pre">GanttChart</span></code></a> and
+<a class="reference internal" href="#ActionTree.DependencyGraph" title="ActionTree.DependencyGraph"><code class="xref py py-class docutils literal"><span class="pre">DependencyGraph</span></code></a>. Can be retrieved by <a class="reference internal" href="#ActionTree.Action.label" title="ActionTree.Action.label"><code class="xref py py-attr docutils literal"><span class="pre">label</span></code></a>.</li>
 <li><strong>dependencies</strong> (<em>list</em><em>(</em><a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a><em>)</em>) – see <a class="reference internal" href="#ActionTree.Action.add_dependency" title="ActionTree.Action.add_dependency"><code class="xref py py-meth docutils literal"><span class="pre">add_dependency()</span></code></a></li>
 <li><strong>resources_required</strong> (<a class="reference external" href="https://docs.python.org/2/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a><em>(</em><a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource"><em>Resource</em></a><em>, </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>)</em>) – see <a class="reference internal" href="#ActionTree.Action.require_resource" title="ActionTree.Action.require_resource"><code class="xref py py-meth docutils literal"><span class="pre">require_resource()</span></code></a></li>
-<li><strong>accept_failed_dependencies</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – it <code class="docutils literal"><span class="pre">True</span></code>, then the action will execute even if some of its dependencies failed.</li>
+<li><strong>accept_failed_dependencies</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – if <code class="docutils literal"><span class="pre">True</span></code>, then the action will execute even after some of its dependencies failed.</li>
 </ul>
 </td>
 </tr>

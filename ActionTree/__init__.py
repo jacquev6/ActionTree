@@ -29,9 +29,6 @@ except ValueError:  # Not unittested: Not doctested: specific to macOS
     stderr = ctypes.c_void_p.in_dll(libc, "__stderrp")
 
 
-# @todo Evaluate https://pypi.python.org/pypi/PyContracts
-
-
 def execute(action, cpu_cores=None, keep_going=False, do_raise=True, hooks=None):
     """
     Recursively execute an :class:`.Action`'s dependencies then the action.
@@ -82,21 +79,17 @@ class Action(object):
 
     def __init__(self, label, dependencies=[], resources_required={}, accept_failed_dependencies=False):
         """
-        :param label:
-            @todo Insist on label being a str or None.
-            Add a note saying how it's used in GanttChart and DependencyGraph.
-            whatever you want to attach to the action.
-            ``str(label)`` must succeed and return a string.
-            Can be retrieved by :attr:`label`.
+        :param label: A string used to represent the action in :class:`GanttChart` and
+            :class:`DependencyGraph`. Can be retrieved by :attr:`label`.
+        :type label: string or None
         :param list(Action) dependencies:
             see :meth:`~.Action.add_dependency`
         :param resources_required:
             see :meth:`~.Action.require_resource`
         :type resources_required: dict(Resource, int)
         :param bool accept_failed_dependencies:
-            it ``True``, then the action will execute even if some of its dependencies failed.
+            if ``True``, then the action will execute even after some of its dependencies failed.
         """
-        str(label)
         self.__label = label
         self.__dependencies = list(dependencies)
         self.__resources_required = {CPU_CORE: 1}
@@ -293,7 +286,7 @@ class DependencyCycleException(Exception):  # Not doctested: implementation deta
         super(DependencyCycleException, self).__init__("Dependency cycle")
 
 
-class CompoundException(Exception):  # Not doctested: @todo
+class CompoundException(Exception):  # Not doctested: @todoc
     """
     Exception thrown by :func:`.execute` when dependencies raise exceptions.
     """
@@ -388,7 +381,7 @@ class ExecutionReport(object):
 
             :rtype: datetime.datetime
             """
-            return self.__pending_time  # Not doctested: @todo
+            return self.__pending_time  # Not doctested: @todoc
 
         @property
         def ready_time(self):
@@ -436,7 +429,7 @@ class ExecutionReport(object):
             The value returned by this action
             (``None`` if it failed or was never started).
             """
-            return self.__return_value  # Not doctested: @todo
+            return self.__return_value  # Not doctested: @todoc
 
         @property
         def failure_time(self):
@@ -454,7 +447,7 @@ class ExecutionReport(object):
             The exception raised by this action
             (``None`` if it succeeded or was never started).
             """
-            return self.__exception  # Not doctested: @todo
+            return self.__exception  # Not doctested: @todoc
 
         @property
         def output(self):
@@ -464,7 +457,7 @@ class ExecutionReport(object):
 
             :rtype: str or None
             """
-            return self.__output  # Not doctested: @todo
+            return self.__output  # Not doctested: @todoc
 
     def __init__(self, root_action, actions, now):
         self._root_action = root_action
@@ -529,7 +522,7 @@ class DependencyGraph(object):
             if action.label is None:  # Not doctested: implementation detail
                 self.__graphviz_graph.node(node, shape="point")
             else:
-                self.__graphviz_graph.node(node, str(action.label))
+                self.__graphviz_graph.node(node, action.label)
             for dependency in action.dependencies:
                 assert dependency in nodes  # Because we are iterating a possible execution order
                 self.__graphviz_graph.edge(node, nodes[dependency])
@@ -623,7 +616,7 @@ class GanttChart(object):  # Not unittested: too difficult
             # @todo Make sure the text is not outside the plot on the right
             if self.__label is not None:
                 ax.annotate(
-                    str(self.__label),
+                    self.__label,
                     xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points",
                 )
             for d in self.__dependencies:
@@ -655,7 +648,7 @@ class GanttChart(object):  # Not unittested: too difficult
             )
             if self.__label is not None:
                 ax.annotate(
-                    str(self.__label),
+                    self.__label,
                     xy=(self.__start_time, ordinate), xytext=(0, 3), textcoords="offset points",
                 )
             for d in self.__dependencies:
@@ -683,7 +676,7 @@ class GanttChart(object):  # Not unittested: too difficult
                 ax.plot([self.__ready_time, self.__cancel_time], [ordinate, ordinate], color="grey", lw=1)
             if self.__label is not None:
                 ax.annotate(
-                    str(self.__label),
+                    self.__label,
                     xy=(self.__cancel_time, ordinate), xytext=(0, 3), textcoords="offset points",
                     color="grey",
                 )
@@ -826,7 +819,7 @@ class _Execute(object):
         for w in multiprocessing.active_children():
             w.join()
 
-        if self.do_raise and self.exceptions:  # Not doctested: @todo
+        if self.do_raise and self.exceptions:  # Not doctested: @todoc
             raise CompoundException(self.exceptions, self.report)
         else:
             return self.report

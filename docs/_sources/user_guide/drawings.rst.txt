@@ -35,11 +35,11 @@ Actions are linked to their dependencies using thin doted lines.
 
 Actions that failed are in red, and actions that were canceled due to a failure in their dependencies are in grey:
 
->>> compile_unexisting = CallSubprocess(["g++", "-c", "unexisting.cpp", "-o", "_build/unexisting.o"])
+>>> compile_unexisting = CallSubprocess(["g++", "-c", "unexisting.cpp", "-o", "_build/unexisting.o"], label="g++ -c unexisting.cpp")
 >>> compile_unexisting.add_dependency(make_build_dir)
 >>> link.add_dependency(compile_unexisting)
 
->>> failed_link_report = execute(link, keep_going=True, do_raise=False)
+>>> failed_link_report = execute(link, cpu_cores=1, keep_going=True, do_raise=False)
 >>> failed_link_report.is_success
 False
 >>> chart = GanttChart(failed_link_report)
