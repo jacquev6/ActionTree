@@ -81,7 +81,7 @@ class Action(object):
         """
         :param label: A string used to represent the action in :class:`GanttChart` and
             :class:`DependencyGraph`. Can be retrieved by :attr:`label`.
-        :type label: string or None
+        :type label: str or None
         :param list(Action) dependencies:
             see :meth:`~.Action.add_dependency`
         :param resources_required:
@@ -249,13 +249,13 @@ class Hooks(object):
         :param Action action: the action.
         """
 
-    def action_printed(self, time, action, text):
+    def action_printed(self, time, action, data):
         """
         Called when an action prints something.
 
-        :param datetime.datetime time: the time at which the action printed the text.
+        :param datetime.datetime time: the time at which the action printed the data.
         :param Action action: the action.
-        :param str text: the text printed.
+        :param str data: the data printed.
         """
 
     def action_successful(self, time, action, return_value):
@@ -346,15 +346,15 @@ class ExecutionReport(object):
         def _set_success(self, success_time, return_value):
             self.__success_time = success_time
             self.__return_value = return_value
-            self._add_output("")
+            self._add_output(b"")
 
         def _set_failure(self, failure_time, exception):
             self.__failure_time = failure_time
             self.__exception = exception
-            self._add_output("")
+            self._add_output(b"")
 
         def _add_output(self, output):
-            self.__output = (self.__output or "") + output
+            self.__output = (self.__output or b"") + output
 
         @property
         def status(self):
@@ -958,10 +958,8 @@ class _Execute(object):
         self._deallocate_resources(action)
 
     def _handle_printed_event(self, action, print_time, data):
-        text = data.decode("utf8")  # @todo DO NOT decode.
-        # We have no way to know the encoding used. Give bytes back to client and let them decode.
-        self.report.get_action_status(action)._add_output(text)
-        self.hooks.action_printed(print_time, action, text)
+        self.report.get_action_status(action)._add_output(data)
+        self.hooks.action_printed(print_time, action, data)
 
     def _handle_failed_event(self, action, failure_time, exception):
         self.report.get_action_status(action)._set_failure(failure_time, exception)

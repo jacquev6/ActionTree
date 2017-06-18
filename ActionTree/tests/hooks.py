@@ -100,7 +100,7 @@ class ExecutionTestCase(ActionTreeTestCase):
                 ("pending", "a"),
                 ("ready", "a"),
                 ("started", "a"),
-                ("printed", "a", "something\n"),
+                ("printed", "a", b"something\n"),
                 ("successful", "a", None),
             ]
         )
@@ -115,7 +115,7 @@ class ExecutionTestCase(ActionTreeTestCase):
                 ("pending", "a"),
                 ("ready", "a"),
                 ("started", "a"),
-                ("printed", "a", "something\n"),
+                ("printed", "a", b"something\n"),
                 ("failed", "a", "foo"),
             ]
         )
@@ -131,9 +131,9 @@ class ExecutionTestCase(ActionTreeTestCase):
                 ("pending", "a"),
                 ("ready", "a"),
                 ("started", "a"),
-                ("printed", "a", "something 1\n"),
-                ("printed", "a", "something 2\n"),
-                ("printed", "a", "something 3\n"),
+                ("printed", "a", b"something 1\n"),
+                ("printed", "a", b"something 2\n"),
+                ("printed", "a", b"something 3\n"),
                 ("successful", "a", None),
             ]
         )

@@ -103,7 +103,7 @@ The <code class="docutils literal"><span class="pre">dependency_statuses</span><
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>label</strong> (<a class="reference external" href="https://docs.python.org/2/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a><em> or </em><a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) – A string used to represent the action in <a class="reference internal" href="#ActionTree.GanttChart" title="ActionTree.GanttChart"><code class="xref py py-class docutils literal"><span class="pre">GanttChart</span></code></a> and
+<li><strong>label</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) – A string used to represent the action in <a class="reference internal" href="#ActionTree.GanttChart" title="ActionTree.GanttChart"><code class="xref py py-class docutils literal"><span class="pre">GanttChart</span></code></a> and
 <a class="reference internal" href="#ActionTree.DependencyGraph" title="ActionTree.DependencyGraph"><code class="xref py py-class docutils literal"><span class="pre">DependencyGraph</span></code></a>. Can be retrieved by <a class="reference internal" href="#ActionTree.Action.label" title="ActionTree.Action.label"><code class="xref py py-attr docutils literal"><span class="pre">label</span></code></a>.</li>
 <li><strong>dependencies</strong> (<em>list</em><em>(</em><a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a><em>)</em>) – see <a class="reference internal" href="#ActionTree.Action.add_dependency" title="ActionTree.Action.add_dependency"><code class="xref py py-meth docutils literal"><span class="pre">add_dependency()</span></code></a></li>
 <li><strong>resources_required</strong> (<a class="reference external" href="https://docs.python.org/2/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a><em>(</em><a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource"><em>Resource</em></a><em>, </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>)</em>) – see <a class="reference internal" href="#ActionTree.Action.require_resource" title="ActionTree.Action.require_resource"><code class="xref py py-meth docutils literal"><span class="pre">require_resource()</span></code></a></li>
@@ -314,16 +314,16 @@ You can pass it to <a class="reference internal" href="#ActionTree.Action.requir
 
 <dl class="method">
 <dt id="ActionTree.Hooks.action_printed">
-<code class="descname">action_printed</code><span class="sig-paren">(</span><em>time</em>, <em>action</em>, <em>text</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_printed" title="Permalink to this definition">¶</a></dt>
+<code class="descname">action_printed</code><span class="sig-paren">(</span><em>time</em>, <em>action</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_printed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when an action prints something.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)"><em>datetime.datetime</em></a>) – the time at which the action printed the text.</li>
+<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)"><em>datetime.datetime</em></a>) – the time at which the action printed the data.</li>
 <li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
-<li><strong>text</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the text printed.</li>
+<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the data printed.</li>
 </ul>
 </td>
 </tr>
@@ -610,7 +610,7 @@ and <a class="reference internal" href="#ActionTree.CANCELED" title="ActionTree.
 <dl class="method">
 <dt id="ActionTree.DependencyGraph.get_graphviz_graph">
 <code class="descname">get_graphviz_graph</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.DependencyGraph.get_graphviz_graph" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a <a class="reference external" href="http://graphviz.readthedocs.io/en/stable/api.html#graphviz.Digraph" title="(in graphviz v0.7.1)"><code class="xref py py-class docutils literal"><span class="pre">graphviz.Digraph</span></code></a> of this dependency graph.</p>
+<dd><p>Return a <a class="reference external" href="http://graphviz.readthedocs.io/en/stable/api.html#graphviz.Digraph" title="(in graphviz v0.8)"><code class="xref py py-class docutils literal"><span class="pre">graphviz.Digraph</span></code></a> of this dependency graph.</p>
 <p>See also <a class="reference internal" href="#ActionTree.DependencyGraph.write_to_png" title="ActionTree.DependencyGraph.write_to_png"><code class="xref py py-meth docutils literal"><span class="pre">write_to_png()</span></code></a> for the simplest use-case.</p>
 </dd></dl>
 
