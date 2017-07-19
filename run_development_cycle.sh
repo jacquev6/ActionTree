@@ -13,6 +13,9 @@ git checkout docs
 ./develop.py test
 
 
+python2 setup.py check --strict --metadata --restructuredtext
+
+
 pep8 --max-line-length=120 ActionTree *.py doc/conf.py
 
 

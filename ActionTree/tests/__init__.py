@@ -41,6 +41,9 @@ class TestAction(Action):
         self.__puts_on_stdout = puts_on_stdout
         self.__echo_on_stdout = echo_on_stdout
 
+    def __repr__(self):
+        return "<TestAction {}>".format(self.label)
+
     def do_execute(self, dependency_statuses):
         for d in self.dependencies:
             assert self.accept_failed_dependencies or dependency_statuses[d].status == SUCCESSFUL

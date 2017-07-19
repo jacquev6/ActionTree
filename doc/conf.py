@@ -9,7 +9,7 @@ import glob
 
 master_doc = "index"
 project = "ActionTree"
-author = '<a href="http://vincent-jacques.net/contact">Vincent Jacques</a>'
+author = '<a href="http://vincent-jacques.net/">Vincent Jacques</a>'
 copyright = "2013-2017 {}".format(author)
 extensions = []
 
