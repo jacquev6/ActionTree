@@ -4,6 +4,7 @@
 
 from __future__ import division, absolute_import, print_function
 
+import re
 import textwrap
 import unittest
 
@@ -18,18 +19,28 @@ class GraphTestCase(unittest.TestCase):
         g1.format = "png"
         self.assertEqual(g.get_graphviz_graph().format, "pdf")
 
+    spaces = re.compile(r"\s+")
+
+    def normalize(self, g):
+        return self.spaces.sub(" ", g).strip()
+
+    def assertGraphEqual(self, g, expected):
+        self.assertEqual(
+            self.normalize(g.source),
+            self.normalize(expected),
+        )
+
     def test_single_action(self):
         a = Action("a")
 
-        self.assertEqual(
-            DependencyGraph(a).get_graphviz_graph().source,
-            textwrap.dedent(
-                """\
-                digraph action {
-                \tnode [shape=box]
-                \t0 [label=a]
-                }"""
-            )
+        self.assertGraphEqual(
+            DependencyGraph(a).get_graphviz_graph(),
+            """
+            digraph action {
+                node [shape=box]
+                0 [label=a]
+            }
+            """
         )
 
     def test_dependency(self):
@@ -37,17 +48,16 @@ class GraphTestCase(unittest.TestCase):
         a = Action("a")
         a.add_dependency(b)
 
-        self.assertEqual(
-            DependencyGraph(a).get_graphviz_graph().source,
-            textwrap.dedent(
-                """\
-                digraph action {
-                \tnode [shape=box]
-                \t0 [label=b]
-                \t1 [label=a]
-                \t\t1 -> 0
-                }"""
-            )
+        self.assertGraphEqual(
+            DependencyGraph(a).get_graphviz_graph(),
+            """
+            digraph action {
+                node [shape=box]
+                0 [label=b]
+                1 [label=a]
+                1 -> 0
+            }
+            """
         )
 
     def test_add_dependency_after_constructing_graph(self):
@@ -55,15 +65,14 @@ class GraphTestCase(unittest.TestCase):
         g = DependencyGraph(a)
         a.add_dependency(Action("b"))
 
-        self.assertEqual(
-            g.get_graphviz_graph().source,
-            textwrap.dedent(
-                """\
-                digraph action {
-                \tnode [shape=box]
-                \t0 [label=a]
-                }"""
-            )
+        self.assertGraphEqual(
+            g.get_graphviz_graph(),
+            """
+            digraph action {
+                node [shape=box]
+                0 [label=a]
+            }
+            """
         )
 
     def test_diamond(self):
@@ -78,35 +87,37 @@ class GraphTestCase(unittest.TestCase):
             d.add_dependency(b)
 
             self.assertIn(
-                DependencyGraph(d).get_graphviz_graph().source,
+                self.normalize(DependencyGraph(d).get_graphviz_graph().source),
                 [
-                    textwrap.dedent(
-                        """\
+                    self.normalize(
+                        """
                         digraph action {
-                        \tnode [shape=box]
-                        \t0 [label=a]
-                        \t1 [label=b]
-                        \t\t1 -> 0
-                        \t2 [label=c]
-                        \t\t2 -> 0
-                        \t3 [label=d]
-                        \t\t3 -> 1
-                        \t\t3 -> 2
-                        }"""
+                            node [shape=box]
+                            0 [label=a]
+                            1 [label=b]
+                            1 -> 0
+                            2 [label=c]
+                            2 -> 0
+                            3 [label=d]
+                            3 -> 1
+                            3 -> 2
+                        }
+                        """
                     ),
-                    textwrap.dedent(
-                        """\
+                    self.normalize(
+                        """
                         digraph action {
-                        \tnode [shape=box]
-                        \t0 [label=a]
-                        \t1 [label=c]
-                        \t\t1 -> 0
-                        \t2 [label=b]
-                        \t\t2 -> 0
-                        \t3 [label=d]
-                        \t\t3 -> 1
-                        \t\t3 -> 2
-                        }"""
+                            node [shape=box]
+                            0 [label=a]
+                            1 [label=c]
+                            1 -> 0
+                            2 [label=b]
+                            2 -> 0
+                            3 [label=d]
+                            3 -> 1
+                            3 -> 2
+                        }
+                        """
                     ),
                 ]
             )
@@ -114,29 +125,27 @@ class GraphTestCase(unittest.TestCase):
     def test_weird_string_label(self):
         a = Action("spaces and; semi=columns")
 
-        self.assertEqual(
-            DependencyGraph(a).get_graphviz_graph().source,
-            textwrap.dedent(
-                """\
-                digraph action {
-                \tnode [shape=box]
-                \t0 [label="spaces and; semi=columns"]
-                }"""
-            )
+        self.assertGraphEqual(
+            DependencyGraph(a).get_graphviz_graph(),
+            """
+            digraph action {
+                node [shape=box]
+                0 [label="spaces and; semi=columns"]
+            }
+            """
         )
 
     def test_None_label(self):
         a = Action(None)
 
-        self.assertEqual(
-            DependencyGraph(a).get_graphviz_graph().source,
-            textwrap.dedent(
-                """\
-                digraph action {
-                \tnode [shape=box]
-                \t0 [shape=point]
-                }"""
-            )
+        self.assertGraphEqual(
+            DependencyGraph(a).get_graphviz_graph(),
+            """
+            digraph action {
+                node [shape=box]
+                0 [shape=point]
+            }
+            """
         )
 
     def test_None_label_twice(self):
@@ -144,15 +153,14 @@ class GraphTestCase(unittest.TestCase):
         b = Action(None)
         a.add_dependency(b)
 
-        self.assertEqual(
-            DependencyGraph(a).get_graphviz_graph().source,
-            textwrap.dedent(
-                """\
-                digraph action {
-                \tnode [shape=box]
-                \t0 [shape=point]
-                \t1 [shape=point]
-                \t\t1 -> 0
-                }"""
-            )
+        self.assertGraphEqual(
+            DependencyGraph(a).get_graphviz_graph(),
+            """
+            digraph action {
+                node [shape=box]
+                0 [shape=point]
+                1 [shape=point]
+                1 -> 0
+            }
+            """
         )
