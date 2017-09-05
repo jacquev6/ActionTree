@@ -7,11 +7,13 @@ import sys
 import glob
 
 
-master_doc = "index"
 project = "ActionTree"
 author = '<a href="http://vincent-jacques.net/">Vincent Jacques</a>'
 copyright = ('2013-2017 {} <script>var jacquev6_ribbon_github="{}"</script>'.format(author, project) +
              '<script src="https://jacquev6.github.io/ribbon.js"></script>')
+
+
+master_doc = "index"
 extensions = []
 
 
@@ -22,9 +24,6 @@ nitpick_ignore = [
 ]
 
 # https://github.com/bitprophet/alabaster
-# html_theme_path
-extensions.append("alabaster")
-html_theme = "alabaster"
 html_sidebars = {
     "**": ["about.html", "navigation.html", "searchbox.html"],
 }
@@ -45,6 +44,10 @@ autodoc_default_flags = ["members"]
 # autodoc_mock_imports
 add_module_names = True
 add_class_names = False
+
+
+# http://sphinx-doc.org/ext/githubpages.html
+extensions.append("sphinx.ext.githubpages")
 
 
 # http://sphinx-doc.org/ext/doctest.html
