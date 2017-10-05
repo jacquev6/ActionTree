@@ -12,12 +12,6 @@ import pickle
 import sys
 import threading
 
-# We import matplotlib in the functions that need it because
-# upgrading it while using it leads to segfault. And we upgrade
-# it via devlpr, that uses ActionTree.
-import graphviz
-
-
 libc = ctypes.CDLL(None)
 try:
     stdout = ctypes.c_void_p.in_dll(libc, "stdout")
@@ -514,6 +508,7 @@ class DependencyGraph(object):
     """
 
     def __init__(self, action):
+        import graphviz
         self.__graphviz_graph = graphviz.Digraph("action", node_attr={"shape": "box"})
         nodes = {}
         for (i, action) in enumerate(action.get_possible_execution_order()):
