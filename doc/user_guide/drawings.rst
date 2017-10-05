@@ -13,6 +13,11 @@ Drawings
 Gantt chart
 -----------
 
+ActionTree uses `matplotlib`_ to visualize Gantt charts. Install all
+required dependencies with ``pip install ActionTree[gantt]``.
+
+.. _`matplotlib`: https://pypi.python.org/pypi/matplotlib
+
 You can draw a Gantt chart of the execution with :class:`.GanttChart`:
 
 >>> from ActionTree import GanttChart
@@ -52,6 +57,14 @@ False
 
 Dependency graph
 ----------------
+
+ActionTree uses `graphviz`_ to visualize dependency graphs. Install all
+required dependencies with ``pip install
+ActionTree[dependency_graphs]``.
+
+.. _`graphviz`: https://pypi.python.org/pypi/graphviz
+
+Dependency graphs need
 
 You can draw a dependency graph with :class:`.DependencyGraph`:
 
