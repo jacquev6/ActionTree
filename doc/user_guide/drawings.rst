@@ -64,8 +64,6 @@ ActionTree[dependency_graphs]``.
 
 .. _`graphviz`: https://pypi.python.org/pypi/graphviz
 
-Dependency graphs need
-
 You can draw a dependency graph with :class:`.DependencyGraph`:
 
 >>> from ActionTree import DependencyGraph
