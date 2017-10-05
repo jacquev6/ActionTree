@@ -43,7 +43,11 @@ setuptools.setup(
         "Programming Language :: Python :: 3.6",
         "Topic :: Software Development",
     ],
-    install_requires=["graphviz", "matplotlib"],
+    install_requires=[],
+    extras_require={
+        "dependency_graphs": ["graphviz"],
+        "gantt": ["matplotlib"],
+    },
     tests_require=py2_only("mock"),
     test_suite="ActionTree.tests",
     use_2to3=True,

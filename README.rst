@@ -51,6 +51,10 @@ Install from PyPI::
 
     $ pip install ActionTree
 
+With dependencies to create Gantt charts and dependency graphs::
+
+    $ pip install 'ActionTree[dependency_graphs,gantt]'
+
 Import:
 
 >>> from ActionTree import execute
