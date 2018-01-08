@@ -50,7 +50,10 @@ class TestAction(Action):
         with open(self.__events_file, "a") as f:
             f.write("{}\n".format(str(self.label).lower()))
         if self.__delay:
-            time.sleep(self.__delay)
+            delay = self.__delay
+            if os.environ.get("TRAVIS") == "true":
+                delay *= 10
+            time.sleep(delay)
         if self.__end_event:
             with open(self.__events_file, "a") as f:
                 f.write("{}\n".format(str(self.label).upper()))
