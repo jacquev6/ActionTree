@@ -1,6 +1,6 @@
 # coding: utf8
 
-# Copyright 2013-2017 Vincent Jacques <vincent@vincent-jacques.net>
+# Copyright 2013-2018 Vincent Jacques <vincent@vincent-jacques.net>
 
 import os
 import sys
@@ -9,7 +9,7 @@ import glob
 
 project = "ActionTree"
 author = '<a href="http://vincent-jacques.net/">Vincent Jacques</a>'
-copyright = ('2013-2017 {} <script>var jacquev6_ribbon_github="{}"</script>'.format(author, project) +
+copyright = ('2013-2018 {} <script>var jacquev6_ribbon_github="{}"</script>'.format(author, project) +
              '<script src="https://jacquev6.github.io/ribbon.js"></script>')
 
 
