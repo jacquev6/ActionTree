@@ -16,9 +16,10 @@ class MultiThreadedExecutionTestCase(ActionTreeTestCase):
         #  b  c  d
 
         a = self._action("a")
-        b = self._action("b", delay=0.1, end_event=True)
-        c = self._action("c", delay=0.1, end_event=True)
-        d = self._action("d", delay=0.1, end_event=True)
+        barrier = self._barrier(3)
+        b = self._action("b", barrier=barrier, end_event=True)
+        c = self._action("c", barrier=barrier, end_event=True)
+        d = self._action("d", barrier=barrier, end_event=True)
         a.add_dependency(b)
         a.add_dependency(c)
         a.add_dependency(d)
@@ -34,9 +35,10 @@ class MultiThreadedExecutionTestCase(ActionTreeTestCase):
         #  b  c  d
 
         a = self._action("a")
-        b = self._action("b", delay=0.1, end_event=True)
-        c = self._action("c", delay=0.1, end_event=True)
-        d = self._action("d", delay=0.1, end_event=True)
+        barrier = self._barrier(3)
+        b = self._action("b", barrier=barrier, end_event=True)
+        c = self._action("c", barrier=barrier, end_event=True)
+        d = self._action("d", barrier=barrier, end_event=True)
         a.add_dependency(b)
         a.add_dependency(c)
         a.add_dependency(d)
@@ -82,8 +84,9 @@ class MultiThreadedExecutionTestCase(ActionTreeTestCase):
         #     d
 
         a = self._action("a")
-        b = self._action("b", delay=0.1, end_event=True)
-        c = self._action("c", delay=0.1, end_event=True)
+        barrier = self._barrier(2)
+        b = self._action("b", barrier=barrier, end_event=True)
+        c = self._action("c", barrier=barrier, end_event=True)
         d = self._action("d", end_event=True)
         a.add_dependency(b)
         a.add_dependency(c)
@@ -120,10 +123,12 @@ class MultiThreadedExecutionTestCase(ActionTreeTestCase):
         #   d   e
 
         a = self._action("a")
-        b = self._action("b", delay=0.1, end_event=True)
-        c = self._action("c", delay=0.1, end_event=True)
-        d = self._action("d", delay=0.1, end_event=True)
-        e = self._action("e", delay=0.1, end_event=True)
+        barrier1 = self._barrier(2)
+        b = self._action("b", barrier=barrier1, end_event=True)
+        c = self._action("c", barrier=barrier1, end_event=True)
+        barrier2 = self._barrier(2)
+        d = self._action("d", barrier=barrier2, end_event=True)
+        e = self._action("e", barrier=barrier2, end_event=True)
         a.add_dependency(b)
         a.add_dependency(c)
         b.add_dependency(d)

@@ -929,9 +929,7 @@ class _Execute(object):
             self.events.put((PRINTED, action_id, (datetime.datetime.now(), data)))
 
     def _check_picklability(self, stuff):
-        # This is a way to fail fast if we see a non-picklable object
-        # because ProcessPoolExecutor freezes forever if we try to transfer
-        # a non-picklable object through its queues
+        # Fail fast: don't put a non-picklable object in a multiprocessing.Queue
         pickle.loads(pickle.dumps(stuff))
 
     def _handle_next_event(self):

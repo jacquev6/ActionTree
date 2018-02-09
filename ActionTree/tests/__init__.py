@@ -5,6 +5,7 @@
 from __future__ import division, absolute_import, print_function
 
 import ctypes
+import multiprocessing
 import subprocess
 import sys
 import tempfile
@@ -22,10 +23,31 @@ from ActionTree import *
 libc = ctypes.CDLL(None)
 
 
+# No multiprocessing.Barrier in Python 2, so we build our own
+class Barrier:
+    def __init__(self, expected_processes):
+        self.__expected_processes = expected_processes
+        self.__waiting_processes = multiprocessing.Value("i", 0)
+        self.__barrier = multiprocessing.Semaphore(0)
+
+    def wait(self):
+        with self.__waiting_processes.get_lock():
+            self.__waiting_processes.value += 1
+        if self.__waiting_processes.value == self.__expected_processes:
+            self.__barrier.release()
+        self.__barrier.acquire()
+        self.__barrier.release()
+
+
+# multiprocessing.Semaphores are not picklable, so we pickle their ids and retrieve them from this dict.
+# We don't deallocate them so we do leak some resources, but we accept that in unit tests.
+barriers = {}
+
+
 class TestAction(Action):
     def __init__(
         self, label,
-        exception, return_value, delay,
+        exception, return_value, barrier_id,
         events_file, end_event,
         print_on_stdout, print_on_stderr, puts_on_stdout, echo_on_stdout,
         accept_failed_dependencies,
@@ -33,7 +55,7 @@ class TestAction(Action):
         super(TestAction, self).__init__(label=label, accept_failed_dependencies=accept_failed_dependencies)
         self.__exception = exception
         self.__return_value = return_value
-        self.__delay = delay
+        self.__barrier_id = barrier_id
         self.__events_file = events_file
         self.__end_event = end_event
         self.__print_on_stdout = print_on_stdout
@@ -49,11 +71,8 @@ class TestAction(Action):
             assert self.accept_failed_dependencies or dependency_statuses[d].status == SUCCESSFUL
         with open(self.__events_file, "a") as f:
             f.write("{}\n".format(str(self.label).lower()))
-        if self.__delay:
-            delay = self.__delay
-            if os.environ.get("TRAVIS") == "true":
-                delay *= 10
-            time.sleep(delay)
+        if self.__barrier_id:
+            barriers[self.__barrier_id].wait()
         if self.__end_event:
             with open(self.__events_file, "a") as f:
                 f.write("{}\n".format(str(self.label).upper()))
@@ -88,7 +107,7 @@ class ActionTreeTestCase(unittest.TestCase):
 
     def _action(
         self, label,
-        exception=None, return_value=None, delay=None,
+        exception=None, return_value=None, barrier=None,
         end_event=False,
         print_on_stdout=None, print_on_stderr=None, puts_on_stdout=None, echo_on_stdout=None,
         accept_failed_dependencies=False,
@@ -96,12 +115,18 @@ class ActionTreeTestCase(unittest.TestCase):
     ):
         return TestAction(
             label,
-            exception, return_value, delay,
+            exception, return_value, barrier,
             self.__events_file, end_event,
             print_on_stdout, print_on_stderr, puts_on_stdout, echo_on_stdout,
             accept_failed_dependencies,
             *args, **kwds
         )
+
+    def _barrier(self, n):
+        barrier = Barrier(n)
+        barrier_id = id(barrier)
+        barriers[barrier_id] = barrier
+        return barrier_id
 
     def assertEventsEqual(self, groups):
         with open(self.__events_file) as f:
