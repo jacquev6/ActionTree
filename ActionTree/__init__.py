@@ -912,7 +912,7 @@ class _Execute(object):
         os.close(pipe_r)
         try:
             self._check_picklability((exception, return_value))
-        except:  # Not doctested: mandatory picklability is more an issue than a feature
+        except BaseException:  # Not doctested: mandatory picklability is more an issue than a feature
             self.events.put((PICKLING_EXCEPTION, action_id, ()))
         else:
             end_time = datetime.datetime.now()
