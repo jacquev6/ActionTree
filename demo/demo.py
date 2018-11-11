@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Copyright 2017-2018 Vincent Jacques <vincent@vincent-jacques.net>
+
 import datetime
 import sys
 import time

@@ -1,6 +1,6 @@
 # coding: utf8
 
-# Copyright 2013-2018 Vincent Jacques <vincent@vincent-jacques.net>
+# Copyright 2015-2018 Vincent Jacques <vincent@vincent-jacques.net>
 
 """
 Stock actions are predefined common tasks (manipulating the filesystem, calling an external program, etc.)

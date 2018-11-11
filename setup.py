@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # coding: utf8
 
-# Copyright 2013-2018 Vincent Jacques <vincent@vincent-jacques.net>
-
-from __future__ import division, absolute_import, print_function
+# Copyright 2012-2018 Vincent Jacques <vincent@vincent-jacques.net>
+# Copyright 2017 Nelo-T. Wallus <nelo@wallus.de>
 
 import setuptools
 import sys
-
 
 version = "0.11.0"
 
