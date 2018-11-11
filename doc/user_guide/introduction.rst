@@ -17,25 +17,26 @@ First, import :mod:`.ActionTree`
 Then create your specialized :class:`.Action` classes:
 
 >>> class CreateFile(Action):
-...   def __init__(self, name):
-...     super(CreateFile, self).__init__("create {}".format(name))
-...     self.__name = name
+...     def __init__(self, name):
+...         super(CreateFile, self).__init__("create {}".format(name))
+...         self.__name = name
 ...
-...   def do_execute(self, dependency_statuses):
-...     with open(self.__name, "w") as f:
-...       f.write("This is {}\n".format(self.__name))
+...     def do_execute(self, dependency_statuses):
+...         with open(self.__name, "w") as f:
+...             f.write("This is {}\n".format(self.__name))
+
 
 >>> class ConcatFiles(Action):
-...   def __init__(self, files, name):
-...     super(ConcatFiles, self).__init__("concat")
-...     self.__files = files
-...     self.__name = name
+...     def __init__(self, files, name):
+...         super(ConcatFiles, self).__init__("concat")
+...         self.__files = files
+...         self.__name = name
 ...
-...   def do_execute(self, dependency_statuses):
-...     with open(self.__name, "w") as output:
-...       for file in self.__files:
-...         with open(file) as input:
-...           output.write(input.read())
+...     def do_execute(self, dependency_statuses):
+...         with open(self.__name, "w") as output:
+...             for file in self.__files:
+...                 with open(file) as input:
+...                     output.write(input.read())
 
 .. END SECTION introduction_actions.py
 
@@ -61,8 +62,8 @@ True
 The actions have been executed successfully:
 
 >>> def cat(name):
-...   with open(name) as f:
-...     print(f.read())
+...     with open(name) as f:
+...         print(f.read())
 
 >>> cat("first")
 This is first

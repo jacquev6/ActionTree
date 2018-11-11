@@ -58,12 +58,12 @@ while allowing other actions to run, just create a resource:
 >>> semaphore = Resource(2)
 >>> dependencies = []
 >>> for i in range(6):
-...   d = Sleep(0.3, label="limited")
-...   d.require_resource(semaphore)
-...   dependencies.append(d)
+...     d = Sleep(0.3, label="limited")
+...     d.require_resource(semaphore)
+...     dependencies.append(d)
 >>> for i in range(5):
-...   d = Sleep(0.4, label="free")
-...   dependencies.append(d)
+...     d = Sleep(0.4, label="free")
+...     dependencies.append(d)
 >>> with_resource = NullAction(dependencies=dependencies)
 
 >>> GanttChart(execute(with_resource, cpu_cores=5)).write_to_png("with_resource_gantt_chart.png")
