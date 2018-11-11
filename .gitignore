@@ -1,9 +1,8 @@
 *.pyc
-/dist/
-/build/
 /*.egg-info/
 /.coverage
 /.coverage.*
 /.eggs/
-/action.png
-/report.png
+/_builds/
+/build/
+/dist/
