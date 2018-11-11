@@ -24,8 +24,7 @@ setuptools.setup(
     long_description=open("README.rst").read(),
     author="Vincent Jacques",
     author_email="vincent@vincent-jacques.net",
-    url="http://jacquev6.github.io/ActionTree/",
-    packages=setuptools.find_packages(),
+    url="http://jacquev6.github.io/ActionTree",
     license="MIT",
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -41,15 +40,16 @@ setuptools.setup(
         "Programming Language :: Python :: 3.6",
         "Topic :: Software Development",
     ],
-    install_requires=[],
+    packages=setuptools.find_packages(),
     extras_require={
         "dependency_graphs": ["graphviz"],
         "gantt": ["matplotlib"],
     },
-    tests_require=py2_only("mock"),
-    test_suite="ActionTree.tests",
+    tests_require=py2_only(
+        "mock",
+    ),
     use_2to3=True,
-    # @todo Investigate convert_2to3_doctests
+    test_suite="ActionTree.tests",
     command_options={
         "build_sphinx": {
             "version": ("setup.py", version),

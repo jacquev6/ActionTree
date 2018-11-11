@@ -91,7 +91,9 @@ class DemoHooks(Hooks):
         self.set(action, time, STARTED)
 
     def action_printed(self, time, action, text):
-        self.action_statuses[self.action_indexes[action]].lines += ["> {}".format(line.rstrip()) for line in text.splitlines()]
+        self.action_statuses[self.action_indexes[action]].lines += [
+            "> {}".format(line.rstrip()) for line in text.splitlines()
+        ]
         self.display()
 
     def action_successful(self, time, action, return_value):

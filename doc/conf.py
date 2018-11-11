@@ -73,32 +73,28 @@ intersphinx_mapping = {
 }
 # intersphinx_cache_limit
 
+sections = []
 
-for input_file in glob.glob("user_guide/*.rst"):
-    with open(input_file) as in_f:
-        seen = set()
-        out_f = None
-        output_file = None
-        for line in in_f:
-            if line.rstrip() == ".. END SECTION {}".format(output_file):
-                assert output_file is not None
-                out_f.close()
-                out_f = None
-                output_file = None
-            if out_f:
-                if any(line.startswith(prefix) for prefix in ["    ", "... ", ">>> "]):
-                    out_f.write(line[4:])
-                elif line.strip() == "":
-                    out_f.write("\n")
-            if line.startswith(".. BEGIN SECTION "):
-                assert output_file is None
-                output_file = line[17:].rstrip()
-                if output_file in seen:
-                    mode = "a"
-                else:
-                    mode = "w"
-                seen.add(output_file)
-                out_f = open("user_guide/artifacts/{}".format(output_file), mode)
-        assert output_file is None
+for file_name in glob.glob("user_guide/*.rst"):
+    with open(file_name) as f:
+        lines = [line.rstrip() for line in f]
+
+    section_name = None
+    for line in lines:
+        if line == ".. END SECTION {}".format(section_name):
+            sections.append((section_name, section_lines))
+            section_name = None
+        if section_name:
+            if any(line.startswith(prefix) for prefix in ["    ", "... ", ">>> "]):
+                section_lines.append(line[4:])
+            elif line.strip() in ["", "..."]:
+                section_lines.append("")
+        if line.startswith(".. BEGIN SECTION "):
+            section_name = line[17:].rstrip()
+            section_lines = []
+
+for (section_name, section_lines) in sections:
+    with open("user_guide/artifacts/{}".format(section_name), "w") as f:
+        f.write("\n".join(section_lines).strip() + "\n")
 
 sys.path.append(os.path.join(os.getcwd(), "user_guide/artifacts"))
