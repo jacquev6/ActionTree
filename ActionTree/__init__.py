@@ -35,7 +35,7 @@ def execute(action, cpu_cores=None, keep_going=False, do_raise=True, hooks=None)
         (make sure your system has the necessary resources).
         Note: CPU cores are managed like any other :class:`Resource`, and this parameter sets the availability
         of :obj:`CPU_CORE` for this execution.
-    :type cpu_cores: int or None or UNLIMITED
+    :type cpu_cores: int or None or :attr:`UNLIMITED`
     :param bool keep_going: if ``True``, then execution does not stop on first failure,
         but executes as many dependencies as possible.
     :param bool do_raise: if ``False``, then exceptions are not re-raised as :exc:`CompoundException`
@@ -185,7 +185,7 @@ class Resource(object):
     def __init__(self, availability):
         """
         :param availability: the number of instances available for this resource
-        :type availability: int or UNLIMITED
+        :type availability: int or :attr:`UNLIMITED`
         """
         self.__availability = availability
 
@@ -193,12 +193,12 @@ class Resource(object):
         return self.__availability
 
 
-class CpuCoreResource(Resource):
+class _CpuCoreResource(Resource):
     def _availability(self, cpu_cores):
         return cpu_cores
 
 
-CPU_CORE = CpuCoreResource(0)
+CPU_CORE = _CpuCoreResource(0)
 """
 A special :class:`.Resource` representing a processing unit.
 You can pass it to :meth:`.Action.require_resource` if your action will execute on more than one core.

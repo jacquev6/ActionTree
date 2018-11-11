@@ -18,9 +18,9 @@ extensions = []
 
 
 nitpicky = True
-# See https://github.com/simpeg/discretize/commit/e1a9cf2352edef9ebf0fdde8a6886db58bf4e90f
 nitpick_ignore = [
-    ('py:obj', 'list'),
+    ('py:class', 'list'),
+    ('py:class', 'tuple'),
 ]
 
 # https://github.com/bitprophet/alabaster
@@ -54,6 +54,8 @@ extensions.append("sphinx.ext.githubpages")
 extensions.append("sphinx.ext.doctest")
 # doctest_path
 doctest_global_setup = """
+from __future__ import print_function
+
 import os
 
 os.chdir("doc/user_guide/artifacts")
@@ -68,8 +70,8 @@ os.chdir("../../..")
 extensions.append("sphinx.ext.intersphinx")
 intersphinx_mapping = {
     "python": ("https://docs.python.org/2/", None),
-    "graphviz": ("http://graphviz.readthedocs.io/en/stable/", None),
-    "matplotlib": ("http://matplotlib.org/", None),
+    "graphviz": ("https://graphviz.readthedocs.io/en/stable/", None),
+    "matplotlib": ("https://matplotlib.org/", None),
 }
 # intersphinx_cache_limit
 

@@ -63,25 +63,21 @@ The actions have been executed successfully:
 
 >>> def cat(name):
 ...     with open(name) as f:
-...         print(f.read())
+...         print(f.read(), end="")
 
 >>> cat("first")
 This is first
-<BLANKLINE>
 
 >>> cat("second")
 This is second
-<BLANKLINE>
 
 >>> cat("third")
 This is third
-<BLANKLINE>
 
 >>> cat("fourth")
 This is first
 This is second
 This is third
-<BLANKLINE>
 
 You have no guaranty about the order of execution of the ``CreateFile`` actions,
 but you are sure that they are all finished before the ``ConcatFiles`` action starts.

@@ -6,8 +6,6 @@ set -o errexit
 
 clear
 
-git checkout docs
-
 coverage2 erase
 coverage2 run --include=ActionTree* setup.py test --quiet
 coverage2 combine
