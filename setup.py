@@ -7,7 +7,7 @@
 import setuptools
 import sys
 
-version = "0.11.0"
+version = "0.12.0"
 
 
 def py2_only(*dependencies):

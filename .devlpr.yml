@@ -1,7 +1,7 @@
 format: 1
 project:
   name: ActionTree
-  version: 0.11.0
+  version: 0.12.0
   status: beta
   short_descriptions:
     github: "Python library executing long concurrent actions with inter-dependencies"
