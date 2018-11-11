@@ -14,7 +14,7 @@ import unittest
 
 try:
     import unittest.mock
-except ImportError:  # Not unittested: test code for Python 2
+except ImportError:  # pragma no cover: test code for Python 2
     import mock
     unittest.mock = mock
 
@@ -63,7 +63,7 @@ class TestAction(Action):
         self.__puts_on_stdout = puts_on_stdout
         self.__echo_on_stdout = echo_on_stdout
 
-    def __repr__(self):
+    def __repr__(self):  # pragma no cover: debug code
         return "<TestAction {}>".format(self.label)
 
     def do_execute(self, dependency_statuses):

@@ -60,7 +60,7 @@ class CallSubprocess(Action):
         # See http://bugs.python.org/issue1692335
         try:
             subprocess.check_call(self.__command, **self.__kwargs)
-        except subprocess.CalledProcessError as e:  # Not doctested: implementation detail
+        except subprocess.CalledProcessError as e:
             raise CalledProcessError(e.returncode, e.cmd, e.output)
 
 
@@ -88,12 +88,12 @@ class CreateDirectory(Action):
     def do_execute(self, dependency_statuses):
         try:
             os.makedirs(self.__name)
-        except OSError as e:  # Not doctested: implementation detail
+        except OSError as e:
             if e.errno != errno.EEXIST or not os.path.isdir(self.__name):
                 raise
 
 
-class DeleteFile(Action):  # Not doctested: could be
+class DeleteFile(Action):
     """
     A stock action that deletes a file.
     No error will be raise if the file doesn't exist.
@@ -115,7 +115,7 @@ class DeleteFile(Action):  # Not doctested: could be
                 raise
 
 
-class DeleteDirectory(Action):  # Not doctested: could be
+class DeleteDirectory(Action):
     """
     A stock action that deletes a directory (recursively).
     No error will be raise if the directory doesn't exist.
@@ -137,7 +137,7 @@ class DeleteDirectory(Action):  # Not doctested: could be
                 raise
 
 
-class CopyFile(Action):  # Not doctested: could be
+class CopyFile(Action):
     """
     A stock action that copies a file. Arguments are passed to :func:`shutil.copy`.
 
@@ -156,7 +156,7 @@ class CopyFile(Action):  # Not doctested: could be
         shutil.copy(self.__src, self.__dst)
 
 
-class TouchFile(Action):  # Not doctested: could be
+class TouchFile(Action):
     """
     A stock action that touches a file.
     If the file already exists, its modification time will be modified.

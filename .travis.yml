@@ -3,31 +3,22 @@ python:
 - "2.7"
 - "3.5"
 - "3.6"
+dist: trusty
 sudo: false
 addons:
   apt:
     packages:
     - graphviz
 install:
-- pip install --upgrade pip setuptools coverage
-- pip install --upgrade sphinx coverage
+- pip install --upgrade pip setuptools coverage sphinx coveralls
 - pip install --upgrade graphviz matplotlib
-- if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ];
-  then
-    pip install --upgrade mock;
-  fi
+- if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ]; then pip install --upgrade mock; fi
 script:
-- export COVERAGE_FILE=/tmp/.coverage
-- '(echo "[run]"; echo "branch = True"; echo "include = $(pwd)/ActionTree/*"; echo "concurrency = multiprocessing"; echo "[report]"; echo "exclude_lines ="; echo "  Not unittested: ...") > /tmp/.coveragerc'
-- coverage run --rcfile=/tmp/.coveragerc setup.py test
-- coverage combine
-- if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ];
-  then
-    python setup.py build_sphinx --builder=doctest;
-  fi
+- coverage run --include=ActionTree*,build/lib/ActionTree* setup.py test
+- if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ]; then python setup.py build_sphinx --builder=doctest; fi
 after_success:
-- pip install --upgrade coveralls
-- coveralls --rcfile=/tmp/.coveragerc
+- coverage combine
+- coveralls
 deploy:
 - provider: pypi
   user: jacquev6

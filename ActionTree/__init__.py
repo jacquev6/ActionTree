@@ -16,11 +16,11 @@ import threading
 libc = ctypes.CDLL(None)
 try:
     stdout = ctypes.c_void_p.in_dll(libc, "stdout")
-except ValueError:  # Not unittested: Not doctested: specific to macOS
+except ValueError:  # pragma no cover: specific to macOS
     stdout = ctypes.c_void_p.in_dll(libc, "__stdoutp")
 try:
     stderr = ctypes.c_void_p.in_dll(libc, "stderr")
-except ValueError:  # Not unittested: Not doctested: specific to macOS
+except ValueError:  # pragma no cover: specific to macOS
     stderr = ctypes.c_void_p.in_dll(libc, "__stderrp")
 
 
@@ -107,7 +107,7 @@ class Action(object):
 
         :raises DependencyCycleException: when adding the new dependency would create a cycle.
         """
-        if self in dependency.get_possible_execution_order():  # Not doctested: implementation detail
+        if self in dependency.get_possible_execution_order():
             raise DependencyCycleException()
         self.__dependencies.append(dependency)
 
@@ -272,7 +272,7 @@ class Hooks(object):
         """
 
 
-class DependencyCycleException(Exception):  # Not doctested: implementation detail
+class DependencyCycleException(Exception):
     """
     Exception thrown by :meth:`.Action.add_dependency` when adding the new dependency would create a cycle.
     """
@@ -281,7 +281,7 @@ class DependencyCycleException(Exception):  # Not doctested: implementation deta
         super(DependencyCycleException, self).__init__("Dependency cycle")
 
 
-class CompoundException(Exception):  # Not doctested: @todoc
+class CompoundException(Exception):
     """
     Exception thrown by :func:`.execute` when dependencies raise exceptions.
     """
@@ -376,7 +376,7 @@ class ExecutionReport(object):
 
             :rtype: datetime.datetime
             """
-            return self.__pending_time  # Not doctested: @todoc
+            return self.__pending_time
 
         @property
         def ready_time(self):
@@ -424,7 +424,7 @@ class ExecutionReport(object):
             The value returned by this action
             (``None`` if it failed or was never started).
             """
-            return self.__return_value  # Not doctested: @todoc
+            return self.__return_value
 
         @property
         def failure_time(self):
@@ -442,7 +442,7 @@ class ExecutionReport(object):
             The exception raised by this action
             (``None`` if it succeeded or was never started).
             """
-            return self.__exception  # Not doctested: @todoc
+            return self.__exception
 
         @property
         def output(self):
@@ -452,7 +452,7 @@ class ExecutionReport(object):
 
             :rtype: str or None
             """
-            return self.__output  # Not doctested: @todoc
+            return self.__output
 
     def __init__(self, root_action, actions, now):
         self._root_action = root_action
@@ -515,7 +515,7 @@ class DependencyGraph(object):
         for (i, action) in enumerate(action.get_possible_execution_order()):
             node = str(i)
             nodes[action] = node
-            if action.label is None:  # Not doctested: implementation detail
+            if action.label is None:
                 self.__graphviz_graph.node(node, shape="point")
             else:
                 self.__graphviz_graph.node(node, action.label)
@@ -523,7 +523,7 @@ class DependencyGraph(object):
                 assert dependency in nodes  # Because we are iterating a possible execution order
                 self.__graphviz_graph.edge(node, nodes[dependency])
 
-    def write_to_png(self, filename):  # Not unittested: too difficult
+    def write_to_png(self, filename):  # pragma no cover: too difficult
         """
         Write the graph as a PNG image to the specified file.
 
@@ -545,7 +545,7 @@ class DependencyGraph(object):
         return self.__graphviz_graph.copy()
 
 
-class GanttChart(object):  # Not unittested: too difficult
+class GanttChart(object):  # pragma no cover: too difficult
     """
     A visual representation of the timing of an execution.
     """
@@ -668,7 +668,7 @@ class GanttChart(object):  # Not unittested: too difficult
 
         def draw(self, ax, ordinates, actions):
             ordinate = ordinates[self.__id]
-            if self.__ready_time:  # Not doctested: implementation detail
+            if self.__ready_time:
                 ax.plot([self.__ready_time, self.__cancel_time], [ordinate, ordinate], color="grey", lw=1)
             if self.__label is not None:
                 ax.annotate(
@@ -718,7 +718,7 @@ class GanttChart(object):  # Not unittested: too difficult
         return fig
 
     @staticmethod
-    def __nearest(v, values):  # Not doctested: implementation detail
+    def __nearest(v, values):
         for i, value in enumerate(values):
             if v < value:
                 break
@@ -815,7 +815,7 @@ class _Execute(object):
         for w in multiprocessing.active_children():
             w.join()
 
-        if self.do_raise and self.exceptions:  # Not doctested: @todoc
+        if self.do_raise and self.exceptions:
             raise CompoundException(self.exceptions, self.report)
         else:
             return self.report
@@ -826,10 +826,10 @@ class _Execute(object):
 
         if action in self.pending:
             self._change_status(action, self.pending, self.done)
-        else:  # Not doctested: implementation detail
+        else:
             self._change_status(action, self.ready, self.done)
 
-        if not self.keep_going:  # Not doctested: implementation detail
+        if not self.keep_going:
             for d in action.dependencies:
                 if d in self.pending or d in self.ready:
                     self._cancel_action(d, now)
@@ -865,7 +865,7 @@ class _Execute(object):
                 # Allow actions requiring more than available to run when they are alone requiring this resource
                 continue
             availability = resource._availability(self.cpu_cores)
-            if availability is UNLIMITED:  # Not doctested: implementation detail
+            if availability is UNLIMITED:
                 # Don't check usage of unlimited resources
                 continue
             if used + quantity > availability:
@@ -913,7 +913,7 @@ class _Execute(object):
         os.close(pipe_r)
         try:
             self._check_picklability((exception, return_value))
-        except BaseException:  # Not doctested: mandatory picklability is more an issue than a feature
+        except BaseException:
             self.events.put((PICKLING_EXCEPTION, action_id, ()))
         else:
             end_time = datetime.datetime.now()
@@ -964,7 +964,7 @@ class _Execute(object):
         self._triage_pending_dependents(action, True, failure_time)
         self._deallocate_resources(action)
 
-    def _handle_pickling_exception_event(self, action):  # Not doctested: mandatory picklability
+    def _handle_pickling_exception_event(self, action):
         raise pickle.PicklingError()
 
     def _change_status(self, action, orig, dest):

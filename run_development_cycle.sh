@@ -8,9 +8,15 @@ clear
 
 git checkout docs
 
-python2 setup.py test --quiet
+coverage2 erase
+coverage2 run --include=ActionTree* setup.py test --quiet
+coverage2 combine
+coverage2 report
 
-python3 setup.py test --quiet
+coverage3 erase
+coverage3 run --include=build/lib/ActionTree* setup.py test --quiet
+coverage3 combine
+coverage3 report
 
 python2 setup.py build_sphinx --builder=doctest
 
