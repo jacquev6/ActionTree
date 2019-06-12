@@ -13,8 +13,6 @@ install:
 - pip install --upgrade pip setuptools coverage sphinx coveralls
 - pip install --upgrade graphviz matplotlib
 - if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ]; then pip install --upgrade mock; fi
-# Temporary workaround for https://travis-ci.org/jacquev6/ActionTree/jobs/527364720#L749
-- if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ]; then pip install urllib3==1.24.2; fi
 script:
 - coverage run --include=ActionTree*,build/lib/ActionTree* setup.py test
 - if [ "v$TRAVIS_PYTHON_VERSION" == "v2.7" ]; then python setup.py build_sphinx --builder=doctest; fi
