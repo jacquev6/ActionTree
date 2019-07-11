@@ -73,6 +73,7 @@ class Action(object):
     """
 
     def __init__(self, label, dependencies=[], resources_required={}, accept_failed_dependencies=False):
+        # @todo Add a parameter saying that the action can safely be executed in the parent process
         """
         :param label: A string used to represent the action in :class:`GanttChart` and
             :class:`DependencyGraph`. Can be retrieved by :attr:`label`.
