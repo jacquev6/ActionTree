@@ -1,0 +1,4 @@
+name: Tests for ActionTree
+runs:
+  using: docker
+  image: Dockerfile
