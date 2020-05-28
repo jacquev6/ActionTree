@@ -7,7 +7,6 @@ Stock actions are predefined common tasks (manipulating the filesystem, calling 
 They all specialize :class:`.Action`.
 """
 
-from __future__ import division, absolute_import, print_function
 
 import errno
 import os
@@ -40,12 +39,6 @@ class NullAction(Action):
 class CallSubprocess(Action):
     """
     A stock action that calls a subprocess.
-
-    Note: if the process fails,
-    :func:`~subprocess.check_call` raises a :exc:`subprocess.CalledProcessError`,
-    which `cannot be pickled <http://bugs.python.org/issue1692335>`__ in Python 2.
-    So, in that case, this action catches the original exception and
-    raises a :exc:`CalledProcessError`.
     """
     def __init__(self, command, kwargs={}, label=DEFAULT, *args, **kwds):
         """
@@ -56,18 +49,7 @@ class CallSubprocess(Action):
         self.__kwargs = kwargs
 
     def do_execute(self, dependency_statuses):
-        # subprocess.CalledProcessError can't be pickled in Python2
-        # See http://bugs.python.org/issue1692335
-        try:
-            subprocess.check_call(self.__command, **self.__kwargs)
-        except subprocess.CalledProcessError as e:
-            raise CalledProcessError(e.returncode, e.cmd, e.output)
-
-
-class CalledProcessError(Exception):
-    """
-    Raised by :class:`CallSubprocess`
-    """
+        subprocess.check_call(self.__command, **self.__kwargs)
 
 
 class CreateDirectory(Action):

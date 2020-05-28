@@ -7,15 +7,7 @@
 import setuptools
 import sys
 
-version = "0.12.0"
-
-
-# @todo Drop support of Python 2
-def py2_only(*dependencies):
-    if sys.version_info[0] == 2:
-        return list(dependencies)
-    else:
-        return []
+version = "0.13.0"
 
 
 setuptools.setup(
@@ -34,11 +26,11 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Topic :: Software Development",
     ],
     packages=setuptools.find_packages(),
@@ -46,10 +38,6 @@ setuptools.setup(
         "dependency_graphs": open("requirements-dependency_graphs.txt").readlines(),
         "gantt": open("requirements-gantt.txt").readlines(),
     },
-    tests_require=py2_only(
-        "mock",
-    ),
-    use_2to3=True,
     test_suite="ActionTree.tests",
     command_options={
         "build_sphinx": {

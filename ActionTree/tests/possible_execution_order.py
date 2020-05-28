@@ -2,7 +2,6 @@
 
 # Copyright 2017-2018 Vincent Jacques <vincent@vincent-jacques.net>
 
-from __future__ import division, absolute_import, print_function
 
 import unittest
 

@@ -2,7 +2,6 @@
 
 # Copyright 2012-2018 Vincent Jacques <vincent@vincent-jacques.net>
 
-from __future__ import division, absolute_import, print_function
 
 import ctypes
 import multiprocessing
@@ -11,32 +10,11 @@ import sys
 import tempfile
 import time
 import unittest
-
-try:
-    import unittest.mock
-except ImportError:  # pragma no cover: test code for Python 2
-    import mock
-    unittest.mock = mock
+import unittest.mock
 
 from ActionTree import *
 
 libc = ctypes.CDLL(None)
-
-
-# No multiprocessing.Barrier in Python 2, so we build our own
-class Barrier:
-    def __init__(self, expected_processes):
-        self.__expected_processes = expected_processes
-        self.__waiting_processes = multiprocessing.Value("i", 0)
-        self.__barrier = multiprocessing.Semaphore(0)
-
-    def wait(self):
-        with self.__waiting_processes.get_lock():
-            self.__waiting_processes.value += 1
-        if self.__waiting_processes.value == self.__expected_processes:
-            self.__barrier.release()
-        self.__barrier.acquire()
-        self.__barrier.release()
 
 
 # multiprocessing.Semaphores are not picklable, so we pickle their ids and retrieve them from this dict.
@@ -123,7 +101,7 @@ class ActionTreeTestCase(unittest.TestCase):
         )
 
     def _barrier(self, n):
-        barrier = Barrier(n)
+        barrier = multiprocessing.Barrier(n)
         barrier_id = id(barrier)
         barriers[barrier_id] = barrier
         return barrier_id

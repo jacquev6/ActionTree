@@ -2,7 +2,6 @@
 
 # Copyright 2015-2018 Vincent Jacques <vincent@vincent-jacques.net>
 
-from __future__ import division, absolute_import, print_function
 
 import errno
 import pickle
@@ -105,18 +104,19 @@ class CallSubprocessTestCase(PatchingTestCase):
         self.check_call.assert_called_once_with(["xxx", "yyy"], foo="bar")
 
     def test_called_process_error(self):
-        self.check_call.side_effect = subprocess.CalledProcessError(1, ["false"], None)
+        exn = subprocess.CalledProcessError(1, ["false"], None)
+        self.check_call.side_effect = exn
 
-        with self.assertRaises(CalledProcessError) as catcher:
+        with self.assertRaises(subprocess.CalledProcessError) as catcher:
             CallSubprocess(["false"]).do_execute({})
-        self.assertEqual(catcher.exception.args, (1, ["false"], None))
+        self.assertIs(catcher.exception, exn)
 
 
 class CallSubprocessForRealTestCase(unittest.TestCase):
     def test_called_process_error(self):
         with self.assertRaises(CompoundException) as catcher:
             execute(CallSubprocess(["false"]))
-        self.assertEqual(catcher.exception.exceptions[0].args, (1, ["false"], None))
+        self.assertEqual(catcher.exception.exceptions[0].args, (1, ["false"]))
 
 
 class DeleteFileTestCase(PatchingTestCase):

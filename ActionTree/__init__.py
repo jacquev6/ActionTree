@@ -3,7 +3,6 @@
 # Copyright 2012-2018 Vincent Jacques <vincent@vincent-jacques.net>
 # Copyright 2017 Nelo-T. Wallus <nelo@wallus.de>
 
-from __future__ import division, absolute_import, print_function
 
 import ctypes
 import datetime
@@ -138,7 +137,7 @@ class Action(object):
 
         :rtype: list(tuple(Resource, int))
         """
-        return list(self.__resources_required.iteritems())
+        return list(self.__resources_required.items())
 
     @property
     def accept_failed_dependencies(self):
@@ -468,7 +467,7 @@ class ExecutionReport(object):
         """
         return all(
             action_status.status == SUCCESSFUL
-            for action_status in self.__action_statuses.itervalues()
+            for action_status in self.__action_statuses.values()
         )
 
     def get_action_status(self, action):
@@ -487,7 +486,7 @@ class ExecutionReport(object):
 
         :rtype: list(tuple(Action, ActionStatus))
         """
-        return self.__action_statuses.items()
+        return list(self.__action_statuses.items())
 
 
 SUCCESSFUL = "SUCCESSFUL"
@@ -745,15 +744,15 @@ class GanttChart(object):  # pragma no cover: too difficult
         """
         import matplotlib.dates
 
-        for action in self.__actions.itervalues():
+        for action in self.__actions.values():
             action.draw(ax, self.__ordinates, self.__actions)
 
         ax.get_yaxis().set_ticklabels([])
         ax.set_ylim(0.5, len(self.__actions) + 1)
 
-        min_time = min(a.min_time for a in self.__actions.itervalues()).replace(microsecond=0)
+        min_time = min(a.min_time for a in self.__actions.values()).replace(microsecond=0)
         max_time = (
-            max(a.max_time for a in self.__actions.itervalues()).replace(microsecond=0) +
+            max(a.max_time for a in self.__actions.values()).replace(microsecond=0) +
             datetime.timedelta(seconds=1)
         )
         duration = int((max_time - min_time).total_seconds())
@@ -767,7 +766,7 @@ class GanttChart(object):  # pragma no cover: too difficult
         ax2 = ax.twiny()
         ax2.set_xlabel("Relative time")
         ax2.set_xlim(min_time, max_time)
-        ticks = range(0, duration, self.__nearest(duration // 5, self.__intervals))
+        ticks = list(range(0, duration, self.__nearest(duration // 5, self.__intervals)))
         ax2.xaxis.set_ticks([min_time + datetime.timedelta(seconds=s) for s in ticks])
         ax2.xaxis.set_ticklabels(ticks)
 
