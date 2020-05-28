@@ -3,10 +3,13 @@
 set -o errexit
 
 
-docker build \
-  --file development/checks/Dockerfile \
-  --tag action-tree-checks \
-  .
+image_id=$(
+  docker build \
+    --quiet \
+    --file development/checks/Dockerfile \
+    --tag action-tree-checks \
+    .
+)
 
 docker run \
   --rm \
