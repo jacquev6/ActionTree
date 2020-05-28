@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python_version: [3.5]
+        python_version: [3.5, 3.6, 3.7, 3.8]
     steps:
       - uses: actions/checkout@v1
       - run: development/tests/run.sh ${{ matrix.python_version }}
@@ -15,4 +15,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: ./.github/actions/checks
+      - run: development/checks/run.sh

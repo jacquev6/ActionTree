@@ -1,4 +1,0 @@
-name: Checks for ActionTree
-runs:
-  using: docker
-  image: Dockerfile
