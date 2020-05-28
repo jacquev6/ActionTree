@@ -16,3 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: development/checks/run.sh
+# @todo Check installability + demo
+# @todo Publish tagged versions on PyPI
+
+# @todo Use actions to ensure repository settings?
