@@ -10,6 +10,7 @@ import sys
 version = "0.12.0"
 
 
+# @todo Drop support of Python 2
 def py2_only(*dependencies):
     if sys.version_info[0] == 2:
         return list(dependencies)
