@@ -43,8 +43,8 @@ setuptools.setup(
     ],
     packages=setuptools.find_packages(),
     extras_require={
-        "dependency_graphs": ["graphviz"],
-        "gantt": ["matplotlib"],
+        "dependency_graphs": open("requirements-dependency_graphs.txt").readlines(),
+        "gantt": open("requirements-gantt.txt").readlines(),
     },
     tests_require=py2_only(
         "mock",

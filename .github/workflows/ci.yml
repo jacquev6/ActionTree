@@ -2,11 +2,16 @@ name: Continuous Integration
 on: push
 jobs:
   tests:
+    name: Tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python_version: [3.5]
     steps:
       - uses: actions/checkout@v1
-      - uses: ./.github/actions/tests
+      - run: development/tests/run.sh ${{ matrix.python_version }}
   checks:
+    name: Checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
