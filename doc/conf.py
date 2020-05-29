@@ -9,8 +9,7 @@ import glob
 
 project = "ActionTree"
 author = '<a href="http://vincent-jacques.net/">Vincent Jacques</a>'
-copyright = ('2013-2018 {} <script>var jacquev6_ribbon_github="{}"</script>'.format(author, project) +
-             '<script src="https://jacquev6.github.io/ribbon.js"></script>')
+copyright = f'2013-2018 {author}<script src="https://jacquev6.net/ribbon.2.js" data-project="{project}"></script>'
 
 
 master_doc = "index"
@@ -18,10 +17,6 @@ extensions = []
 
 
 nitpicky = True
-nitpick_ignore = [
-    ('py:class', 'list'),
-    ('py:class', 'tuple'),
-]
 
 # https://github.com/bitprophet/alabaster
 html_sidebars = {
@@ -30,7 +25,6 @@ html_sidebars = {
 html_theme_options = {
     "github_user": "jacquev6",
     "github_repo": project,
-    "travis_button": True,
 }
 html_logo = "logo.png"
 
@@ -54,8 +48,6 @@ extensions.append("sphinx.ext.githubpages")
 extensions.append("sphinx.ext.doctest")
 # doctest_path
 doctest_global_setup = """
-from __future__ import print_function
-
 import os
 
 os.chdir("doc/user_guide/artifacts")
@@ -69,7 +61,7 @@ os.chdir("../../..")
 # http://sphinx-doc.org/latest/ext/intersphinx.html
 extensions.append("sphinx.ext.intersphinx")
 intersphinx_mapping = {
-    "python": ("https://docs.python.org/2/", None),
+    "python": ("https://docs.python.org/3/", None),
     "graphviz": ("https://graphviz.readthedocs.io/en/stable/", None),
     "matplotlib": ("https://matplotlib.org/", None),
 }

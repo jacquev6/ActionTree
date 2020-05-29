@@ -52,9 +52,9 @@ Pass <a class="reference internal" href="#ActionTree.UNLIMITED" title="ActionTre
 (make sure your system has the necessary resources).
 Note: CPU cores are managed like any other <a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resource</span></code></a>, and this parameter sets the availability
 of <a class="reference internal" href="#ActionTree.CPU_CORE" title="ActionTree.CPU_CORE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CPU_CORE</span></code></a> for this execution.</li>
-<li><strong>keep_going</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, then execution does not stop on first failure,
+<li><strong>keep_going</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, then execution does not stop on first failure,
 but executes as many dependencies as possible.</li>
-<li><strong>do_raise</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – if <code class="docutils literal notranslate"><span class="pre">False</span></code>, then exceptions are not re-raised as <a class="reference internal" href="#ActionTree.CompoundException" title="ActionTree.CompoundException"><code class="xref py py-exc docutils literal notranslate"><span class="pre">CompoundException</span></code></a>
+<li><strong>do_raise</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <code class="docutils literal notranslate"><span class="pre">False</span></code>, then exceptions are not re-raised as <a class="reference internal" href="#ActionTree.CompoundException" title="ActionTree.CompoundException"><code class="xref py py-exc docutils literal notranslate"><span class="pre">CompoundException</span></code></a>
 but only included in the <a class="reference internal" href="#ActionTree.ExecutionReport" title="ActionTree.ExecutionReport"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExecutionReport</span></code></a>.</li>
 <li><strong>hooks</strong> (<a class="reference internal" href="#ActionTree.Hooks" title="ActionTree.Hooks"><em>Hooks</em></a>) – its methods will be called when execution progresses.</li>
 </ul>
@@ -93,11 +93,11 @@ The <code class="docutils literal notranslate"><span class="pre">dependency_stat
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>label</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) – A string used to represent the action in <a class="reference internal" href="#ActionTree.GanttChart" title="ActionTree.GanttChart"><code class="xref py py-class docutils literal notranslate"><span class="pre">GanttChart</span></code></a> and
+<li><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – A string used to represent the action in <a class="reference internal" href="#ActionTree.GanttChart" title="ActionTree.GanttChart"><code class="xref py py-class docutils literal notranslate"><span class="pre">GanttChart</span></code></a> and
 <a class="reference internal" href="#ActionTree.DependencyGraph" title="ActionTree.DependencyGraph"><code class="xref py py-class docutils literal notranslate"><span class="pre">DependencyGraph</span></code></a>. Can be retrieved by <a class="reference internal" href="#ActionTree.Action.label" title="ActionTree.Action.label"><code class="xref py py-attr docutils literal notranslate"><span class="pre">label</span></code></a>.</li>
-<li><strong>dependencies</strong> (<em>list</em><em>(</em><a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a><em>)</em>) – see <a class="reference internal" href="#ActionTree.Action.add_dependency" title="ActionTree.Action.add_dependency"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_dependency()</span></code></a></li>
-<li><strong>resources_required</strong> (<a class="reference external" href="https://docs.python.org/2/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a><em>(</em><a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource"><em>Resource</em></a><em>, </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em>)</em>) – see <a class="reference internal" href="#ActionTree.Action.require_resource" title="ActionTree.Action.require_resource"><code class="xref py py-meth docutils literal notranslate"><span class="pre">require_resource()</span></code></a></li>
-<li><strong>accept_failed_dependencies</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, then the action will execute even after some of its dependencies failed.</li>
+<li><strong>dependencies</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a><em>)</em>) – see <a class="reference internal" href="#ActionTree.Action.add_dependency" title="ActionTree.Action.add_dependency"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_dependency()</span></code></a></li>
+<li><strong>resources_required</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource"><em>Resource</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em>) – see <a class="reference internal" href="#ActionTree.Action.require_resource" title="ActionTree.Action.require_resource"><code class="xref py py-meth docutils literal notranslate"><span class="pre">require_resource()</span></code></a></li>
+<li><strong>accept_failed_dependencies</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, then the action will execute even after some of its dependencies failed.</li>
 </ul>
 </td>
 </tr>
@@ -144,7 +144,7 @@ It will just not be executed in parallel with any other action that requires the
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>resource</strong> (<a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource"><em>Resource</em></a>) – </li>
-<li><strong>quantity</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – </li>
+<li><strong>quantity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </li>
 </ul>
 </td>
 </tr>
@@ -160,7 +160,7 @@ It will just not be executed in parallel with any other action that requires the
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list(tuple(<a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource">Resource</a>, <a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)">int</a>))</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource">Resource</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a>))</td>
 </tr>
 </tbody>
 </table>
@@ -174,7 +174,7 @@ It will just not be executed in parallel with any other action that requires the
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)">bool</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></td>
 </tr>
 </tbody>
 </table>
@@ -239,7 +239,7 @@ You can pass it to <a class="reference internal" href="#ActionTree.Action.requir
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)"><em>datetime.datetime</em></a>) – the time at which the action was considered for execution.</li>
+<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action was considered for execution.</li>
 <li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
 </ul>
 </td>
@@ -257,7 +257,7 @@ You can pass it to <a class="reference internal" href="#ActionTree.Action.requir
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)"><em>datetime.datetime</em></a>) – the time at which the action was ready.</li>
+<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action was ready.</li>
 <li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
 </ul>
 </td>
@@ -275,7 +275,7 @@ You can pass it to <a class="reference internal" href="#ActionTree.Action.requir
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)"><em>datetime.datetime</em></a>) – the time at which the action was canceled.</li>
+<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action was canceled.</li>
 <li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
 </ul>
 </td>
@@ -293,7 +293,7 @@ You can pass it to <a class="reference internal" href="#ActionTree.Action.requir
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)"><em>datetime.datetime</em></a>) – the time at which the action was started.</li>
+<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action was started.</li>
 <li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
 </ul>
 </td>
@@ -311,9 +311,9 @@ You can pass it to <a class="reference internal" href="#ActionTree.Action.requir
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)"><em>datetime.datetime</em></a>) – the time at which the action printed the data.</li>
+<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action printed the data.</li>
 <li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
-<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the data printed.</li>
+<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the data printed.</li>
 </ul>
 </td>
 </tr>
@@ -330,7 +330,7 @@ You can pass it to <a class="reference internal" href="#ActionTree.Action.requir
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)"><em>datetime.datetime</em></a>) – the time at which the action completed.</li>
+<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action completed.</li>
 <li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
 <li><strong>return_value</strong> – the value returned by the action.</li>
 </ul>
@@ -349,7 +349,7 @@ You can pass it to <a class="reference internal" href="#ActionTree.Action.requir
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)"><em>datetime.datetime</em></a>) – the time at which the action completed.</li>
+<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action completed.</li>
 <li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
 <li><strong>exception</strong> – the exception raised by the action</li>
 </ul>
@@ -410,7 +410,7 @@ and <a class="reference internal" href="#ActionTree.CANCELED" title="ActionTree.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)">datetime.datetime</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a></td>
 </tr>
 </tbody>
 </table>
@@ -425,7 +425,7 @@ and <a class="reference internal" href="#ActionTree.CANCELED" title="ActionTree.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)">None</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></td>
 </tr>
 </tbody>
 </table>
@@ -440,7 +440,7 @@ and <a class="reference internal" href="#ActionTree.CANCELED" title="ActionTree.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)">None</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></td>
 </tr>
 </tbody>
 </table>
@@ -455,7 +455,7 @@ and <a class="reference internal" href="#ActionTree.CANCELED" title="ActionTree.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)">None</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></td>
 </tr>
 </tbody>
 </table>
@@ -470,7 +470,7 @@ and <a class="reference internal" href="#ActionTree.CANCELED" title="ActionTree.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)">None</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></td>
 </tr>
 </tbody>
 </table>
@@ -492,7 +492,7 @@ and <a class="reference internal" href="#ActionTree.CANCELED" title="ActionTree.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/2/library/datetime.html#datetime.datetime" title="(in Python v2.7)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)">None</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></td>
 </tr>
 </tbody>
 </table>
@@ -514,7 +514,7 @@ and <a class="reference internal" href="#ActionTree.CANCELED" title="ActionTree.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)">str</a> or <a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)">None</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></td>
 </tr>
 </tbody>
 </table>
@@ -530,7 +530,7 @@ and <a class="reference internal" href="#ActionTree.CANCELED" title="ActionTree.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/2/library/functions.html#bool" title="(in Python v2.7)">bool</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></td>
 </tr>
 </tbody>
 </table>
@@ -560,7 +560,7 @@ and <a class="reference internal" href="#ActionTree.CANCELED" title="ActionTree.
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list(tuple(<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action">Action</a>, <a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus" title="ActionTree.ExecutionReport.ActionStatus">ActionStatus</a>))</td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action">Action</a>, <a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus" title="ActionTree.ExecutionReport.ActionStatus">ActionStatus</a>))</td>
 </tr>
 </tbody>
 </table>
@@ -664,7 +664,7 @@ If the directory to create is nested, intermediate directories will be created a
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the directory to create, passed to <a class="reference external" href="https://docs.python.org/2/library/os.html#os.makedirs" title="(in Python v2.7)"><code class="xref py py-func docutils literal notranslate"><span class="pre">os.makedirs()</span></code></a>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the directory to create, passed to <a class="reference external" href="https://docs.python.org/3/library/os.html#os.makedirs" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">os.makedirs()</span></code></a>.</td>
 </tr>
 </tbody>
 </table>
@@ -680,7 +680,7 @@ No error will be raise if the file doesn’t exist.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the name of the file to delete, passed to <a class="reference external" href="https://docs.python.org/2/library/os.html#os.unlink" title="(in Python v2.7)"><code class="xref py py-func docutils literal notranslate"><span class="pre">os.unlink()</span></code></a>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the name of the file to delete, passed to <a class="reference external" href="https://docs.python.org/3/library/os.html#os.unlink" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">os.unlink()</span></code></a>.</td>
 </tr>
 </tbody>
 </table>
@@ -696,7 +696,7 @@ No error will be raise if the directory doesn’t exist.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the name of the directory to delete, passed to <a class="reference external" href="https://docs.python.org/2/library/shutil.html#shutil.rmtree" title="(in Python v2.7)"><code class="xref py py-func docutils literal notranslate"><span class="pre">shutil.rmtree()</span></code></a>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the name of the directory to delete, passed to <a class="reference external" href="https://docs.python.org/3/library/shutil.html#shutil.rmtree" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">shutil.rmtree()</span></code></a>.</td>
 </tr>
 </tbody>
 </table>
@@ -706,14 +706,14 @@ No error will be raise if the directory doesn’t exist.</p>
 <dl class="class">
 <dt id="ActionTree.stock.CopyFile">
 <em class="property">class </em><code class="descclassname">ActionTree.stock.</code><code class="descname">CopyFile</code><span class="sig-paren">(</span><em>src</em>, <em>dst</em>, <em>label=&lt;object object&gt;</em>, <em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.CopyFile" title="Permalink to this definition">¶</a></dt>
-<dd><p>A stock action that copies a file. Arguments are passed to <a class="reference external" href="https://docs.python.org/2/library/shutil.html#shutil.copy" title="(in Python v2.7)"><code class="xref py py-func docutils literal notranslate"><span class="pre">shutil.copy()</span></code></a>.</p>
+<dd><p>A stock action that copies a file. Arguments are passed to <a class="reference external" href="https://docs.python.org/3/library/shutil.html#shutil.copy" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">shutil.copy()</span></code></a>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>src</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the file to copy</li>
-<li><strong>dst</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the destination</li>
+<li><strong>src</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the file to copy</li>
+<li><strong>dst</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the destination</li>
 </ul>
 </td>
 </tr>
@@ -734,7 +734,7 @@ You might want to ensure that by adding a <a class="reference internal" href="#A
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the name of the file to touch. Passed to <a class="reference external" href="https://docs.python.org/2/library/functions.html#open" title="(in Python v2.7)"><code class="xref py py-func docutils literal notranslate"><span class="pre">open()</span></code></a> and/or <a class="reference external" href="https://docs.python.org/2/library/os.html#os.utime" title="(in Python v2.7)"><code class="xref py py-func docutils literal notranslate"><span class="pre">os.utime()</span></code></a>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the name of the file to touch. Passed to <a class="reference external" href="https://docs.python.org/3/library/functions.html#open" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">open()</span></code></a> and/or <a class="reference external" href="https://docs.python.org/3/library/os.html#os.utime" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">os.utime()</span></code></a>.</td>
 </tr>
 </tbody>
 </table>
@@ -749,7 +749,7 @@ You might want to ensure that by adding a <a class="reference internal" href="#A
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>secs</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – seconds to sleep, passed to <a class="reference external" href="https://docs.python.org/2/library/time.html#time.sleep" title="(in Python v2.7)"><code class="xref py py-func docutils literal notranslate"><span class="pre">time.sleep()</span></code></a>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>secs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – seconds to sleep, passed to <a class="reference external" href="https://docs.python.org/3/library/time.html#time.sleep" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">time.sleep()</span></code></a>.</td>
 </tr>
 </tbody>
 </table>
@@ -785,18 +785,6 @@ You might want to ensure that by adding a <a class="reference internal" href="#A
 
 
 
-    
-
-<p>
-<a class="badge" href="https://travis-ci.org/jacquev6/ActionTree">
-    <img
-        alt="https://secure.travis-ci.org/jacquev6/ActionTree.svg?branch=master"
-        src="https://secure.travis-ci.org/jacquev6/ActionTree.svg?branch=master"
-    />
-</a>
-</p>
-
-
 <h3>Navigation</h3>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="user_guide.html">User guide</a></li>
@@ -825,7 +813,7 @@ You might want to ensure that by adding a <a class="reference internal" href="#A
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2013-2018 <a href="http://vincent-jacques.net/">Vincent Jacques</a> <script>var jacquev6_ribbon_github="ActionTree"</script><script src="https://jacquev6.github.io/ribbon.js"></script>.
+      &copy;2013-2018 <a href="http://vincent-jacques.net/">Vincent Jacques</a><script src="https://jacquev6.net/ribbon.2.js" data-project="ActionTree"></script>.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>

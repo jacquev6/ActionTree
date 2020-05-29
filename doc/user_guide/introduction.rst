@@ -122,9 +122,3 @@ Say you want to compile :ref:`two C++ files <source_files>` and link them:
 .. END SECTION stock_link.py
 
 >>> link_report = execute(link)
-
-.. @todo Remove. devlpr is dead
-
-If you're really looking to compile stuff using *ActionTree*,
-you may want to have a look at `devlpr <https://github.com/jacquev6/devlpr>`__.
-It's the reason why I wrote *ActionTree* in the first place.
