@@ -16,7 +16,18 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: development/checks/run.sh
+  docs:
+    name: Docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: |
+          development/doc/build.sh
+          sudo chown runner:docker -R .
+          git checkout -- docs/_images
+          git diff --exit-code --stat docs
+
 # @todo Check installability + demo
 # @todo Publish tagged versions on PyPI
-
-# @todo Use actions to ensure repository settings?
+# @todo Ensure repository settings?
+# @todo Ensure file headers have copyright notices?

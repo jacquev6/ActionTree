@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Resources &#8212; ActionTree 0.12.0 documentation</title>
+    <title>Resources &#8212; ActionTree 0.13.0 documentation</title>
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
@@ -41,7 +41,7 @@
 Thus, by default, the <code class="docutils literal notranslate"><span class="pre">cpu_cores</span></code> parameter of <a class="reference internal" href="../reference.html#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal notranslate"><span class="pre">execute()</span></code></a> controls how many actions can be executed in parallel.</p>
 <p>You can tell <em>ActionTree</em> that your <a class="reference internal" href="../reference.html#ActionTree.Action" title="ActionTree.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action</span></code></a> uses more cores with <a class="reference internal" href="../reference.html#ActionTree.Action.require_resource" title="ActionTree.Action.require_resource"><code class="xref py py-meth docutils literal notranslate"><span class="pre">require_resource()</span></code></a> and <a class="reference internal" href="../reference.html#ActionTree.CPU_CORE" title="ActionTree.CPU_CORE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CPU_CORE</span></code></a>:</p>
 <p>(Here are the <a class="reference internal" href="source_files.html#source-files"><span class="std std-ref">source files</span></a> used below.)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="k">import</span> <span class="n">CPU_CORE</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="kn">import</span> <span class="n">CPU_CORE</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">compile_others</span> <span class="o">=</span> <span class="n">CallSubprocess</span><span class="p">([</span><span class="s2">&quot;make&quot;</span><span class="p">,</span> <span class="s2">&quot;-j&quot;</span><span class="p">,</span> <span class="s2">&quot;4&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/c.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/d.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/e.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/f.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/g.o&quot;</span><span class="p">,</span> <span class="s2">&quot;_build/h.o&quot;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;make -j 4&quot;</span><span class="p">)</span>
@@ -69,8 +69,8 @@ Thus, by default, the <code class="docutils literal notranslate"><span class="pr
 <p>The same mechanism can be used with any instance of the <a class="reference internal" href="../reference.html#ActionTree.Resource" title="ActionTree.Resource"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resource</span></code></a> class.
 If you want that no more than two actions of some kind execute at the same time,
 while allowing other actions to run, just create a resource:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="k">import</span> <span class="n">Resource</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree.stock</span> <span class="k">import</span> <span class="n">Sleep</span><span class="p">,</span> <span class="n">NullAction</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="kn">import</span> <span class="n">Resource</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree.stock</span> <span class="kn">import</span> <span class="n">Sleep</span><span class="p">,</span> <span class="n">NullAction</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">semaphore</span> <span class="o">=</span> <span class="n">Resource</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>

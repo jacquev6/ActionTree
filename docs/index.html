@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>ActionTree &#8212; ActionTree 0.12.0 documentation</title>
+    <title>ActionTree &#8212; ActionTree 0.13.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -34,25 +34,14 @@
             
   <div class="section" id="actiontree">
 <h1>ActionTree<a class="headerlink" href="#actiontree" title="Permalink to this headline">¶</a></h1>
-<p><em>ActionTree</em> is a Python (2.7 and 3.5+) library to execute (long) actions in parallel, respecting dependencies between those actions.
+<p><em>ActionTree</em> is a Python (3.5+) library to execute (long) actions in parallel, respecting dependencies between those actions.
 You create a dependency graph of actions to be executed and then call the <code class="docutils literal notranslate"><span class="pre">execute</span></code> function on its root.</p>
 <p>It’s licensed under the <a class="reference external" href="http://choosealicense.com/licenses/mit/">MIT license</a>.
 It’s available on the <a class="reference external" href="http://pypi.python.org/pypi/ActionTree">Python package index</a>.
 Its <a class="reference external" href="http://jacquev6.github.io/ActionTree">documentation</a>
 and its <a class="reference external" href="https://github.com/jacquev6/ActionTree">source code</a> are on GitHub.</p>
 <p>Questions? Remarks? Bugs? Want to contribute? <a class="reference external" href="https://github.com/jacquev6/ActionTree/issues">Open an issue</a>!</p>
-<a class="reference external image-reference" href="https://travis-ci.org/jacquev6/ActionTree"><img alt="https://img.shields.io/travis/jacquev6/ActionTree/master.svg" src="https://img.shields.io/travis/jacquev6/ActionTree/master.svg" /></a>
-<a class="reference external image-reference" href="https://coveralls.io/r/jacquev6/ActionTree"><img alt="https://img.shields.io/coveralls/jacquev6/ActionTree/master.svg" src="https://img.shields.io/coveralls/jacquev6/ActionTree/master.svg" /></a>
-<a class="reference external image-reference" href="https://codeclimate.com/github/jacquev6/ActionTree"><img alt="https://img.shields.io/codeclimate/github/jacquev6/ActionTree.svg" src="https://img.shields.io/codeclimate/github/jacquev6/ActionTree.svg" /></a>
-<a class="reference external image-reference" href="https://scrutinizer-ci.com/g/jacquev6/ActionTree"><img alt="https://img.shields.io/scrutinizer/g/jacquev6/ActionTree.svg" src="https://img.shields.io/scrutinizer/g/jacquev6/ActionTree.svg" /></a>
-<a class="reference external image-reference" href="https://pypi.python.org/pypi/ActionTree"><img alt="https://img.shields.io/pypi/dm/ActionTree.svg" src="https://img.shields.io/pypi/dm/ActionTree.svg" /></a>
-<a class="reference external image-reference" href="https://pypi.python.org/pypi/ActionTree"><img alt="https://img.shields.io/pypi/l/ActionTree.svg" src="https://img.shields.io/pypi/l/ActionTree.svg" /></a>
-<a class="reference external image-reference" href="https://pypi.python.org/pypi/ActionTree"><img alt="https://img.shields.io/pypi/v/ActionTree.svg" src="https://img.shields.io/pypi/v/ActionTree.svg" /></a>
-<a class="reference external image-reference" href="https://pypi.python.org/pypi/ActionTree"><img alt="https://img.shields.io/pypi/pyversions/ActionTree.svg" src="https://img.shields.io/pypi/pyversions/ActionTree.svg" /></a>
-<a class="reference external image-reference" href="https://pypi.python.org/pypi/ActionTree"><img alt="https://img.shields.io/pypi/status/ActionTree.svg" src="https://img.shields.io/pypi/status/ActionTree.svg" /></a>
-<a class="reference external image-reference" href="https://github.com/jacquev6/ActionTree/issues"><img alt="https://img.shields.io/github/issues/jacquev6/ActionTree.svg" src="https://img.shields.io/github/issues/jacquev6/ActionTree.svg" /></a>
-<a class="reference external image-reference" href="https://github.com/jacquev6/ActionTree/network"><img alt="https://img.shields.io/github/forks/jacquev6/ActionTree.svg" src="https://img.shields.io/github/forks/jacquev6/ActionTree.svg" /></a>
-<a class="reference external image-reference" href="https://github.com/jacquev6/ActionTree/stargazers"><img alt="https://img.shields.io/github/stars/jacquev6/ActionTree.svg" src="https://img.shields.io/github/stars/jacquev6/ActionTree.svg" /></a>
+<a class="reference external image-reference" href="https://github.com/jacquev6/ActionTree/actions?query=workflow%3A%22Continuous+Integration%22"><img alt="https://github.com/jacquev6/ActionTree/workflows/Continuous%20Integration/badge.svg" src="https://github.com/jacquev6/ActionTree/workflows/Continuous%20Integration/badge.svg" /></a>
 <div class="section" id="quick-start">
 <h2>Quick start<a class="headerlink" href="#quick-start" title="Permalink to this headline">¶</a></h2>
 <p>Install from PyPI:</p>
@@ -64,8 +53,8 @@ and its <a class="reference external" href="https://github.com/jacquev6/ActionTr
 </pre></div>
 </div>
 <p>Import:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="k">import</span> <span class="n">execute</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree.stock</span> <span class="k">import</span> <span class="n">CallSubprocess</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree</span> <span class="kn">import</span> <span class="n">execute</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">ActionTree.stock</span> <span class="kn">import</span> <span class="n">CallSubprocess</span>
 </pre></div>
 </div>
 <p>Execute some action:</p>
