@@ -1,3 +1,4 @@
+# @todo Clean-up?
 *.pyc
 /*.egg-info/
 /.coverage
@@ -6,3 +7,4 @@
 /_builds/
 /build/
 /dist/
+/htmlcov/
