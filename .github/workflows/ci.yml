@@ -33,7 +33,27 @@ jobs:
       - uses: actions/checkout@v1
       - run: |
           development/demo/run.sh
+  publish:
+    name: Publish
+    needs:
+      - tests
+      - checks
+      - docs
+      - demo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - run: python setup.py sdist
+      # @todo Check is tag just pushed matches version in setup.py
+      - name: Publish to PyPI
+        if: startsWith(github.event.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.pypi_password }}
 
-# @todo Publish tagged versions on PyPI
 # @todo Ensure repository settings?
 # @todo Ensure file headers have copyright notices?
