@@ -48,7 +48,8 @@ jobs:
         with:
           python-version: 3.8
       - run: python setup.py sdist
-      # @todo Check is tag just pushed matches version in setup.py
+      - run: test ${{ github.event.ref }} == refs/tags/$(grep ^version setup.py | cut -d '"' -f 2)
+        if: startsWith(github.event.ref, 'refs/tags')
       - name: Publish to PyPI
         if: startsWith(github.event.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@master
