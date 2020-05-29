@@ -9,8 +9,16 @@ and its `source code <https://github.com/jacquev6/ActionTree>`_ are on GitHub.
 
 Questions? Remarks? Bugs? Want to contribute? `Open an issue <https://github.com/jacquev6/ActionTree/issues>`_!
 
-.. image:: https://github.com/jacquev6/ActionTree/workflows/Continuous%20Integration/badge.svg
+.. image:: https://img.shields.io/github/workflow/status/jacquev6/ActionTree/Continuous%20Integration?label=CI&logo=github
     :target: https://github.com/jacquev6/ActionTree/actions?query=workflow%3A%22Continuous+Integration%22
+
+.. image:: https://img.shields.io/pypi/v/ActionTree?logo=pypi
+    :alt: PyPI
+    :target: https://pypi.org/project/ActionTree/
+
+.. image:: https://img.shields.io/pypi/pyversions/ActionTree?logo=pypi
+    :alt: PyPI
+    :target: https://pypi.org/project/ActionTree/
 
 Quick start
 ===========
