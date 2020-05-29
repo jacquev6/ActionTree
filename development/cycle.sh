@@ -19,3 +19,6 @@ echo
 
 title "Tests (Python 3.8)"
 ./development/tests/run.sh 3.8
+
+echo
+echo "Development cycle OK"
