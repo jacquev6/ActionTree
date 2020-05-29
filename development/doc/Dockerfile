@@ -5,9 +5,8 @@ RUN apt-get update \
       graphviz \
  && rm -r /var/lib/apt/lists/*
 
-# @todo Upgrade Sphinx version
 RUN pip install \
-      sphinx==1.8.2 \
+      sphinx \
       matplotlib \
       graphviz
 

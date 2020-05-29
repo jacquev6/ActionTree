@@ -33,7 +33,7 @@ html_logo = "logo.png"
 extensions.append("sphinx.ext.autodoc")
 autoclass_content = "both"
 autodoc_member_order = "bysource"
-autodoc_default_flags = ["members"]
+autodoc_default_options = {"members": True}
 # autodoc_docstring_signature
 # autodoc_mock_imports
 add_module_names = True

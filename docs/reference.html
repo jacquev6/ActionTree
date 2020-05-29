@@ -1,18 +1,17 @@
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
     <title>Reference &#8212; ActionTree 0.13.0 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Source files of examples" href="user_guide/source_files.html" />
@@ -36,49 +35,45 @@
 <h1>Reference<a class="headerlink" href="#reference" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="module-ActionTree">
 <span id="core"></span><h2>Core<a class="headerlink" href="#module-ActionTree" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
+<dl class="py function">
 <dt id="ActionTree.execute">
-<code class="descclassname">ActionTree.</code><code class="descname">execute</code><span class="sig-paren">(</span><em>action</em>, <em>cpu_cores=None</em>, <em>keep_going=False</em>, <em>do_raise=True</em>, <em>hooks=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.execute" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">ActionTree.</code><code class="sig-name descname">execute</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">action</span></em>, <em class="sig-param"><span class="n">cpu_cores</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">keep_going</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">do_raise</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">hooks</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.execute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Recursively execute an <a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action</span></code></a>’s dependencies then the action.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action to execute.</li>
-<li><strong>cpu_cores</strong> (int or None or <a class="reference internal" href="#ActionTree.UNLIMITED" title="ActionTree.UNLIMITED"><code class="xref py py-attr docutils literal notranslate"><span class="pre">UNLIMITED</span></code></a>) – number of CPU cores to use in parallel.
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action to execute.</p></li>
+<li><p><strong>cpu_cores</strong> (int or None or <a class="reference internal" href="#ActionTree.UNLIMITED" title="ActionTree.UNLIMITED"><code class="xref py py-attr docutils literal notranslate"><span class="pre">UNLIMITED</span></code></a>) – number of CPU cores to use in parallel.
 Pass <code class="docutils literal notranslate"><span class="pre">None</span></code> (the default value) to let ActionTree choose.
 Pass <a class="reference internal" href="#ActionTree.UNLIMITED" title="ActionTree.UNLIMITED"><code class="xref py py-attr docutils literal notranslate"><span class="pre">UNLIMITED</span></code></a> to execute an unlimited number of actions in parallel
 (make sure your system has the necessary resources).
 Note: CPU cores are managed like any other <a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resource</span></code></a>, and this parameter sets the availability
-of <a class="reference internal" href="#ActionTree.CPU_CORE" title="ActionTree.CPU_CORE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CPU_CORE</span></code></a> for this execution.</li>
-<li><strong>keep_going</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, then execution does not stop on first failure,
-but executes as many dependencies as possible.</li>
-<li><strong>do_raise</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <code class="docutils literal notranslate"><span class="pre">False</span></code>, then exceptions are not re-raised as <a class="reference internal" href="#ActionTree.CompoundException" title="ActionTree.CompoundException"><code class="xref py py-exc docutils literal notranslate"><span class="pre">CompoundException</span></code></a>
-but only included in the <a class="reference internal" href="#ActionTree.ExecutionReport" title="ActionTree.ExecutionReport"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExecutionReport</span></code></a>.</li>
-<li><strong>hooks</strong> (<a class="reference internal" href="#ActionTree.Hooks" title="ActionTree.Hooks"><em>Hooks</em></a>) – its methods will be called when execution progresses.</li>
+of <a class="reference internal" href="#ActionTree.CPU_CORE" title="ActionTree.CPU_CORE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CPU_CORE</span></code></a> for this execution.</p></li>
+<li><p><strong>keep_going</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, then execution does not stop on first failure,
+but executes as many dependencies as possible.</p></li>
+<li><p><strong>do_raise</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <code class="docutils literal notranslate"><span class="pre">False</span></code>, then exceptions are not re-raised as <a class="reference internal" href="#ActionTree.CompoundException" title="ActionTree.CompoundException"><code class="xref py py-exc docutils literal notranslate"><span class="pre">CompoundException</span></code></a>
+but only included in the <a class="reference internal" href="#ActionTree.ExecutionReport" title="ActionTree.ExecutionReport"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExecutionReport</span></code></a>.</p></li>
+<li><p><strong>hooks</strong> (<a class="reference internal" href="#ActionTree.Hooks" title="ActionTree.Hooks"><em>Hooks</em></a>) – its methods will be called when execution progresses.</p></li>
 </ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><a class="reference internal" href="#ActionTree.CompoundException" title="ActionTree.CompoundException"><strong>CompoundException</strong></a> – when <code class="docutils literal notranslate"><span class="pre">do_raise</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code> and dependencies raise exceptions.</p>
-</td>
-</tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#ActionTree.ExecutionReport" title="ActionTree.ExecutionReport">ExecutionReport</a></p>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="#ActionTree.CompoundException" title="ActionTree.CompoundException"><strong>CompoundException</strong></a> – when <code class="docutils literal notranslate"><span class="pre">do_raise</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code> and dependencies raise exceptions.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ActionTree.ExecutionReport" title="ActionTree.ExecutionReport">ExecutionReport</a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="data">
+<dl class="py data">
 <dt id="ActionTree.UNLIMITED">
-<code class="descclassname">ActionTree.</code><code class="descname">UNLIMITED</code><em class="property"> = &lt;object object&gt;</em><a class="headerlink" href="#ActionTree.UNLIMITED" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">ActionTree.</code><code class="sig-name descname">UNLIMITED</code><em class="property"> = &lt;object object&gt;</em><a class="headerlink" href="#ActionTree.UNLIMITED" title="Permalink to this definition">¶</a></dt>
 <dd><p>The availability of an infinite <a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resource</span></code></a>.</p>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="ActionTree.Action">
-<em class="property">class </em><code class="descclassname">ActionTree.</code><code class="descname">Action</code><span class="sig-paren">(</span><em>label</em>, <em>dependencies=[]</em>, <em>resources_required={}</em>, <em>accept_failed_dependencies=False</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Action" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ActionTree.</code><code class="sig-name descname">Action</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span></em>, <em class="sig-param"><span class="n">dependencies</span><span class="o">=</span><span class="default_value">[]</span></em>, <em class="sig-param"><span class="n">resources_required</span><span class="o">=</span><span class="default_value">{}</span></em>, <em class="sig-param"><span class="n">accept_failed_dependencies</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Action" title="Permalink to this definition">¶</a></dt>
 <dd><p>The main class of ActionTree.
 An action to be started after all its dependencies are finished.
 Pass it to <a class="reference internal" href="#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal notranslate"><span class="pre">execute()</span></code></a>.</p>
@@ -88,101 +83,85 @@ The <code class="docutils literal notranslate"><span class="pre">dependency_stat
 <a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus" title="ActionTree.ExecutionReport.ActionStatus"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionStatus</span></code></a>.
 <a class="reference internal" href="user_guide/outputs.html#outputs"><span class="std std-ref">Outputs and side-effects</span></a> describes how its return values, the exceptions it may raise and what it may print is handled.</p>
 <p>Actions, return values and exceptions raised must be picklable.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – A string used to represent the action in <a class="reference internal" href="#ActionTree.GanttChart" title="ActionTree.GanttChart"><code class="xref py py-class docutils literal notranslate"><span class="pre">GanttChart</span></code></a> and
-<a class="reference internal" href="#ActionTree.DependencyGraph" title="ActionTree.DependencyGraph"><code class="xref py py-class docutils literal notranslate"><span class="pre">DependencyGraph</span></code></a>. Can be retrieved by <a class="reference internal" href="#ActionTree.Action.label" title="ActionTree.Action.label"><code class="xref py py-attr docutils literal notranslate"><span class="pre">label</span></code></a>.</li>
-<li><strong>dependencies</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a><em>)</em>) – see <a class="reference internal" href="#ActionTree.Action.add_dependency" title="ActionTree.Action.add_dependency"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_dependency()</span></code></a></li>
-<li><strong>resources_required</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource"><em>Resource</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em>) – see <a class="reference internal" href="#ActionTree.Action.require_resource" title="ActionTree.Action.require_resource"><code class="xref py py-meth docutils literal notranslate"><span class="pre">require_resource()</span></code></a></li>
-<li><strong>accept_failed_dependencies</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, then the action will execute even after some of its dependencies failed.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)"><em>None</em></a>) – A string used to represent the action in <a class="reference internal" href="#ActionTree.GanttChart" title="ActionTree.GanttChart"><code class="xref py py-class docutils literal notranslate"><span class="pre">GanttChart</span></code></a> and
+<a class="reference internal" href="#ActionTree.DependencyGraph" title="ActionTree.DependencyGraph"><code class="xref py py-class docutils literal notranslate"><span class="pre">DependencyGraph</span></code></a>. Can be retrieved by <a class="reference internal" href="#ActionTree.Action.label" title="ActionTree.Action.label"><code class="xref py py-attr docutils literal notranslate"><span class="pre">label</span></code></a>.</p></li>
+<li><p><strong>dependencies</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a><em>(</em><a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a><em>)</em>) – see <a class="reference internal" href="#ActionTree.Action.add_dependency" title="ActionTree.Action.add_dependency"><code class="xref py py-meth docutils literal notranslate"><span class="pre">add_dependency()</span></code></a></p></li>
+<li><p><strong>resources_required</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a><em>(</em><a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource"><em>Resource</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a><em>)</em>) – see <a class="reference internal" href="#ActionTree.Action.require_resource" title="ActionTree.Action.require_resource"><code class="xref py py-meth docutils literal notranslate"><span class="pre">require_resource()</span></code></a></p></li>
+<li><p><strong>accept_failed_dependencies</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – if <code class="docutils literal notranslate"><span class="pre">True</span></code>, then the action will execute even after some of its dependencies failed.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="attribute">
+</dd>
+</dl>
+<dl class="py method">
 <dt id="ActionTree.Action.label">
-<code class="descname">label</code><a class="headerlink" href="#ActionTree.Action.label" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">label</code><a class="headerlink" href="#ActionTree.Action.label" title="Permalink to this definition">¶</a></dt>
 <dd><p>The label passed to the constructor.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.Action.add_dependency">
-<code class="descname">add_dependency</code><span class="sig-paren">(</span><em>dependency</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Action.add_dependency" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">add_dependency</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dependency</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Action.add_dependency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Add a dependency to be executed before this action.
 Order of insertion of dependencies is not important.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dependency</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – </td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#ActionTree.DependencyCycleException" title="ActionTree.DependencyCycleException"><strong>DependencyCycleException</strong></a> – when adding the new dependency would create a cycle.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dependency</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – </p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="#ActionTree.DependencyCycleException" title="ActionTree.DependencyCycleException"><strong>DependencyCycleException</strong></a> – when adding the new dependency would create a cycle.</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.Action.dependencies">
-<code class="descname">dependencies</code><a class="headerlink" href="#ActionTree.Action.dependencies" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">dependencies</code><a class="headerlink" href="#ActionTree.Action.dependencies" title="Permalink to this definition">¶</a></dt>
 <dd><p>The list of this action’s direct dependencies.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.Action.require_resource">
-<code class="descname">require_resource</code><span class="sig-paren">(</span><em>resource</em>, <em>quantity=1</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Action.require_resource" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">require_resource</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">resource</span></em>, <em class="sig-param"><span class="n">quantity</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Action.require_resource" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the quantity of a certain <a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resource</span></code></a> required to run this action.</p>
 <p>Note that an action that requires more than a resource’s availability <em>will</em> be executed anyway.
 It will just not be executed in parallel with any other action that requires the same resource.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>resource</strong> (<a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource"><em>Resource</em></a>) – </li>
-<li><strong>quantity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>resource</strong> (<a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource"><em>Resource</em></a>) – </p></li>
+<li><p><strong>quantity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – </p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.Action.resources_required">
-<code class="descname">resources_required</code><a class="headerlink" href="#ActionTree.Action.resources_required" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">resources_required</code><a class="headerlink" href="#ActionTree.Action.resources_required" title="Permalink to this definition">¶</a></dt>
 <dd><p>The list of this action’s required resources and quantities required.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource">Resource</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a>))</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource">Resource</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a>))</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.Action.accept_failed_dependencies">
-<code class="descname">accept_failed_dependencies</code><a class="headerlink" href="#ActionTree.Action.accept_failed_dependencies" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">accept_failed_dependencies</code><a class="headerlink" href="#ActionTree.Action.accept_failed_dependencies" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the action will execute even if some of its dependencies failed.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.Action.get_possible_execution_order">
-<code class="descname">get_possible_execution_order</code><span class="sig-paren">(</span><em>seen_actions=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Action.get_possible_execution_order" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_possible_execution_order</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">seen_actions</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Action.get_possible_execution_order" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the list of all this action’s dependencies (recursively),
 in an order that is suitable for linear execution.
 Note that this order is not unique.
@@ -191,443 +170,380 @@ The order chosen is not specified.</p>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="ActionTree.Resource">
-<em class="property">class </em><code class="descclassname">ActionTree.</code><code class="descname">Resource</code><span class="sig-paren">(</span><em>availability</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Resource" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ActionTree.</code><code class="sig-name descname">Resource</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">availability</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Resource" title="Permalink to this definition">¶</a></dt>
 <dd><p>A resource that an <a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action</span></code></a> can require for its execution.
 You can use resources to protect stuff that must not be used by more than N actions at the same time,
 à la <a class="reference external" href="https://en.wikipedia.org/wiki/Semaphore_(programming)">semaphore</a>.
 Like semaphorees, with an availability of 1,
 they become <a class="reference external" href="https://en.wikipedia.org/wiki/Lock_(computer_science)">mutexes</a>.</p>
 <p><a class="reference internal" href="user_guide/resources.html#resources"><span class="std std-ref">Resources</span></a> Describes how to use this class.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>availability</strong> (int or <a class="reference internal" href="#ActionTree.UNLIMITED" title="ActionTree.UNLIMITED"><code class="xref py py-attr docutils literal notranslate"><span class="pre">UNLIMITED</span></code></a>) – the number of instances available for this resource</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>availability</strong> (int or <a class="reference internal" href="#ActionTree.UNLIMITED" title="ActionTree.UNLIMITED"><code class="xref py py-attr docutils literal notranslate"><span class="pre">UNLIMITED</span></code></a>) – the number of instances available for this resource</p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="data">
+<dl class="py data">
 <dt id="ActionTree.CPU_CORE">
-<code class="descclassname">ActionTree.</code><code class="descname">CPU_CORE</code><em class="property"> = &lt;ActionTree._CpuCoreResource object&gt;</em><a class="headerlink" href="#ActionTree.CPU_CORE" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">ActionTree.</code><code class="sig-name descname">CPU_CORE</code><em class="property"> = &lt;ActionTree._CpuCoreResource object&gt;</em><a class="headerlink" href="#ActionTree.CPU_CORE" title="Permalink to this definition">¶</a></dt>
 <dd><p>A special <a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource"><code class="xref py py-class docutils literal notranslate"><span class="pre">Resource</span></code></a> representing a processing unit.
 You can pass it to <a class="reference internal" href="#ActionTree.Action.require_resource" title="ActionTree.Action.require_resource"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Action.require_resource()</span></code></a> if your action will execute on more than one core.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource">Resource</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ActionTree.Resource" title="ActionTree.Resource">Resource</a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="ActionTree.Hooks">
-<em class="property">class </em><code class="descclassname">ActionTree.</code><code class="descname">Hooks</code><a class="headerlink" href="#ActionTree.Hooks" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ActionTree.</code><code class="sig-name descname">Hooks</code><a class="headerlink" href="#ActionTree.Hooks" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class to derive from when defining your hooks.
 <a class="reference internal" href="#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal notranslate"><span class="pre">execute()</span></code></a> will call its methods when execution progresses.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.Hooks.action_pending">
-<code class="descname">action_pending</code><span class="sig-paren">(</span><em>time</em>, <em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_pending" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">action_pending</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time</span></em>, <em class="sig-param"><span class="n">action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_pending" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when an action is considered for execution, i.e. at the beginning of <a class="reference internal" href="#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal notranslate"><span class="pre">execute()</span></code></a>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action was considered for execution.</li>
-<li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action was considered for execution.</p></li>
+<li><p><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.Hooks.action_ready">
-<code class="descname">action_ready</code><span class="sig-paren">(</span><em>time</em>, <em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_ready" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">action_ready</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time</span></em>, <em class="sig-param"><span class="n">action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_ready" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when an action is ready to be executed, i.e. when all its dependencies have succeeded.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action was ready.</li>
-<li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action was ready.</p></li>
+<li><p><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.Hooks.action_canceled">
-<code class="descname">action_canceled</code><span class="sig-paren">(</span><em>time</em>, <em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_canceled" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">action_canceled</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time</span></em>, <em class="sig-param"><span class="n">action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_canceled" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when an action’s execution is canceled, i.e. when some of its dependencies has failed.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action was canceled.</li>
-<li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action was canceled.</p></li>
+<li><p><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.Hooks.action_started">
-<code class="descname">action_started</code><span class="sig-paren">(</span><em>time</em>, <em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_started" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">action_started</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time</span></em>, <em class="sig-param"><span class="n">action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_started" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when an action’s execution starts.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action was started.</li>
-<li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action was started.</p></li>
+<li><p><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.Hooks.action_printed">
-<code class="descname">action_printed</code><span class="sig-paren">(</span><em>time</em>, <em>action</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_printed" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">action_printed</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time</span></em>, <em class="sig-param"><span class="n">action</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_printed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when an action prints something.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action printed the data.</li>
-<li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
-<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the data printed.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action printed the data.</p></li>
+<li><p><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</p></li>
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the data printed.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.Hooks.action_successful">
-<code class="descname">action_successful</code><span class="sig-paren">(</span><em>time</em>, <em>action</em>, <em>return_value</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_successful" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">action_successful</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time</span></em>, <em class="sig-param"><span class="n">action</span></em>, <em class="sig-param"><span class="n">return_value</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_successful" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when an action completes without error.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action completed.</li>
-<li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
-<li><strong>return_value</strong> – the value returned by the action.</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action completed.</p></li>
+<li><p><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</p></li>
+<li><p><strong>return_value</strong> – the value returned by the action.</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.Hooks.action_failed">
-<code class="descname">action_failed</code><span class="sig-paren">(</span><em>time</em>, <em>action</em>, <em>exception</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_failed" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">action_failed</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time</span></em>, <em class="sig-param"><span class="n">action</span></em>, <em class="sig-param"><span class="n">exception</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.Hooks.action_failed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Called when an action completes with an exception.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action completed.</li>
-<li><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</li>
-<li><strong>exception</strong> – the exception raised by the action</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)"><em>datetime.datetime</em></a>) – the time at which the action completed.</p></li>
+<li><p><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – the action.</p></li>
+<li><p><strong>exception</strong> – the exception raised by the action</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="exception">
+<dl class="py exception">
 <dt id="ActionTree.DependencyCycleException">
-<em class="property">exception </em><code class="descclassname">ActionTree.</code><code class="descname">DependencyCycleException</code><a class="headerlink" href="#ActionTree.DependencyCycleException" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="sig-prename descclassname">ActionTree.</code><code class="sig-name descname">DependencyCycleException</code><a class="headerlink" href="#ActionTree.DependencyCycleException" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception thrown by <a class="reference internal" href="#ActionTree.Action.add_dependency" title="ActionTree.Action.add_dependency"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Action.add_dependency()</span></code></a> when adding the new dependency would create a cycle.</p>
 </dd></dl>
 
-<dl class="exception">
+<dl class="py exception">
 <dt id="ActionTree.CompoundException">
-<em class="property">exception </em><code class="descclassname">ActionTree.</code><code class="descname">CompoundException</code><span class="sig-paren">(</span><em>exceptions</em>, <em>execution_report</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.CompoundException" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="sig-prename descclassname">ActionTree.</code><code class="sig-name descname">CompoundException</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">exceptions</span></em>, <em class="sig-param"><span class="n">execution_report</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.CompoundException" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception thrown by <a class="reference internal" href="#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal notranslate"><span class="pre">execute()</span></code></a> when dependencies raise exceptions.</p>
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.CompoundException.exceptions">
-<code class="descname">exceptions</code><a class="headerlink" href="#ActionTree.CompoundException.exceptions" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">exceptions</code><a class="headerlink" href="#ActionTree.CompoundException.exceptions" title="Permalink to this definition">¶</a></dt>
 <dd><p>The list of exceptions raised.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.CompoundException.execution_report">
-<code class="descname">execution_report</code><a class="headerlink" href="#ActionTree.CompoundException.execution_report" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">execution_report</code><a class="headerlink" href="#ActionTree.CompoundException.execution_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>The <a class="reference internal" href="#ActionTree.ExecutionReport" title="ActionTree.ExecutionReport"><code class="xref py py-class docutils literal notranslate"><span class="pre">ExecutionReport</span></code></a> of the failed execution.</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="ActionTree.ExecutionReport">
-<em class="property">class </em><code class="descclassname">ActionTree.</code><code class="descname">ExecutionReport</code><a class="headerlink" href="#ActionTree.ExecutionReport" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ActionTree.</code><code class="sig-name descname">ExecutionReport</code><a class="headerlink" href="#ActionTree.ExecutionReport" title="Permalink to this definition">¶</a></dt>
 <dd><p>Execution report, returned by <a class="reference internal" href="#ActionTree.execute" title="ActionTree.execute"><code class="xref py py-func docutils literal notranslate"><span class="pre">execute()</span></code></a>.</p>
-<dl class="class">
+<dl class="py class">
 <dt id="ActionTree.ExecutionReport.ActionStatus">
-<em class="property">class </em><code class="descname">ActionStatus</code><span class="sig-paren">(</span><em>pending_time</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-name descname">ActionStatus</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pending_time</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Status of a single <a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action</span></code></a>.</p>
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.ExecutionReport.ActionStatus.status">
-<code class="descname">status</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.status" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">status</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.status" title="Permalink to this definition">¶</a></dt>
 <dd><p>The status of the action:
 <a class="reference internal" href="#ActionTree.SUCCESSFUL" title="ActionTree.SUCCESSFUL"><code class="xref py py-attr docutils literal notranslate"><span class="pre">SUCCESSFUL</span></code></a> if the action succeeded,
 <a class="reference internal" href="#ActionTree.FAILED" title="ActionTree.FAILED"><code class="xref py py-attr docutils literal notranslate"><span class="pre">FAILED</span></code></a> if the action failed,
 and <a class="reference internal" href="#ActionTree.CANCELED" title="ActionTree.CANCELED"><code class="xref py py-attr docutils literal notranslate"><span class="pre">CANCELED</span></code></a> if the action was canceled because some of its dependencies failed.</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.ExecutionReport.ActionStatus.pending_time">
-<code class="descname">pending_time</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.pending_time" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">pending_time</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.pending_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>The time when this action was considered for execution.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.ExecutionReport.ActionStatus.ready_time">
-<code class="descname">ready_time</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.ready_time" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">ready_time</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.ready_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>The time when this action was ready to execute.
 (<code class="docutils literal notranslate"><span class="pre">None</span></code> if it was canceled before being ready).</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.ExecutionReport.ActionStatus.cancel_time">
-<code class="descname">cancel_time</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.cancel_time" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">cancel_time</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.cancel_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>The time when this action was canceled.
 (<code class="docutils literal notranslate"><span class="pre">None</span></code> if it was started).</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.ExecutionReport.ActionStatus.start_time">
-<code class="descname">start_time</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.start_time" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">start_time</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.start_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>The time at the beginning of the execution of this action.
 (<code class="docutils literal notranslate"><span class="pre">None</span></code> if it was never started).</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.ExecutionReport.ActionStatus.success_time">
-<code class="descname">success_time</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.success_time" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">success_time</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.success_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>The time at the successful end of the execution of this action.
 (<code class="docutils literal notranslate"><span class="pre">None</span></code> if it was never started or if it failed).</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.ExecutionReport.ActionStatus.return_value">
-<code class="descname">return_value</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.return_value" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">return_value</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.return_value" title="Permalink to this definition">¶</a></dt>
 <dd><p>The value returned by this action
 (<code class="docutils literal notranslate"><span class="pre">None</span></code> if it failed or was never started).</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.ExecutionReport.ActionStatus.failure_time">
-<code class="descname">failure_time</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.failure_time" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">failure_time</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.failure_time" title="Permalink to this definition">¶</a></dt>
 <dd><p>The time at the successful end of the execution of this action.
 (<code class="docutils literal notranslate"><span class="pre">None</span></code> if it was never started or if it succeeded).</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/datetime.html#datetime.datetime" title="(in Python v3.8)">datetime.datetime</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.ExecutionReport.ActionStatus.exception">
-<code class="descname">exception</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.exception" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">exception</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.exception" title="Permalink to this definition">¶</a></dt>
 <dd><p>The exception raised by this action
 (<code class="docutils literal notranslate"><span class="pre">None</span></code> if it succeeded or was never started).</p>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.ExecutionReport.ActionStatus.output">
-<code class="descname">output</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.output" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">output</code><a class="headerlink" href="#ActionTree.ExecutionReport.ActionStatus.output" title="Permalink to this definition">¶</a></dt>
 <dd><p>Everything printed (and flushed in time) by this action.
 (<code class="docutils literal notranslate"><span class="pre">None</span></code> if it never started, <code class="docutils literal notranslate"><span class="pre">&quot;&quot;</span></code> it if didn’t print anything)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a> or <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py method">
 <dt id="ActionTree.ExecutionReport.is_success">
-<code class="descname">is_success</code><a class="headerlink" href="#ActionTree.ExecutionReport.is_success" title="Permalink to this definition">¶</a></dt>
+<em class="property">property </em><code class="sig-name descname">is_success</code><a class="headerlink" href="#ActionTree.ExecutionReport.is_success" title="Permalink to this definition">¶</a></dt>
 <dd><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if the execution finished without error.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.ExecutionReport.get_action_status">
-<code class="descname">get_action_status</code><span class="sig-paren">(</span><em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.ExecutionReport.get_action_status" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_action_status</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.ExecutionReport.get_action_status" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the <a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus" title="ActionTree.ExecutionReport.ActionStatus"><code class="xref py py-class docutils literal notranslate"><span class="pre">ActionStatus</span></code></a> of an action.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – </td>
-</tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus" title="ActionTree.ExecutionReport.ActionStatus">ActionStatus</a></td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>action</strong> (<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><em>Action</em></a>) – </p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus" title="ActionTree.ExecutionReport.ActionStatus">ActionStatus</a></p>
+</dd>
+</dl>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.ExecutionReport.get_actions_and_statuses">
-<code class="descname">get_actions_and_statuses</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.ExecutionReport.get_actions_and_statuses" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_actions_and_statuses</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.ExecutionReport.get_actions_and_statuses" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a list of actions and their statuses.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action">Action</a>, <a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus" title="ActionTree.ExecutionReport.ActionStatus">ActionStatus</a>))</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a>(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.8)">tuple</a>(<a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action">Action</a>, <a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus" title="ActionTree.ExecutionReport.ActionStatus">ActionStatus</a>))</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="data">
+<dl class="py data">
 <dt id="ActionTree.SUCCESSFUL">
-<code class="descclassname">ActionTree.</code><code class="descname">SUCCESSFUL</code><em class="property"> = 'SUCCESSFUL'</em><a class="headerlink" href="#ActionTree.SUCCESSFUL" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">ActionTree.</code><code class="sig-name descname">SUCCESSFUL</code><em class="property"> = 'SUCCESSFUL'</em><a class="headerlink" href="#ActionTree.SUCCESSFUL" title="Permalink to this definition">¶</a></dt>
 <dd><p>The <a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus.status" title="ActionTree.ExecutionReport.ActionStatus.status"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ActionStatus.status</span></code></a> after a successful execution.</p>
 </dd></dl>
 
-<dl class="data">
+<dl class="py data">
 <dt id="ActionTree.FAILED">
-<code class="descclassname">ActionTree.</code><code class="descname">FAILED</code><em class="property"> = 'FAILED'</em><a class="headerlink" href="#ActionTree.FAILED" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">ActionTree.</code><code class="sig-name descname">FAILED</code><em class="property"> = 'FAILED'</em><a class="headerlink" href="#ActionTree.FAILED" title="Permalink to this definition">¶</a></dt>
 <dd><p>The <a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus.status" title="ActionTree.ExecutionReport.ActionStatus.status"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ActionStatus.status</span></code></a> after a failed execution where this action raised an exception.</p>
 </dd></dl>
 
-<dl class="data">
+<dl class="py data">
 <dt id="ActionTree.CANCELED">
-<code class="descclassname">ActionTree.</code><code class="descname">CANCELED</code><em class="property"> = 'CANCELED'</em><a class="headerlink" href="#ActionTree.CANCELED" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">ActionTree.</code><code class="sig-name descname">CANCELED</code><em class="property"> = 'CANCELED'</em><a class="headerlink" href="#ActionTree.CANCELED" title="Permalink to this definition">¶</a></dt>
 <dd><p>The <a class="reference internal" href="#ActionTree.ExecutionReport.ActionStatus.status" title="ActionTree.ExecutionReport.ActionStatus.status"><code class="xref py py-attr docutils literal notranslate"><span class="pre">ActionStatus.status</span></code></a> after a failed execution where a dependency raised an exception.</p>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="ActionTree.DependencyGraph">
-<em class="property">class </em><code class="descclassname">ActionTree.</code><code class="descname">DependencyGraph</code><span class="sig-paren">(</span><em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.DependencyGraph" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ActionTree.</code><code class="sig-name descname">DependencyGraph</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">action</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.DependencyGraph" title="Permalink to this definition">¶</a></dt>
 <dd><p>A visual representation of the dependency graph, using <a class="reference external" href="http://graphviz.org/">Graphviz</a>.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.DependencyGraph.write_to_png">
-<code class="descname">write_to_png</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.DependencyGraph.write_to_png" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">write_to_png</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.DependencyGraph.write_to_png" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the graph as a PNG image to the specified file.</p>
 <p>See also <a class="reference internal" href="#ActionTree.DependencyGraph.get_graphviz_graph" title="ActionTree.DependencyGraph.get_graphviz_graph"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_graphviz_graph()</span></code></a> if you want to draw the graph somewhere else.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.DependencyGraph.get_graphviz_graph">
-<code class="descname">get_graphviz_graph</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.DependencyGraph.get_graphviz_graph" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_graphviz_graph</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.DependencyGraph.get_graphviz_graph" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a <a class="reference external" href="https://graphviz.readthedocs.io/en/stable/api.html#graphviz.Digraph" title="(in graphviz v0.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">graphviz.Digraph</span></code></a> of this dependency graph.</p>
 <p>See also <a class="reference internal" href="#ActionTree.DependencyGraph.write_to_png" title="ActionTree.DependencyGraph.write_to_png"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write_to_png()</span></code></a> for the simplest use-case.</p>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="ActionTree.GanttChart">
-<em class="property">class </em><code class="descclassname">ActionTree.</code><code class="descname">GanttChart</code><span class="sig-paren">(</span><em>report</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.GanttChart" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ActionTree.</code><code class="sig-name descname">GanttChart</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">report</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.GanttChart" title="Permalink to this definition">¶</a></dt>
 <dd><p>A visual representation of the timing of an execution.</p>
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.GanttChart.write_to_png">
-<code class="descname">write_to_png</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.GanttChart.write_to_png" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">write_to_png</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.GanttChart.write_to_png" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the Gantt chart as a PNG image to the specified file.</p>
 <p>See also <a class="reference internal" href="#ActionTree.GanttChart.get_mpl_figure" title="ActionTree.GanttChart.get_mpl_figure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_mpl_figure()</span></code></a> and <a class="reference internal" href="#ActionTree.GanttChart.plot_on_mpl_axes" title="ActionTree.GanttChart.plot_on_mpl_axes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_on_mpl_axes()</span></code></a> if you want to draw the report somewhere else.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.GanttChart.get_mpl_figure">
-<code class="descname">get_mpl_figure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.GanttChart.get_mpl_figure" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">get_mpl_figure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.GanttChart.get_mpl_figure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a <a class="reference external" href="https://matplotlib.org/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure" title="(in Matplotlib v3.2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.figure.Figure</span></code></a> of this Gantt chart.</p>
 <p>See also <a class="reference internal" href="#ActionTree.GanttChart.plot_on_mpl_axes" title="ActionTree.GanttChart.plot_on_mpl_axes"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_on_mpl_axes()</span></code></a> if you want to draw the Gantt chart on your own matplotlib figure.</p>
 <p>See also <a class="reference internal" href="#ActionTree.GanttChart.write_to_png" title="ActionTree.GanttChart.write_to_png"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write_to_png()</span></code></a> for the simplest use-case.</p>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="ActionTree.GanttChart.plot_on_mpl_axes">
-<code class="descname">plot_on_mpl_axes</code><span class="sig-paren">(</span><em>ax</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.GanttChart.plot_on_mpl_axes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot_on_mpl_axes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ax</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.GanttChart.plot_on_mpl_axes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot this Gantt chart on the provided <a class="reference external" href="https://matplotlib.org/api/axes_api.html#matplotlib.axes.Axes" title="(in Matplotlib v3.2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">matplotlib.axes.Axes</span></code></a>.</p>
 <p>See also <a class="reference internal" href="#ActionTree.GanttChart.write_to_png" title="ActionTree.GanttChart.write_to_png"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write_to_png()</span></code></a> and <a class="reference internal" href="#ActionTree.GanttChart.get_mpl_figure" title="ActionTree.GanttChart.get_mpl_figure"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_mpl_figure()</span></code></a> for the simpler use-cases.</p>
 </dd></dl>
@@ -639,120 +555,101 @@ and <a class="reference internal" href="#ActionTree.CANCELED" title="ActionTree.
 <span id="stock-actions"></span><h2>Stock actions<a class="headerlink" href="#module-ActionTree.stock" title="Permalink to this headline">¶</a></h2>
 <p>Stock actions are predefined common tasks (manipulating the filesystem, calling an external program, etc.)
 They all specialize <a class="reference internal" href="#ActionTree.Action" title="ActionTree.Action"><code class="xref py py-class docutils literal notranslate"><span class="pre">Action</span></code></a>.</p>
-<dl class="class">
+<dl class="py class">
 <dt id="ActionTree.stock.NullAction">
-<em class="property">class </em><code class="descclassname">ActionTree.stock.</code><code class="descname">NullAction</code><span class="sig-paren">(</span><em>label=None</em>, <em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.NullAction" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ActionTree.stock.</code><code class="sig-name descname">NullAction</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwds</span></em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.NullAction" title="Permalink to this definition">¶</a></dt>
 <dd><p>A stock action that does nothing.
 Useful as a placeholder for several dependencies.</p>
 <p>&#64;todoc</p>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="ActionTree.stock.CallSubprocess">
-<em class="property">class </em><code class="descclassname">ActionTree.stock.</code><code class="descname">CallSubprocess</code><span class="sig-paren">(</span><em>command</em>, <em>kwargs={}</em>, <em>label=&lt;object object&gt;</em>, <em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.CallSubprocess" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ActionTree.stock.</code><code class="sig-name descname">CallSubprocess</code><span class="sig-paren">(</span><em class="sig-param">command</em>, <em class="sig-param">kwargs={}</em>, <em class="sig-param">label=&lt;object object&gt;</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.CallSubprocess" title="Permalink to this definition">¶</a></dt>
 <dd><p>A stock action that calls a subprocess.</p>
 <p>&#64;todoc</p>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="ActionTree.stock.CreateDirectory">
-<em class="property">class </em><code class="descclassname">ActionTree.stock.</code><code class="descname">CreateDirectory</code><span class="sig-paren">(</span><em>name</em>, <em>label=&lt;object object&gt;</em>, <em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.CreateDirectory" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ActionTree.stock.</code><code class="sig-name descname">CreateDirectory</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">label=&lt;object object&gt;</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.CreateDirectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>A stock action that creates a directory.
 No error will be raised if the directory already exists.
 If the directory to create is nested, intermediate directories will be created as well.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the directory to create, passed to <a class="reference external" href="https://docs.python.org/3/library/os.html#os.makedirs" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">os.makedirs()</span></code></a>.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the directory to create, passed to <a class="reference external" href="https://docs.python.org/3/library/os.html#os.makedirs" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">os.makedirs()</span></code></a>.</p>
+</dd>
+</dl>
 <p>&#64;todoc</p>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="ActionTree.stock.DeleteFile">
-<em class="property">class </em><code class="descclassname">ActionTree.stock.</code><code class="descname">DeleteFile</code><span class="sig-paren">(</span><em>name</em>, <em>label=&lt;object object&gt;</em>, <em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.DeleteFile" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ActionTree.stock.</code><code class="sig-name descname">DeleteFile</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">label=&lt;object object&gt;</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.DeleteFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>A stock action that deletes a file.
 No error will be raise if the file doesn’t exist.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the name of the file to delete, passed to <a class="reference external" href="https://docs.python.org/3/library/os.html#os.unlink" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">os.unlink()</span></code></a>.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the name of the file to delete, passed to <a class="reference external" href="https://docs.python.org/3/library/os.html#os.unlink" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">os.unlink()</span></code></a>.</p>
+</dd>
+</dl>
 <p>&#64;todoc</p>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="ActionTree.stock.DeleteDirectory">
-<em class="property">class </em><code class="descclassname">ActionTree.stock.</code><code class="descname">DeleteDirectory</code><span class="sig-paren">(</span><em>name</em>, <em>label=&lt;object object&gt;</em>, <em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.DeleteDirectory" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ActionTree.stock.</code><code class="sig-name descname">DeleteDirectory</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">label=&lt;object object&gt;</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.DeleteDirectory" title="Permalink to this definition">¶</a></dt>
 <dd><p>A stock action that deletes a directory (recursively).
 No error will be raise if the directory doesn’t exist.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the name of the directory to delete, passed to <a class="reference external" href="https://docs.python.org/3/library/shutil.html#shutil.rmtree" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">shutil.rmtree()</span></code></a>.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the name of the directory to delete, passed to <a class="reference external" href="https://docs.python.org/3/library/shutil.html#shutil.rmtree" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">shutil.rmtree()</span></code></a>.</p>
+</dd>
+</dl>
 <p>&#64;todoc</p>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="ActionTree.stock.CopyFile">
-<em class="property">class </em><code class="descclassname">ActionTree.stock.</code><code class="descname">CopyFile</code><span class="sig-paren">(</span><em>src</em>, <em>dst</em>, <em>label=&lt;object object&gt;</em>, <em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.CopyFile" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ActionTree.stock.</code><code class="sig-name descname">CopyFile</code><span class="sig-paren">(</span><em class="sig-param">src</em>, <em class="sig-param">dst</em>, <em class="sig-param">label=&lt;object object&gt;</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.CopyFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>A stock action that copies a file. Arguments are passed to <a class="reference external" href="https://docs.python.org/3/library/shutil.html#shutil.copy" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">shutil.copy()</span></code></a>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>src</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the file to copy</li>
-<li><strong>dst</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the destination</li>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the file to copy</p></li>
+<li><p><strong>dst</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the destination</p></li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 <p>&#64;todoc</p>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="ActionTree.stock.TouchFile">
-<em class="property">class </em><code class="descclassname">ActionTree.stock.</code><code class="descname">TouchFile</code><span class="sig-paren">(</span><em>name</em>, <em>label=&lt;object object&gt;</em>, <em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.TouchFile" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ActionTree.stock.</code><code class="sig-name descname">TouchFile</code><span class="sig-paren">(</span><em class="sig-param">name</em>, <em class="sig-param">label=&lt;object object&gt;</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.TouchFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>A stock action that touches a file.
 If the file already exists, its modification time will be modified.
 Else, it will be created, empty.</p>
 <p>Note that the containing directory must exist.
 You might want to ensure that by adding a <a class="reference internal" href="#ActionTree.stock.CreateDirectory" title="ActionTree.stock.CreateDirectory"><code class="xref py py-class docutils literal notranslate"><span class="pre">CreateDirectory</span></code></a> as a dependency.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the name of the file to touch. Passed to <a class="reference external" href="https://docs.python.org/3/library/functions.html#open" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">open()</span></code></a> and/or <a class="reference external" href="https://docs.python.org/3/library/os.html#os.utime" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">os.utime()</span></code></a>.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – the name of the file to touch. Passed to <a class="reference external" href="https://docs.python.org/3/library/functions.html#open" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">open()</span></code></a> and/or <a class="reference external" href="https://docs.python.org/3/library/os.html#os.utime" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">os.utime()</span></code></a>.</p>
+</dd>
+</dl>
 <p>&#64;todoc</p>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="ActionTree.stock.Sleep">
-<em class="property">class </em><code class="descclassname">ActionTree.stock.</code><code class="descname">Sleep</code><span class="sig-paren">(</span><em>secs</em>, <em>label=&lt;object object&gt;</em>, <em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.Sleep" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">ActionTree.stock.</code><code class="sig-name descname">Sleep</code><span class="sig-paren">(</span><em class="sig-param">secs</em>, <em class="sig-param">label=&lt;object object&gt;</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwds</em><span class="sig-paren">)</span><a class="headerlink" href="#ActionTree.stock.Sleep" title="Permalink to this definition">¶</a></dt>
 <dd><p>A stock action that sleeps for a certain duration.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>secs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – seconds to sleep, passed to <a class="reference external" href="https://docs.python.org/3/library/time.html#time.sleep" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">time.sleep()</span></code></a>.</td>
-</tr>
-</tbody>
-</table>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>secs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – seconds to sleep, passed to <a class="reference external" href="https://docs.python.org/3/library/time.html#time.sleep" title="(in Python v3.8)"><code class="xref py py-func docutils literal notranslate"><span class="pre">time.sleep()</span></code></a>.</p>
+</dd>
+</dl>
 <p>&#64;todoc</p>
 </dd></dl>
 
@@ -797,17 +694,15 @@ You might want to ensure that by adding a <a class="reference internal" href="#A
 
 
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -816,7 +711,7 @@ You might want to ensure that by adding a <a class="reference internal" href="#A
       &copy;2013-2018 <a href="http://vincent-jacques.net/">Vincent Jacques</a><script src="https://jacquev6.net/ribbon.2.js" data-project="ActionTree"></script>.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
