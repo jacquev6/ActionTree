@@ -9,6 +9,9 @@ and its `source code <https://github.com/jacquev6/ActionTree>`_ are on GitHub.
 
 Questions? Remarks? Bugs? Want to contribute? `Open an issue <https://github.com/jacquev6/ActionTree/issues>`_!
 
+.. image:: https://github.com/jacquev6/ActionTree/workflows/Continuous%20Integration/badge.svg
+    :target: https://github.com/jacquev6/ActionTree/actions?query=workflow%3A%22Continuous+Integration%22
+
 Quick start
 ===========
 
