@@ -26,8 +26,14 @@ jobs:
           sudo chown runner:docker -R .
           git checkout -- docs/_images
           git diff --exit-code --stat docs
+  demo:
+    name: Demo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: |
+          development/demo/run.sh
 
-# @todo Check installability + demo
 # @todo Publish tagged versions on PyPI
 # @todo Ensure repository settings?
 # @todo Ensure file headers have copyright notices?

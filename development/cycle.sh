@@ -23,5 +23,8 @@ title "Tests (Python 3.8)"
 title "Documentation"
 ./development/doc/build.sh
 
+title "Demo"
+./development/demo/run.sh
+
 echo
 echo "Development cycle OK"
