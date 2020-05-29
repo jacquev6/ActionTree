@@ -7,7 +7,7 @@
 import setuptools
 import sys
 
-version = "0.13.1"
+version = "0.13.2"
 
 
 setuptools.setup(
