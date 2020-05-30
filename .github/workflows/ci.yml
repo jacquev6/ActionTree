@@ -54,6 +54,7 @@ jobs:
         if: startsWith(github.event.ref, 'refs/tags')
         uses: pypa/gh-action-pypi-publish@master
         with:
+          # [PyPI API token](https://pypi.org/manage/account/#api-tokens) set as a [secret](https://github.com/jacquev6/ActionTree/settings/secrets)
           password: ${{ secrets.pypi_password }}
 
 # @todo Ensure repository settings?
